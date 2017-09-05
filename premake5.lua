@@ -2,7 +2,7 @@ workspace "nob"
 	language "C++"
 	flags { "C++11" }
 	location ( "build" )
-	configurations { "Release" }
+	configurations { "Debug", "Release" }
 	platforms {"x64"}
 	objdir("build/obj")
 	includedirs { "include" }
@@ -14,12 +14,19 @@ workspace "nob"
 			"include/*.hpp", "include/*.h",
 			"include/nob/shv/*.hpp", "include/nob/shv/*.h",
 			"src/*.cpp", "src/*.hpp", "src/*.h",
-			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h",
+			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h"
 		}
 		targetprefix "lib"
 		targetextension ".a"
-		defines { "NDEBUG" }
-		optimize "Speed"
+
+		configuration "Debug"
+			defines { "DEBUG" }
+			symbols "On"
+			warnings "Extra"
+
+		configuration "Release"
+			defines { "NDEBUG" }
+			optimize "Speed"
 
 	project "nob_tester"
 		kind "SharedLib"
@@ -27,6 +34,13 @@ workspace "nob"
 		files { "test/*.cpp" }
 		targetextension ".asi"
 		libdirs { "lib" }
-		defines { "NDEBUG" }
-		optimize "Speed"
-		links { "user32", "nob" }
+		links { "user32", "psapi", "nob" }
+
+		configuration "Debug"
+			defines { "DEBUG" }
+			symbols "On"
+			warnings "Extra"
+
+		configuration "Release"
+			defines { "NDEBUG" }
+			optimize "Speed"

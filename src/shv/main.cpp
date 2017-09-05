@@ -1,5 +1,5 @@
 #include <nob/shv/main.hpp>
-#include <sstream>
+
 namespace nob {
 	namespace shv {
 		HMODULE dll;
@@ -39,8 +39,14 @@ namespace nob {
 
 		eGameVersion (*getGameVersion)();
 
-		void _load() {
-			dll = LoadLibraryW(L"ScriptHookV.dll");
+		bool _init() {
+			dll = GetModuleHandleW(L"ScriptHookV.dll");
+			if (!dll) {
+				dll = LoadLibraryW(L"ScriptHookV.dll");
+				if (!dll) {
+					return false;
+				}
+			}
 
 			createTexture = (int (*)(const char *texFileName))GetProcAddress(dll, "?createTexture@@YAHPEBD@Z");
 
@@ -76,10 +82,8 @@ namespace nob {
 			getScriptHandleBaseAddress = (BYTE *(*)(int handle))GetProcAddress(dll, "?getScriptHandleBaseAddress@@YAPEAEH@Z");
 
 			getGameVersion = (eGameVersion (*)())GetProcAddress(dll, "?getGameVersion@@YA?AW4eGameVersion@@XZ");
-		}
 
-		void _free() {
-			FreeLibrary(dll);
+			return true;
 		}
 	} /* shv */
 } /* nob */

@@ -1598,7 +1598,7 @@ namespace nob {
 		{
 			inline void TASK_PAUSE(Ped ped, int ms) { invoke<Void>(0xE73A266DB0CA9042, ped, ms); } // 0xE73A266DB0CA9042 0x17A64668
 			inline void TASK_STAND_STILL(Ped ped, int time) { invoke<Void>(0x919BE13EED931959, ped, time); } // 0x919BE13EED931959 0x6F80965D
-			inline void TASK_JUMP(Ped ped, BOOL unused) { invoke<Void>(0x0AE4086104E067B1, ped, unused); } // 0x0AE4086104E067B1 0x0356E3CE
+			inline void TASK_JUMP(Ped ped, BOOL unused, BOOL flag1, BOOL flag2) { invoke<Void>(0x0AE4086104E067B1, ped, unused, flag1, flag2); } // 0x0AE4086104E067B1 0x0356E3CE
 			inline void TASK_COWER(Ped ped, int duration) { invoke<Void>(0x3EB1FE9E8E908E15, ped, duration); } // 0x3EB1FE9E8E908E15 0x9CF1C19B
 			inline void TASK_HANDS_UP(Ped ped, int duration, Ped facingPed, int p3, BOOL p4) { invoke<Void>(0xF2EAB31979A7F910, ped, duration, facingPed, p3, p4); } // 0xF2EAB31979A7F910 0x8DCC19C5
 			inline void UPDATE_TASK_HANDS_UP_DURATION(Ped ped, int duration) { invoke<Void>(0xA98FCAFD7893C834, ped, duration); } // 0xA98FCAFD7893C834 0x3AA39BE9

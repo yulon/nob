@@ -1,22 +1,25 @@
 #include <nob/shv/main.hpp>
+#include <atomic>
 
 namespace nob {
 	namespace shv {
-		void _load();
-		void _free();
+		bool _init();
 	} /* shv */
-	void _entry_point();
+	void _script_entry_point();
 } /* nob */
 
-BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
-	switch (reason) {
+BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH:
-			nob::shv::_load();
-			nob::shv::scriptRegister(hInstance, nob::_entry_point);
+			if (!nob::shv::_init()) {
+				return FALSE;
+			}
+			nob::shv::scriptRegister(hinstDLL, nob::_script_entry_point);
 			break;
 		case DLL_PROCESS_DETACH:
-			//nob::shv::scriptUnregister(hInstance);
-			//nob::shv::free();
+			#ifndef DEBUG
+				nob::shv::scriptUnregister(hinstDLL);
+			#endif
 			break;
 	}
 	return TRUE;
