@@ -5,7 +5,7 @@ namespace nob {
 	namespace shv {
 		bool _init();
 	} /* shv */
-	void _script_entry_point();
+	void _main();
 } /* nob */
 
 BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
@@ -14,7 +14,7 @@ BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 			if (!nob::shv::_init()) {
 				return FALSE;
 			}
-			nob::shv::scriptRegister(hinstDLL, nob::_script_entry_point);
+			nob::shv::scriptRegister(hinstDLL, nob::_main);
 			break;
 		case DLL_PROCESS_DETACH:
 			#ifndef DEBUG

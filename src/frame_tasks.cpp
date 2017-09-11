@@ -2,7 +2,7 @@
 
 #include <list>
 #include <forward_list>
-#include <atomic>
+#include <mutex>
 
 namespace nob {
 	struct _ftask {
@@ -28,6 +28,8 @@ namespace nob {
 	}
 
 	size_t _cur_tick;
+
+	std::thread::id main_thread_id;
 
 	PVOID _main_fiber;
 	PVOID _cur_fiber;
@@ -126,11 +128,53 @@ namespace nob {
 	}
 
 	void wait(size_t ms) {
+		if (std::this_thread::get_id() != main_thread_id) {
+			Sleep(!ms ? ms = 1 : ms);
+			return;
+		}
 		_wait({_cur_fiber, nullptr, 0, ms, nullptr});
 	}
 
 	void wait(const std::function<bool()> &cond) {
+		if (std::this_thread::get_id() != main_thread_id) {
+			do {
+				Sleep(1);
+			} while (!cond);
+			return;
+		}
 		_wait({_cur_fiber, nullptr, 0, 0, cond});
+	}
+
+	uintptr_t call_onmt(const std::function<uintptr_t()> &func) {
+		if (std::this_thread::get_id() != main_thread_id) {
+			return func();
+		}
+
+		auto mtx = new std::mutex;
+		auto done = new bool(false);
+		auto result = new uintptr_t;
+
+		std::thread([mtx, done, result, func]() {
+			mtx->lock();
+			*result = func();
+			*done = true;
+			mtx->unlock();
+		}).detach();
+
+		wait([mtx, done]()->bool {
+			if (mtx->try_lock()) {
+				auto done_cp = *done;
+				mtx->unlock();
+				return done_cp;
+			}
+			return false;
+		});
+
+		auto r = *result;
+		delete mtx;
+		delete done;
+		delete result;
+		return r;
 	}
 
 	void del_frame_task(uintptr_t id, bool wait_ran) {
@@ -159,7 +203,7 @@ namespace nob {
 		}
 
 		for (auto it = _ftasks.begin(); it != _ftasks.end(); ++it) {
-			if (ftask == *it) {
+			if (*it == ftask) {
 				_ftasks.erase(it);
 				delete ftask;
 				break;
@@ -167,11 +211,30 @@ namespace nob {
 		}
 	}
 
-	shv::Player shv_player;
+	bool has_frame_task(uintptr_t id) {
+		auto ftask = (_ftask *)id;
+		for (auto it = _ftasks.begin(); it != _ftasks.end(); ++it) {
+			if (*it == ftask) {
+				return true;
+			}
+		}
+		for (auto it = _sleepings.begin(); it != _sleepings.end(); ++it) {
+			if (it->ftask == ftask) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	namespace player {
+		ntv::Player ntv_player;
+	} /* player */
 
 	uintptr_t _first_ftask;
 
-	void _script_entry_point() {
+	void _main() {
+		main_thread_id = std::this_thread::get_id();
+
 		for (auto it = _ftasks.begin(); it != _ftasks.end(); ) {
 			delete *it;
 			it = _ftasks.erase(it);
@@ -191,13 +254,13 @@ namespace nob {
 
 		_main_fiber = _cur_fiber = GetCurrentFiber();
 
-		shv_player = shv::PLAYER::PLAYER_ID();
+		player::ntv_player = ntv::PLAYER::PLAYER_ID();
 
 		_cur_tick = GetTickCount();
 		_ftasks_it = _ftasks.end();
 
 		_first_ftask = add_frame_task([]() {
-			on_first_frame();
+			main();
 			del_frame_task(_first_ftask);
 		});
 
