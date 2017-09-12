@@ -1,8 +1,12 @@
 #pragma once
 
+#include <cstdint>
+#include <cassert>
+
 namespace nob {
 	namespace ntv {
 		// Reference from http://www.dev-c.com/gtav/scripthookv/
+
 		typedef unsigned int Void;
 		typedef unsigned int Any;
 		typedef unsigned int uint;
@@ -42,351 +46,154 @@ namespace nob {
 		} Vector3;
 		#pragma pack(pop)
 
-		// Reference from https://github.com/crosire/scripthookvdotnet/blob/dev_v3/source/scripting/Control.cs
-		enum class ctrls : int {
-			NextCamera,
-			LookLeftRight,
-			LookUpDown,
-			LookUpOnly,
-			LookDownOnly,
-			LookLeftOnly,
-			LookRightOnly,
-			CinematicSlowMo,
-			FlyUpDown,
-			FlyLeftRight,
-			ScriptedFlyZUp,
-			ScriptedFlyZDown,
-			WeaponWheelUpDown,
-			WeaponWheelLeftRight,
-			WeaponWheelNext,
-			WeaponWheelPrev,
-			SelectNextWeapon,
-			SelectPrevWeapon,
-			SkipCutscene,
-			CharacterWheel,
-			MultiplayerInfo,
-			Sprint,
-			Jump,
-			Enter,
-			Attack,
-			Aim,
-			LookBehind,
-			Phone,
-			SpecialAbility,
-			SpecialAbilitySecondary,
-			MoveLeftRight,
-			MoveUpDown,
-			MoveUpOnly,
-			MoveDownOnly,
-			MoveLeftOnly,
-			MoveRightOnly,
-			Duck,
-			SelectWeapon,
-			Pickup,
-			SniperZoom,
-			SniperZoomInOnly,
-			SniperZoomOutOnly,
-			SniperZoomInSecondary,
-			SniperZoomOutSecondary,
-			Cover,
-			Reload,
-			Talk,
-			Detonate,
-			HUDSpecial,
-			Arrest,
-			AccurateAim,
-			Context,
-			ContextSecondary,
-			WeaponSpecial,
-			WeaponSpecial2,
-			Dive,
-			DropWeapon,
-			DropAmmo,
-			ThrowGrenade,
-			VehicleMoveLeftRight,
-			VehicleMoveUpDown,
-			VehicleMoveUpOnly,
-			VehicleMoveDownOnly,
-			VehicleMoveLeftOnly,
-			VehicleMoveRightOnly,
-			VehicleSpecial,
-			VehicleGunLeftRight,
-			VehicleGunUpDown,
-			VehicleAim,
-			VehicleAttack,
-			VehicleAttack2,
-			VehicleAccelerate,
-			VehicleBrake,
-			VehicleDuck,
-			VehicleHeadlight,
-			VehicleExit,
-			VehicleHandbrake,
-			VehicleHotwireLeft,
-			VehicleHotwireRight,
-			VehicleLookBehind,
-			VehicleCinCam,
-			VehicleNextRadio,
-			VehiclePrevRadio,
-			VehicleNextRadioTrack,
-			VehiclePrevRadioTrack,
-			VehicleRadioWheel,
-			VehicleHorn,
-			VehicleFlyThrottleUp,
-			VehicleFlyThrottleDown,
-			VehicleFlyYawLeft,
-			VehicleFlyYawRight,
-			VehiclePassengerAim,
-			VehiclePassengerAttack,
-			VehicleSpecialAbilityFranklin,
-			VehicleStuntUpDown,
-			VehicleCinematicUpDown,
-			VehicleCinematicUpOnly,
-			VehicleCinematicDownOnly,
-			VehicleCinematicLeftRight,
-			VehicleSelectNextWeapon,
-			VehicleSelectPrevWeapon,
-			VehicleRoof,
-			VehicleJump,
-			VehicleGrapplingHook,
-			VehicleShuffle,
-			VehicleDropProjectile,
-			VehicleMouseControlOverride,
-			VehicleFlyRollLeftRight,
-			VehicleFlyRollLeftOnly,
-			VehicleFlyRollRightOnly,
-			VehicleFlyPitchUpDown,
-			VehicleFlyPitchUpOnly,
-			VehicleFlyPitchDownOnly,
-			VehicleFlyUnderCarriage,
-			VehicleFlyAttack,
-			VehicleFlySelectNextWeapon,
-			VehicleFlySelectPrevWeapon,
-			VehicleFlySelectTargetLeft,
-			VehicleFlySelectTargetRight,
-			VehicleFlyVerticalFlightMode,
-			VehicleFlyDuck,
-			VehicleFlyAttackCamera,
-			VehicleFlyMouseControlOverride,
-			VehicleSubTurnLeftRight,
-			VehicleSubTurnLeftOnly,
-			VehicleSubTurnRightOnly,
-			VehicleSubPitchUpDown,
-			VehicleSubPitchUpOnly,
-			VehicleSubPitchDownOnly,
-			VehicleSubThrottleUp,
-			VehicleSubThrottleDown,
-			VehicleSubAscend,
-			VehicleSubDescend,
-			VehicleSubTurnHardLeft,
-			VehicleSubTurnHardRight,
-			VehicleSubMouseControlOverride,
-			VehiclePushbikePedal,
-			VehiclePushbikeSprint,
-			VehiclePushbikeFrontBrake,
-			VehiclePushbikeRearBrake,
-			MeleeAttackLight,
-			MeleeAttackHeavy,
-			MeleeAttackAlternate,
-			MeleeBlock,
-			ParachuteDeploy,
-			ParachuteDetach,
-			ParachuteTurnLeftRight,
-			ParachuteTurnLeftOnly,
-			ParachuteTurnRightOnly,
-			ParachutePitchUpDown,
-			ParachutePitchUpOnly,
-			ParachutePitchDownOnly,
-			ParachuteBrakeLeft,
-			ParachuteBrakeRight,
-			ParachuteSmoke,
-			ParachutePrecisionLanding,
-			Map,
-			SelectWeaponUnarmed,
-			SelectWeaponMelee,
-			SelectWeaponHandgun,
-			SelectWeaponShotgun,
-			SelectWeaponSmg,
-			SelectWeaponAutoRifle,
-			SelectWeaponSniper,
-			SelectWeaponHeavy,
-			SelectWeaponSpecial,
-			SelectCharacterMichael,
-			SelectCharacterFranklin,
-			SelectCharacterTrevor,
-			SelectCharacterMultiplayer,
-			SaveReplayClip,
-			SpecialAbilityPC,
-			PhoneUp,
-			PhoneDown,
-			PhoneLeft,
-			PhoneRight,
-			PhoneSelect,
-			PhoneCancel,
-			PhoneOption,
-			PhoneExtraOption,
-			PhoneScrollForward,
-			PhoneScrollBackward,
-			PhoneCameraFocusLock,
-			PhoneCameraGrid,
-			PhoneCameraSelfie,
-			PhoneCameraDOF,
-			PhoneCameraExpression,
-			FrontendDown,
-			FrontendUp,
-			FrontendLeft,
-			FrontendRight,
-			FrontendRdown,
-			FrontendRup,
-			FrontendRleft,
-			FrontendRright,
-			FrontendAxisX,
-			FrontendAxisY,
-			FrontendRightAxisX,
-			FrontendRightAxisY,
-			FrontendPause,
-			FrontendPauseAlternate,
-			FrontendAccept,
-			FrontendCancel,
-			FrontendX,
-			FrontendY,
-			FrontendLb,
-			FrontendRb,
-			FrontendLt,
-			FrontendRt,
-			FrontendLs,
-			FrontendRs,
-			FrontendLeaderboard,
-			FrontendSocialClub,
-			FrontendSocialClubSecondary,
-			FrontendDelete,
-			FrontendEndscreenAccept,
-			FrontendEndscreenExpand,
-			FrontendSelect,
-			ScriptLeftAxisX,
-			ScriptLeftAxisY,
-			ScriptRightAxisX,
-			ScriptRightAxisY,
-			ScriptRUp,
-			ScriptRDown,
-			ScriptRLeft,
-			ScriptRRight,
-			ScriptLB,
-			ScriptRB,
-			ScriptLT,
-			ScriptRT,
-			ScriptLS,
-			ScriptRS,
-			ScriptPadUp,
-			ScriptPadDown,
-			ScriptPadLeft,
-			ScriptPadRight,
-			ScriptSelect,
-			CursorAccept,
-			CursorCancel,
-			CursorX,
-			CursorY,
-			CursorScrollUp,
-			CursorScrollDown,
-			EnterCheatCode,
-			InteractionMenu,
-			MpTextChatAll,
-			MpTextChatTeam,
-			MpTextChatFriends,
-			MpTextChatCrew,
-			PushToTalk,
-			CreatorLS,
-			CreatorRS,
-			CreatorLT,
-			CreatorRT,
-			CreatorMenuToggle,
-			CreatorAccept,
-			CreatorDelete,
-			Attack2,
-			RappelJump,
-			RappelLongJump,
-			RappelSmashWindow,
-			PrevWeapon,
-			NextWeapon,
-			MeleeAttack1,
-			MeleeAttack2,
-			Whistle,
-			MoveLeft,
-			MoveRight,
-			MoveUp,
-			MoveDown,
-			LookLeft,
-			LookRight,
-			LookUp,
-			LookDown,
-			SniperZoomIn,
-			SniperZoomOut,
-			SniperZoomInAlternate,
-			SniperZoomOutAlternate,
-			VehicleMoveLeft,
-			VehicleMoveRight,
-			VehicleMoveUp,
-			VehicleMoveDown,
-			VehicleGunLeft,
-			VehicleGunRight,
-			VehicleGunUp,
-			VehicleGunDown,
-			VehicleLookLeft,
-			VehicleLookRight,
-			ReplayStartStopRecording,
-			ReplayStartStopRecordingSecondary,
-			ScaledLookLeftRight,
-			ScaledLookUpDown,
-			ScaledLookUpOnly,
-			ScaledLookDownOnly,
-			ScaledLookLeftOnly,
-			ScaledLookRightOnly,
-			ReplayMarkerDelete,
-			ReplayClipDelete,
-			ReplayPause,
-			ReplayRewind,
-			ReplayFfwd,
-			ReplayNewmarker,
-			ReplayRecord,
-			ReplayScreenshot,
-			ReplayHidehud,
-			ReplayStartpoint,
-			ReplayEndpoint,
-			ReplayAdvance,
-			ReplayBack,
-			ReplayTools,
-			ReplayRestart,
-			ReplayShowhotkey,
-			ReplayCycleMarkerLeft,
-			ReplayCycleMarkerRight,
-			ReplayFOVIncrease,
-			ReplayFOVDecrease,
-			ReplayCameraUp,
-			ReplayCameraDown,
-			ReplaySave,
-			ReplayToggletime,
-			ReplayToggletips,
-			ReplayPreview,
-			ReplayToggleTimeline,
-			ReplayTimelinePickupClip,
-			ReplayTimelineDuplicateClip,
-			ReplayTimelinePlaceClip,
-			ReplayCtrl,
-			ReplayTimelineSave,
-			ReplayPreviewAudio,
-			VehicleDriveLook,
-			VehicleDriveLook2,
-			VehicleFlyAttack2,
-			RadioWheelUpDown,
-			RadioWheelLeftRight,
-			VehicleSlowMoUpDown,
-			VehicleSlowMoUpOnly,
-			VehicleSlowMoDownOnly,
-			MapPointOfInterest,
-			ReplaySnapmaticPhoto,
-			VehicleCarJump,
-			VehicleRocketBoost,
-			VehicleParachute,
-			VehicleBikeWings
+		////////////////////////////////////////////////////////////////////////////
+
+		// Reference from https://github.com/zorg93/EnableMpCars-GTAV
+
+		class global_table_t {
+			public:
+				global_table_t();
+
+				uint64_t &operator[](size_t hash) {
+					#ifdef DEBUG
+						assert(*this);
+					#endif
+
+					return _base_addr[hash >> 18 & 0x3F][hash & 0x3FFFF];
+				}
+
+				uint64_t operator[](size_t hash) const {
+					return (*this)[hash];
+				}
+
+				operator bool() const {
+					return _base_addr && *_base_addr;
+				}
+
+			private:
+				uint64_t **_base_addr;
+		};
+
+		struct script_list_t {
+			struct info_t {
+				struct code_t {
+					char padding1[16];					//0x0
+					unsigned char **blocks_offset;		//0x10
+					char padding2[4];					//0x18
+					int length;							//0x1C
+					char padding3[4];					//0x20
+					int local_count;					//0x24
+					char padding4[4];					//0x28
+					int native_count;					//0x2C
+					int64_t *local_offset;				//0x30
+					char padding5[8];					//0x38
+					int64_t *native_offset;				//0x40
+					char padding6[16];					//0x48
+					int nameHash;						//0x58
+					char padding7[4];					//0x5C
+					char *name;							//0x60
+					char **strings_offset;				//0x68
+					int string_size;					//0x70
+					char padding8[12];					//0x74
+
+					bool is_valid() const {
+						return length;
+					}
+
+					int page_count() const {
+						return (length + 0x3FFF) >> 14;
+					}
+
+					int page_size(int page) const {
+						return (page < 0 || page >= page_count() ? 0 : (page == page_count() - 1) ? length & 0x3FFF : 0x4000);
+					}
+
+					unsigned char* page_addr(int page) const {
+						return blocks_offset[page];
+					}
+
+					unsigned char* pos_addr(int pos) const {
+						return pos < 0 || pos >= length ? NULL : &blocks_offset[pos >> 14][pos & 0x3FFF];
+					}
+
+					char* get_string(int str_pos) const {
+						return str_pos < 0 || str_pos >= string_size ? NULL : &strings_offset[str_pos >> 14][str_pos & 0x3FFF];
+					}
+				};
+
+				code_t *code;
+				int _unk;
+				int hash;
+			};
+
+			info_t *infos;
+			uint8_t _unk[16];
+			int size;
+
+			info_t *find(const char *name) const;
+		};
+
+		////////////////////////////////////////////////////////////////////////////
+
+		// Reference from https://github.com/ivanmeler/OpenVHook
+
+		class func_table_t {
+			public:
+				struct node_t {
+					struct call_context_t {
+						uintptr_t *results;
+						uint32_t args_len;
+						uintptr_t *args;
+						uint32_t data_len;
+					};
+			
+					typedef void (__cdecl *func_t)(call_context_t *);
+		
+					node_t *next_node;
+					func_t funcs[7];
+					uint32_t length;
+					uint64_t hashes[7];
+				};
+
+				func_table_t();
+
+				node_t::func_t operator[](uint64_t hash) const {
+					#ifdef DEBUG
+						assert(*this);
+					#endif
+
+					for (auto n = _nodes[hash & 0xFF]; n; n = n->next_node) {
+						for (uint8_t i = 0; i < n->length; ++i) {
+							if (n->hashes[i] == hash) {
+								return n->funcs[i];
+							}
+						}
+					}
+					return nullptr;
+				}
+
+				bool set(uint64_t hash, node_t::func_t new_func) {
+					#ifdef DEBUG
+						assert(*this);
+					#endif
+
+					for (auto n = _nodes[hash & 0xFF]; n; n = n->next_node) {
+						for (uint8_t i = 0; i < n->length; ++i) {
+							if (n->hashes[i] == hash) {
+								n->funcs[i] = new_func;
+								return true;
+							}
+						}
+					}
+					return false;
+				}
+
+				operator bool() const {
+					return _nodes;
+				}
+
+			private:
+				node_t **_nodes;
 		};
 	} /* ntv */
 } /* nob */

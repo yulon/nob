@@ -1,6 +1,6 @@
 #pragma once
 
-// Generated 11 Aug 2017
+// Reference from http://www.dev-c.com/nativedb/
 
 #include "types.hpp"
 

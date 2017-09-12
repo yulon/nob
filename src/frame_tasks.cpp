@@ -99,7 +99,7 @@ namespace nob {
 		_wakeup_fiber(_main_fiber);
 	}
 
-	VOID WINAPI _handle_ftasks_loop(PVOID p) {
+	VOID WINAPI _handle_ftasks_loop(PVOID) {
 		for (;;) {
 			_handle_ftasks();
 		}

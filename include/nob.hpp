@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nob/ntv/funcs.hpp"
+#include "nob/ntv.hpp"
 
 #include <string>
 #include <functional>
@@ -48,7 +48,7 @@ namespace nob {
 			return {coords.x, coords.y, get_ground_height(coords, load_scene)};
 		}
 
-		void no_man(bool toggle);
+		void no_man(bool toggle = true);
 
 		inline void clear_black_fog() {
 			ntv::UI::_SET_MINIMAP_REVEALED(TRUE);
@@ -278,16 +278,16 @@ namespace nob {
 	} /* g2d */
 
 	namespace ui {
-		struct outfit {
+		struct component {
 			std::string name;
 			std::string desc;
 		};
 
-		struct item : public outfit {
+		struct item : public component {
 			std::function<void()> action;
 		};
 
-		struct list : public outfit {
+		struct list : public component {
 			std::vector<item> items;
 			size_t selected = 0;
 		};
@@ -358,8 +358,8 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
-		void disable_story_features(bool toggle);
-		void disable_wheel_slowmo();
+		void disable_story_features(bool toggle = true);
+		void disable_wheel_slowmo(bool toggle = true);
 	} /* ui */
 
 	namespace i18n {

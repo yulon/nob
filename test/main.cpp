@@ -1,4 +1,5 @@
 #include <nob.hpp>
+#include <nob/hack.hpp>
 
 #include <memory>
 #include <cstring>
@@ -7,9 +8,9 @@ size_t fps;
 size_t fps_count;
 
 void nob::main() {
-	world::no_man(true);
+	world::no_man();
 	world::clear_black_fog();
-	ui::disable_story_features(true);
+	ui::disable_story_features();
 	ui::disable_wheel_slowmo();
 	vehicle::unlock_banned_vehicles();
 
@@ -24,7 +25,21 @@ void nob::main() {
 	auto veh = vehicle("MOLOTOK", plr_chr.pos({0, 10, 0}));
 	veh.place_on_ground();
 	veh.set_best_mod();
-	ntv::ENTITY::SET_ENTITY_INVINCIBLE(veh.ntv_vehicle, TRUE);
+
+	if (ntv::func_table) {
+		auto f = ntv::func_table[0xC20B73867395D06D]; //ntv::ENTITY::SET_ENTITY_INVINCIBLE(veh.ntv_vehicle, TRUE);
+		if (f) {
+			auto p = new uintptr_t[16]{(uintptr_t)veh.ntv_vehicle, 1};
+			ntv::func_table_t::node_t::call_context_t cc = {
+				p,
+				2,
+				p,
+				0
+			};
+			f(&cc);
+			delete p;
+		}
+	}
 
 	ui::info("you know!");
 

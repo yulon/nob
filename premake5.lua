@@ -13,8 +13,7 @@ workspace "nob"
 		files {
 			"include/*.hpp", "include/*.h",
 			"include/nob/shv/*.hpp", "include/nob/shv/*.h",
-			"src/*.cpp", "src/*.hpp", "src/*.h",
-			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h"
+			"src/*.cpp", "src/*.hpp", "src/*.h"
 		}
 		targetprefix "lib"
 		targetextension ".a"
@@ -34,7 +33,7 @@ workspace "nob"
 		files { "test/*.cpp" }
 		targetextension ".asi"
 		libdirs { "lib" }
-		links { "user32", "psapi", "nob" }
+		links { "user32", "nob", "psapi", "MinHook" }
 
 		configuration "Debug"
 			defines { "DEBUG" }

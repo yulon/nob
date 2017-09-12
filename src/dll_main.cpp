@@ -1,11 +1,11 @@
 #include <nob/shv/main.hpp>
-#include <atomic>
 
 namespace nob {
+	void _main();
+
 	namespace shv {
 		bool _init();
 	} /* shv */
-	void _main();
 } /* nob */
 
 BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
