@@ -1,9 +1,9 @@
 #include <nob/shv/main.hpp>
 
+#include <array>
+
 namespace nob {
 	namespace shv {
-		HMODULE dll;
-
 		int (*createTexture)(const char *texFileName);
 
 		void (*drawTexture)(
@@ -39,14 +39,28 @@ namespace nob {
 
 		eGameVersion (*getGameVersion)();
 
+		constexpr const std::array<LPCWSTR, 2> _module_names {
+			L"ScriptHookV.dll",
+			L"OpenVHook.dll"
+		};
+
 		bool _init() {
-			dll = GetModuleHandleW(L"ScriptHookV.dll");
-			if (!dll) {
-				dll = LoadLibraryW(L"ScriptHookV.dll");
-				if (!dll) {
-					return false;
+			HMODULE dll;
+			for (size_t i = 0; i < _module_names.size(); ++i) {
+				dll = GetModuleHandleW(_module_names[i]);
+				if (dll) {
+					goto get_func;
 				}
 			}
+			for (size_t i = 0; i < _module_names.size(); ++i) {
+				dll = LoadLibraryW(_module_names[i]);
+				if (dll) {
+					goto get_func;
+				}
+			}
+			return false;
+
+			get_func:
 
 			createTexture = (int (*)(const char *texFileName))GetProcAddress(dll, "?createTexture@@YAHPEBD@Z");
 
@@ -85,5 +99,7 @@ namespace nob {
 
 			return true;
 		}
+
+		const bool valid = _init();
 	} /* shv */
 } /* nob */
