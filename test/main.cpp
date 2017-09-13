@@ -1,5 +1,4 @@
 #include <nob.hpp>
-#include <nob/hack.hpp>
 
 #include <memory>
 #include <cstring>
@@ -26,20 +25,8 @@ void nob::main() {
 	veh.place_on_ground();
 	veh.set_best_mod();
 
-	if (ntv::func_table) {
-		auto f = ntv::func_table[0xC20B73867395D06D]; //ntv::ENTITY::SET_ENTITY_INVINCIBLE(veh.ntv_vehicle, TRUE);
-		if (f) {
-			auto p = new uintptr_t[16]{(uintptr_t)veh.ntv_vehicle, 1};
-			ntv::func_table_t::node_t::call_context_t cc = {
-				p,
-				2,
-				p,
-				0
-			};
-			f(&cc);
-			delete p;
-		}
-	}
+	//ntv::ENTITY::SET_ENTITY_INVINCIBLE(veh.ntv_vehicle, TRUE);
+	ntv::func_table[0xC20B73867395D06D].call<2>({(uintptr_t)veh.ntv_vehicle, (uintptr_t)true});
 
 	ui::info("you know!");
 

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cassert>
+#include <array>
 
 namespace nob {
 	namespace ntv {
@@ -137,18 +138,46 @@ namespace nob {
 
 		// Reference from https://github.com/ivanmeler/OpenVHook
 
+		class func_t {
+			public:
+				operator bool() {
+					return _ptr;
+				}
+
+				template <uint8_t N>
+				uintptr_t call(std::array<uintptr_t, N> args) {
+					if (!_ptr) {
+						return 0;
+					}
+
+					_call_context_t cc;
+					uintptr_t result;
+					cc.args_len = args.size();
+					if (args.size()) {
+						cc.args = args.data();
+						cc.result = args.data();
+					} else {
+						cc.args = &result;
+						cc.result = &result;
+					}
+					_ptr(&cc);
+					return cc.result[0];
+				}
+
+			private:
+				struct _call_context_t {
+					uintptr_t *result;
+					uint32_t args_len;
+					uintptr_t *args;
+					uint32_t data_len = 0;
+				};
+
+				void (__cdecl *_ptr)(_call_context_t *_call_context_ptr) = nullptr;
+		};
+
 		class func_table_t {
 			public:
 				struct node_t {
-					struct call_context_t {
-						uintptr_t *results;
-						uint32_t args_len;
-						uintptr_t *args;
-						uint32_t data_len;
-					};
-			
-					typedef void (__cdecl *func_t)(call_context_t *);
-		
 					node_t *next_node;
 					func_t funcs[7];
 					uint32_t length;
@@ -157,11 +186,10 @@ namespace nob {
 
 				func_table_t();
 
-				node_t::func_t operator[](uint64_t hash) const {
-					#ifdef DEBUG
-						assert(*this);
-					#endif
-
+				func_t operator[](uint64_t hash) const {
+					if (!_nodes) {
+						return func_t();
+					}
 					for (auto n = _nodes[hash & 0xFF]; n; n = n->next_node) {
 						for (uint8_t i = 0; i < n->length; ++i) {
 							if (n->hashes[i] == hash) {
@@ -169,14 +197,13 @@ namespace nob {
 							}
 						}
 					}
-					return nullptr;
+					return func_t();
 				}
 
-				bool set(uint64_t hash, node_t::func_t new_func) {
-					#ifdef DEBUG
-						assert(*this);
-					#endif
-
+				bool set(uint64_t hash, func_t new_func) {
+					if (!_nodes) {
+						return func_t();
+					}
 					for (auto n = _nodes[hash & 0xFF]; n; n = n->next_node) {
 						for (uint8_t i = 0; i < n->length; ++i) {
 							if (n->hashes[i] == hash) {
