@@ -11,17 +11,14 @@ namespace nob {
 
 		global_table_t global_table;
 
-		script_list_t::info_t *script_list_t::find(const char *name) const {
+		script_list_t::node_t *script_list_t::find(const char *name) const {
 			#ifdef DEBUG
-				assert(infos);
+				assert(nodes);
 			#endif
 			int hash = ntv::GAMEPLAY::GET_HASH_KEY(name);
 			for (int i = 0; i < size; i++) {
-				if (infos[i].hash == hash) {
-					#ifdef DEBUG
-						assert(infos[i].code);
-					#endif
-					return &infos[i];
+				if (nodes[i].hash == hash) {
+					return &nodes[i];
 				}
 			}
 			return nullptr;
