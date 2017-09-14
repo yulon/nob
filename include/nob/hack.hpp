@@ -21,10 +21,10 @@ namespace nob {
 
 		extern std::atomic<size_t> _hooking_count;
 
-		template <typename T, typename... A>
+		template <typename T, typename ...A>
 		class hook;
 
-		template <typename T, typename... A>
+		template <typename T, typename ...A>
 		class hook<T(A...)> {
 			public:
 				hook(T(*detour)(A...)) : _detour(reinterpret_cast<LPVOID>(detour)) {}
