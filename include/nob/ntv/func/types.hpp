@@ -113,6 +113,7 @@ namespace nob {
 		template <typename R, typename... A>
 		class lazy_func_t<R(A...)> : public nt_lazy_func_t<sizeof...(A)> {
 			public:
+				lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
 				lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
 				lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
 
@@ -124,6 +125,7 @@ namespace nob {
 		template <typename... A>
 		class lazy_func_t<void(A...)> : public nt_lazy_func_t<sizeof...(A)> {
 			public:
+				lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
 				lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
 				lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
 
