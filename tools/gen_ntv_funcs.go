@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 )
 
@@ -20,23 +18,18 @@ type nfsMap map[string]map[string]struct {
 var nfs nfsMap
 
 func main() {
-	resp, err := http.Get("http://www.dev-c.com/nativedb/natives.json")
+	nf, err := os.Open("natives.json")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	nfsJson, err := ioutil.ReadAll(resp.Body)
+	dec := json.NewDecoder(nf)
+	err = dec.Decode(&nfs)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	resp.Body.Close()
-
-	err = json.Unmarshal(nfsJson, &nfs)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	nf.Close()
 
 	hpp, err := os.Create("../include/nob/ntv/funcs.hpp")
 	if err != nil {
@@ -86,7 +79,7 @@ namespace nob {
 			if isHeadFile {
 				file.WriteString("extern ")
 			}
-			file.WriteString("lazy_func_t<" + fn.Results + "(")
+			file.WriteString("typed_lazy_func_t<" + fn.Results + "(")
 			for i, p := range fn.Params {
 				switch p.Type {
 				case "char*":

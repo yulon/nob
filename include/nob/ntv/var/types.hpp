@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cassert>
 #include <array>
+#include <initializer_list>
 
 namespace nob {
 	namespace ntv {
@@ -96,19 +97,28 @@ namespace nob {
 		// Reference from https://github.com/ivanmeler/OpenVHook
 
 		struct call_context_t {
-			uintptr_t *result;
-			uint32_t args_len;
-			uintptr_t *args;
-			uint32_t data_len = 0;
+			uintptr_t *result_stack;
+			uint32_t args_length;
+			uintptr_t *args_stack;
+			uint32_t data_length;
+
+			////////////////////////////////////////////////////////////////////////
+
+			call_context_t(std::array<uintptr_t, 20> &stack, size_t args_len = 0) :
+				result_stack(stack.data()),
+				args_length(args_len),
+				args_stack(stack.data()),
+				data_length(0)
+			{}
 
 			template <typename T>
-			T &get_arg(size_t i) {
-				return *reinterpret_cast<T *>(&args[i]);
+			T &args(size_t i) {
+				return *reinterpret_cast<T *>(&args_stack[i]);
 			}
 
 			template <typename T>
-			T &get_result() {
-				return *reinterpret_cast<T *>(result);
+			T &result() {
+				return *reinterpret_cast<T *>(result_stack);
 			}
 		};
 

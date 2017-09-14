@@ -47,24 +47,16 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////////
 
-		template <uint8_t N>
-		class nt_lazy_func_t {
+		class lazy_func_t {
 			public:
-				constexpr nt_lazy_func_t() : _f(nullptr), _h(0) {}
-				constexpr nt_lazy_func_t(func_t func) : _f(func), _h(0) {}
-				constexpr nt_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : _f(nullptr), _h(hash), _tr(is_like_shv_hash) {}
+				constexpr lazy_func_t() : _f(nullptr), _h(0), _tr(false) {}
+				constexpr lazy_func_t(func_t func) : _f(func), _h(0), _tr(false) {}
+				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : _f(nullptr), _h(hash), _tr(is_like_shv_hash) {}
 
-				void operator()(std::array<uintptr_t, 20> &stack) {
+				void operator()(call_context_t &ctx) {
 					if (!target()) {
 						return;
 					}
-
-					call_context_t ctx;
-
-					ctx.args_len = N;
-					ctx.args = stack.data();
-					ctx.result = ctx.args;
-
 					_f(&ctx);
 				}
 
@@ -109,33 +101,35 @@ namespace nob {
 			return r;
 		}
 
-		template <typename R, typename... A>
-		class lazy_func_t;
+		template <typename R, typename ...A>
+		class typed_lazy_func_t;
 
-		template <typename R, typename... A>
-		class lazy_func_t<R(A...)> : public nt_lazy_func_t<sizeof...(A)> {
+		template <typename R, typename ...A>
+		class typed_lazy_func_t<R(A...)> : public lazy_func_t {
 			public:
-				constexpr lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
-				constexpr lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
-				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
+				constexpr typed_lazy_func_t() : lazy_func_t() {}
+				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
+				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
 
-				R operator()(A... args) {
-					std::array<uintptr_t, 20> stack{(argument_cast<decltype(args)>(args))...};
-					nt_lazy_func_t<sizeof...(A)>::operator()(stack);
-					return *reinterpret_cast<R *>(stack.data());
+				R operator()(A ...args) {
+					std::array<uintptr_t, 20> stack { (argument_cast<decltype(args)>(args))... };
+					call_context_t ctx(stack, sizeof...(A));
+					lazy_func_t::operator()(ctx);
+					return ctx.result<R>();
 				}
 		};
 
-		template <typename... A>
-		class lazy_func_t<void(A...)> : public nt_lazy_func_t<sizeof...(A)> {
+		template <typename ...A>
+		class typed_lazy_func_t<void(A...)> : public lazy_func_t {
 			public:
-				constexpr lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
-				constexpr lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
-				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
+				constexpr typed_lazy_func_t() : lazy_func_t() {}
+				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
+				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
 
-				void operator()(A... args) {
-					std::array<uintptr_t, 20> stack{(argument_cast<decltype(args)>(args))...};
-					nt_lazy_func_t<sizeof...(A)>::operator()(stack);
+				void operator()(A ...args) {
+					std::array<uintptr_t, 20> stack { (argument_cast<decltype(args)>(args))... };
+					call_context_t ctx(stack, sizeof...(A));
+					lazy_func_t::operator()(ctx);
 				}
 		};
 	} /* ntv */
