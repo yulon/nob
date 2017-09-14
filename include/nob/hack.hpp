@@ -3,6 +3,7 @@
 #include <MinHook.h>
 
 #include <vector>
+#include <atomic>
 
 namespace nob {
 	namespace hack {
@@ -18,27 +19,26 @@ namespace nob {
 			return reinterpret_cast<T *>(addr + 4 + *(uint32_t *)addr);
 		}
 
-		extern size_t _hooking_count;
+		extern std::atomic<size_t> _hooking_count;
 
 		template <typename T, typename... A>
-		class hook {
+		class hook;
+
+		template <typename T, typename... A>
+		class hook<T(A...)> {
 			public:
-				hook(T(*detour)(A...)) : _detour(reinterpret_cast<LPVOID>(detour)) {
-					if (++_hooking_count == 1) {
-						MH_Initialize();
-					}
-				}
+				hook(T(*detour)(A...)) : _detour(reinterpret_cast<LPVOID>(detour)) {}
 
 				~hook() {
 					if (_target) {
 						uninstall();
 					}
-					if (!--_hooking_count) {
-						MH_Uninitialize();
-					}
 				}
 
 				void install(T(*target)(A...)) {
+					if (++_hooking_count == 1) {
+						MH_Initialize();
+					}
 					_target = reinterpret_cast<LPVOID>(target);
 					MH_CreateHook(_target, _detour, &_original);
 					MH_EnableHook(_target);
@@ -56,6 +56,9 @@ namespace nob {
 					MH_DisableHook(_target);
 					MH_RemoveHook(_target);
 					_target = nullptr;
+					if (!--_hooking_count) {
+						MH_Uninitialize();
+					}
 				}
 
 			private:

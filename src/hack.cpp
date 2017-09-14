@@ -37,6 +37,6 @@ namespace nob {
 			return mem_match(reinterpret_cast<const uint8_t *>(mi.lpBaseOfDll), mi.SizeOfImage, pattern, ret_gap_addr);
 		}
 
-		size_t _hooking_count = 0;
+		std::atomic<size_t> _hooking_count(0);
 	} /* hack */
 } /* nob */

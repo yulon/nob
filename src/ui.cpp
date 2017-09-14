@@ -27,7 +27,7 @@ namespace nob {
 
 		void _wsm_detour() {}
 
-		hack::hook<void> _wsm_hook(&_wsm_detour);
+		hack::hook<void()> _wsm_hook(&_wsm_detour);
 
 		uintptr_t _wsm_fp = 0;
 

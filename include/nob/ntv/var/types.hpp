@@ -100,6 +100,16 @@ namespace nob {
 			uint32_t args_len;
 			uintptr_t *args;
 			uint32_t data_len = 0;
+
+			template <typename T>
+			T &get_arg(size_t i) {
+				return *reinterpret_cast<T *>(&args[i]);
+			}
+
+			template <typename T>
+			T &get_result() {
+				return *reinterpret_cast<T *>(result);
+			}
 		};
 
 		typedef void (__cdecl *func_t)(call_context_t *cc);
