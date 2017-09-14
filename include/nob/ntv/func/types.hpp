@@ -99,11 +99,10 @@ namespace nob {
 				bool _tr;
 		};
 
-		
 		template <typename T>
-		inline uintptr_t cast(T v) {
+		inline uintptr_t argument_cast(T v) {
 			if (sizeof(T) == sizeof(uintptr_t)) {
-				return (uintptr_t)v;
+				return *reinterpret_cast<uintptr_t *>(&v);
 			}
 			uintptr_t r = 0;
 			*reinterpret_cast<T *>(&r) = v;
@@ -121,7 +120,7 @@ namespace nob {
 				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
 
 				R operator()(A... args) {
-					std::array<uintptr_t, 20> stack{(cast<decltype(args)>(args))...};
+					std::array<uintptr_t, 20> stack{(argument_cast<decltype(args)>(args))...};
 					nt_lazy_func_t<sizeof...(A)>::operator()(stack);
 					return *reinterpret_cast<R *>(stack.data());
 				}
@@ -135,7 +134,7 @@ namespace nob {
 				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
 
 				void operator()(A... args) {
-					std::array<uintptr_t, 20> stack{(cast<decltype(args)>(args))...};
+					std::array<uintptr_t, 20> stack{(argument_cast<decltype(args)>(args))...};
 					nt_lazy_func_t<sizeof...(A)>::operator()(stack);
 				}
 		};
