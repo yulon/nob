@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ntv/types.hpp"
-
 #include <MinHook.h>
 
 #include <vector>
@@ -51,7 +49,7 @@ namespace nob {
 				}
 
 				void call(A... a) {
-					(*reinterpret_cast<void (*)()>(_original))(a...);
+					(*reinterpret_cast<T (*)(A...)>(_original))(a...);
 				}
 
 				void uninstall() {

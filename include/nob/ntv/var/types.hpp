@@ -6,49 +6,6 @@
 
 namespace nob {
 	namespace ntv {
-		// Reference from http://www.dev-c.com/gtav/scripthookv/
-
-		typedef unsigned int Void;
-		typedef unsigned int Any;
-		typedef unsigned int uint;
-		typedef unsigned int Hash;
-		typedef int Entity;
-		typedef int Player;
-		typedef int FireId;
-		typedef int Ped;
-		typedef int Vehicle;
-		typedef int Cam;
-		typedef int CarGenerator;
-		typedef int Group;
-		typedef int Train;
-		typedef int Pickup;
-		typedef int Object;
-		typedef int Weapon;
-		typedef int Interior;
-		typedef int Blip;
-		typedef int Texture;
-		typedef int TextureDict;
-		typedef int CoverPoint;
-		typedef int Camera;
-		typedef int TaskSequence;
-		typedef int ColourIndex;
-		typedef int Sphere;
-		typedef int ScrHandle;
-
-		#pragma pack(push, 1)
-		typedef struct
-		{
-			float x;
-			unsigned int _paddingx;
-			float y;
-			unsigned int _paddingy;
-			float z;
-			unsigned int _paddingz;
-		} Vector3;
-		#pragma pack(pop)
-
-		////////////////////////////////////////////////////////////////////////////
-
 		// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 
 		class global_table_t {
@@ -77,7 +34,7 @@ namespace nob {
 
 		struct script_t {
 			char padding1[16];					//0x0
-			uint8_t **blocks_offset;		//0x10
+			uint8_t **blocks_offset;			//0x10
 			char padding2[4];					//0x18
 			int length;							//0x1C
 			char padding3[4];					//0x20
@@ -138,52 +95,16 @@ namespace nob {
 
 		// Reference from https://github.com/ivanmeler/OpenVHook
 
-		class func_t {
-			public:
-				operator bool() {
-					return _ptr;
-				}
-
-				bool operator==(func_t f) const {
-					return _ptr == f._ptr;
-				}
-
-				bool operator!=(func_t f) const {
-					return _ptr != f._ptr;
-				}
-
-				template <uint8_t N>
-				uintptr_t call(std::array<uintptr_t, N> args) {
-					if (!_ptr) {
-						return 0;
-					}
-
-					_call_context_t cc;
-					uintptr_t result;
-					cc.args_len = args.size();
-					if (args.size()) {
-						cc.args = args.data();
-						cc.result = args.data();
-					} else {
-						cc.args = &result;
-						cc.result = &result;
-					}
-					_ptr(&cc);
-					return cc.result[0];
-				}
-
-			private:
-				struct _call_context_t {
-					uintptr_t *result;
-					uint32_t args_len;
-					uintptr_t *args;
-					uint32_t data_len = 0;
-				};
-
-				void (__cdecl *_ptr)(_call_context_t *cc) = nullptr;
+		struct call_context_t {
+			uintptr_t *result;
+			uint32_t args_len;
+			uintptr_t *args;
+			uint32_t data_len = 0;
 		};
 
-		static func_t nullfunc;
+		typedef void (__cdecl *func_t)(call_context_t *cc);
+
+		static func_t nullfunc = nullptr;
 
 		class func_table_t {
 			public:

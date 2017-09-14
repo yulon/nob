@@ -12,8 +12,10 @@ workspace "nob"
 		targetdir("lib")
 		files {
 			"include/*.hpp", "include/*.h",
+			"include/nob/ntv/*.hpp", "include/nob/ntv/*.h",
 			"include/nob/shv/*.hpp", "include/nob/shv/*.h",
-			"src/*.cpp", "src/*.hpp", "src/*.h"
+			"src/*.cpp", "src/*.hpp", "src/*.h",
+			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h",
 		}
 		targetprefix "lib"
 		targetextension ".a"

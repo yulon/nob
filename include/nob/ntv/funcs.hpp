@@ -2,7 +2,8 @@
 
 // Reference from http://www.dev-c.com/nativedb/
 
-#include "types.hpp"
+#include "func/types.hpp"
+#include "func/consts.hpp"
 
 #include "../shv/nativeCaller.hpp"
 

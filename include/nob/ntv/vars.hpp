@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.hpp"
+#include "var/types.hpp"
 
 namespace nob {
 	namespace ntv {

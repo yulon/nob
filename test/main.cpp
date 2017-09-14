@@ -26,7 +26,8 @@ void nob::main() {
 	veh.set_best_mod();
 
 	//ntv::ENTITY::SET_ENTITY_INVINCIBLE(veh.ntv_vehicle, TRUE);
-	ntv::func_table[0xC20B73867395D06D].call<2>({(uintptr_t)veh.ntv_vehicle, (uintptr_t)true});
+	ntv::lazy_func_t<void(nob::ntv::Vehicle, bool)> SET_ENTITY_INVINCIBLE(0xC20B73867395D06D);
+	SET_ENTITY_INVINCIBLE(veh.ntv_vehicle, true);
 
 	ui::info("you know!");
 
