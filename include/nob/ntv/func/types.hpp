@@ -50,9 +50,9 @@ namespace nob {
 		template <uint8_t N>
 		class nt_lazy_func_t {
 			public:
-				nt_lazy_func_t() : _llf(nullptr), _h(0) {}
-				nt_lazy_func_t(func_t func) : _llf(func), _h(0) {}
-				nt_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : _llf(nullptr), _h(hash), _tr(is_like_shv_hash) {}
+				nt_lazy_func_t() : _f(nullptr), _h(0) {}
+				nt_lazy_func_t(func_t func) : _f(func), _h(0) {}
+				nt_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : _f(nullptr), _h(hash), _tr(is_like_shv_hash) {}
 
 				uintptr_t operator()(std::array<uintptr_t, N> args) {
 					if (!target()) {
@@ -62,22 +62,22 @@ namespace nob {
 					call_context_t ctx;
 					uintptr_t result;
 
-					ctx.args_len = args.size();
-					if (args.size()) {
+					ctx.args_len = N;
+					if (N) {
 						ctx.args = args.data();
-						ctx.result = args.data();
+						ctx.result = args;
 					} else {
 						ctx.args = &result;
 						ctx.result = &result;
 					}
 
-					_llf(&ctx);
+					_f(&ctx);
 
 					return ctx.result[0];
 				}
 
 				func_t target() {
-					if (!_llf) {
+					if (!_f) {
 						if (_h) {
 							if (_tr) {
 								_tr = false;
@@ -89,8 +89,8 @@ namespace nob {
 								_h = pair->second;
 							}
 
-							_llf = func_table[_h];
-							if (!_llf) {
+							_f = func_table[_h];
+							if (!_f) {
 								_h = 0;
 								return 0;
 							}
@@ -98,11 +98,11 @@ namespace nob {
 							return 0;
 						}
 					}
-					return _llf;
+					return _f;
 				}
 
 			private:
-				func_t _llf;
+				func_t _f;
 				uint64_t _h;
 				bool _tr;
 		};
