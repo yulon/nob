@@ -12,10 +12,22 @@ workspace "nob"
 		targetdir("lib")
 		files {
 			"include/*.hpp", "include/*.h",
+
+			"include/nob/*.hpp", "include/nob/*.h",
+
 			"include/nob/ntv/*.hpp", "include/nob/ntv/*.h",
+			"include/nob/ntv/func/*.hpp", "include/nob/ntv/func/*.h",
+			"include/nob/ntv/var/*.hpp", "include/nob/ntv/var/*.h",
+
 			"include/nob/shv/*.hpp", "include/nob/shv/*.h",
+
 			"src/*.cpp", "src/*.hpp", "src/*.h",
-			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h",
+
+			"src/ntv/*.cpp", "src/ntv/*.hpp", "src/ntv/*.h",
+			"src/ntv/func/*.cpp", "src/ntv/func/*.hpp", "src/ntv/func/*.h",
+			"src/ntv/var/*.cpp", "src/ntv/var/*.hpp", "src/ntv/var/*.h",
+
+			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h"
 		}
 		targetprefix "lib"
 		targetextension ".a"

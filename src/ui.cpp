@@ -1,4 +1,5 @@
 #include <nob.hpp>
+#include <nob/ntv.hpp>
 #include <nob/hack.hpp>
 
 namespace nob {
@@ -8,16 +9,16 @@ namespace nob {
 		void disable_story_features(bool toggle) {
 			if (toggle && !has_frame_task(_dcw_ft)) {
 				_dcw_ft = add_frame_task([]() {
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::MultiplayerInfo, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::CharacterWheel, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterMichael, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterFranklin, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterTrevor, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterMultiplayer, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SpecialAbilityPC, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::Phone, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::CinematicSlowMo, TRUE);
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::VehicleSlowMoUpDown, TRUE);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::MultiplayerInfo, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::CharacterWheel, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterMichael, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterFranklin, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterTrevor, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SelectCharacterMultiplayer, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::SpecialAbilityPC, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::Phone, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::CinematicSlowMo, true);
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::ctrls::VehicleSlowMoUpDown, true);
 				});
 			} else {
 				del_frame_task(_dcw_ft);

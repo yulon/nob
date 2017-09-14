@@ -1,4 +1,5 @@
 #include <nob.hpp>
+#include <nob/shv/main.hpp>
 
 namespace nob {
 	namespace world {
@@ -23,9 +24,9 @@ namespace nob {
 						ntv::VEHICLE::DELETE_ALL_TRAINS();
 						ntv::PLAYER::SET_MAX_WANTED_LEVEL(0);
 	
-						ntv::VEHICLE::SET_GARBAGE_TRUCKS(FALSE);
-						ntv::VEHICLE::SET_RANDOM_BOATS(FALSE);
-						ntv::VEHICLE::SET_RANDOM_TRAINS(FALSE);
+						ntv::VEHICLE::SET_GARBAGE_TRUCKS(false);
+						ntv::VEHICLE::SET_RANDOM_BOATS(false);
+						ntv::VEHICLE::SET_RANDOM_TRAINS(false);
 	
 						int a[10];
 						int c = shv::worldGetAllPeds(a, 10);
@@ -34,9 +35,9 @@ namespace nob {
 						}
 					});
 					auto pos = player::controlling().pos();
-					ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, FALSE, FALSE, FALSE, FALSE);
+					ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, false, false, false, false);
 					ntv::AUDIO::_DISABLE_POLICE_REPORTS();
-					ntv::AUDIO::_FORCE_AMBIENT_SIREN(FALSE);
+					ntv::AUDIO::_FORCE_AMBIENT_SIREN(false);
 				}
 			} else {
 				del_frame_task(_no_man_ft);

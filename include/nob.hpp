@@ -51,13 +51,13 @@ namespace nob {
 		void no_man(bool toggle = true);
 
 		inline void clear_black_fog() {
-			ntv::UI::_SET_MINIMAP_REVEALED(TRUE);
+			ntv::UI::_SET_MINIMAP_REVEALED(true);
 		}
 	}
 
 	class model {
 		public:
-			DWORD ntv_model;
+			uint32_t ntv_model;
 
 			model(const char *name) : ntv_model(ntv::GAMEPLAY::GET_HASH_KEY(name)) {
 				if (ntv::STREAMING::IS_MODEL_IN_CDIMAGE(ntv_model) && ntv::STREAMING::IS_MODEL_VALID(ntv_model)) {
@@ -86,11 +86,11 @@ namespace nob {
 		public:
 			ntv::Ped ntv_ped;
 
-			character(model m, const vector3 &coords, bool no_brain = false) : ntv_ped(ntv::PED::CREATE_PED(4, m.ntv_model, coords.x, coords.y, coords.z, 0.0f, FALSE, TRUE)) {
+			character(model m, const vector3 &coords, bool no_brain = false) : ntv_ped(ntv::PED::CREATE_PED(4, m.ntv_model, coords.x, coords.y, coords.z, 0.0f, false, true)) {
 				if (no_brain) {
-					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(ntv_ped, TRUE);
+					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(ntv_ped, true);
 					ntv::PED::SET_PED_FLEE_ATTRIBUTES(ntv_ped, 0, 0);
-					ntv::PED::SET_PED_COMBAT_ATTRIBUTES(ntv_ped, 292, TRUE);
+					ntv::PED::SET_PED_COMBAT_ATTRIBUTES(ntv_ped, 292, true);
 				}
 			}
 
@@ -110,11 +110,11 @@ namespace nob {
 			}
 
 			void move(const vector3 &coords) {
-				ntv::ENTITY::SET_ENTITY_COORDS(ntv_ped, coords.x, coords.y, coords.z, TRUE, TRUE, TRUE, TRUE);
+				ntv::ENTITY::SET_ENTITY_COORDS(ntv_ped, coords.x, coords.y, coords.z, true, true, true, true);
 			}
 
 			void set_random_outfit() {
-				ntv::PED::SET_PED_RANDOM_COMPONENT_VARIATION(ntv_ped, FALSE);
+				ntv::PED::SET_PED_RANDOM_COMPONENT_VARIATION(ntv_ped, false);
 			}
 
 			void set_default_outfit() {
@@ -140,12 +140,12 @@ namespace nob {
 			}
 
 			void set_rotation(const vector3 &ro) {
-				ntv::ENTITY::SET_ENTITY_ROTATION(ntv_ped, ro.x, ro.y, ro.z, 2, TRUE);
+				ntv::ENTITY::SET_ENTITY_ROTATION(ntv_ped, ro.x, ro.y, ro.z, 2, true);
 			}
 
 			void show_name(const std::string &name, const std::string &tag = "") {
-				auto id = ntv::UI::_CREATE_MP_GAMER_TAG(ntv_ped, name.c_str(), TRUE, TRUE, tag.c_str(), 0);
-				ntv::UI::SET_MP_GAMER_TAG_VISIBILITY(id, 0, TRUE);
+				auto id = ntv::UI::_CREATE_MP_GAMER_TAG(ntv_ped, name.c_str(), true, true, tag.c_str(), 0);
+				ntv::UI::SET_MP_GAMER_TAG_VISIBILITY(id, 0, true);
 			}
 	};
 
@@ -157,7 +157,7 @@ namespace nob {
 		}
 
 		inline void control(character chr) {
-			ntv::PLAYER::CHANGE_PLAYER_PED(ntv_player, chr.ntv_ped, TRUE, TRUE);
+			ntv::PLAYER::CHANGE_PLAYER_PED(ntv_player, chr.ntv_ped, true, true);
 		}
 
 		inline void possession(character chr) {
@@ -181,7 +181,7 @@ namespace nob {
 		public:
 			ntv::Vehicle ntv_vehicle;
 
-			vehicle(model m, const vector3 &coords) : ntv_vehicle(ntv::VEHICLE::CREATE_VEHICLE(m.ntv_model, coords.x, coords.y, coords.z, 0.0, FALSE, TRUE)) {
+			vehicle(model m, const vector3 &coords) : ntv_vehicle(ntv::VEHICLE::CREATE_VEHICLE(m.ntv_model, coords.x, coords.y, coords.z, 0.0, false, true)) {
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(ntv_vehicle, 0);
 			}
 
@@ -202,7 +202,7 @@ namespace nob {
 			}
 
 			void set_mod(int mod_type, int mod) {
-				ntv::VEHICLE::SET_VEHICLE_MOD(ntv_vehicle, mod_type, mod, TRUE);
+				ntv::VEHICLE::SET_VEHICLE_MOD(ntv_vehicle, mod_type, mod, true);
 			}
 
 			void get_mod(int mod_type) {
@@ -213,7 +213,7 @@ namespace nob {
 				for (size_t i = 0; i < 50; i++) {
 					auto n = get_mod_total(i);
 					if (n > 0) {
-						ntv::VEHICLE::SET_VEHICLE_MOD(ntv_vehicle, i, n - 1, FALSE);
+						ntv::VEHICLE::SET_VEHICLE_MOD(ntv_vehicle, i, n - 1, false);
 					}
 				}
 			}
@@ -245,10 +245,10 @@ namespace nob {
 			ntv::UI::SET_TEXT_WRAP(x, x + height);
 			switch (align) {
 				case 1:
-					ntv::UI::SET_TEXT_CENTRE(TRUE);
+					ntv::UI::SET_TEXT_CENTRE(true);
 					break;
 				case 2:
-					ntv::UI::SET_TEXT_RIGHT_JUSTIFY(TRUE);
+					ntv::UI::SET_TEXT_RIGHT_JUSTIFY(true);
 			}
 			if (outline) ntv::UI::SET_TEXT_OUTLINE();
 			ntv::UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
@@ -304,7 +304,7 @@ namespace nob {
 		inline void tip(const std::string &content) {
 			ntv::UI::_SET_NOTIFICATION_TEXT_ENTRY("STRING");
 			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(content.c_str());
-			ntv::UI::_DRAW_NOTIFICATION(FALSE, FALSE);
+			ntv::UI::_DRAW_NOTIFICATION(false, false);
 		}
 
 		enum class msg_icon : int {
@@ -331,8 +331,8 @@ namespace nob {
 		) {
 			ntv::UI::_SET_NOTIFICATION_TEXT_ENTRY("STRING");
 			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(content.c_str());
-			ntv::UI::_SET_NOTIFICATION_MESSAGE_CLAN_TAG_2(pic.c_str(), pic.c_str(), FALSE, (int)sender_icon, sender.c_str(), subject.c_str(), duration, sender_tag.c_str(), (int)subject_icon, 0);
-			ntv::UI::_DRAW_NOTIFICATION(FALSE, FALSE);
+			ntv::UI::_SET_NOTIFICATION_MESSAGE_CLAN_TAG_2(pic.c_str(), pic.c_str(), false, (int)sender_icon, sender.c_str(), subject.c_str(), duration, sender_tag.c_str(), (int)subject_icon, 0);
+			ntv::UI::_DRAW_NOTIFICATION(false, false);
 		}
 
 		////////////////////////////////////////////////////////////////////////

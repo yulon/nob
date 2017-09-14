@@ -9,8 +9,6 @@ namespace nob {
 			0x4D, 0x85, 0xC9, 0x74, 0x11
 		})) {}
 
-		global_table_t global_table;
-
 		script_list_t::node_t *script_list_t::find(const char *name) const {
 			#ifdef DEBUG
 				assert(nodes);
@@ -24,17 +22,9 @@ namespace nob {
 			return nullptr;
 		}
 
-		script_list_t *script_list = hack::find_const_ptr<script_list_t>({
-			// Reference from https://github.com/zorg93/EnableMpCars-GTAV
-			0x48, 0x03, 0x15, 1111, 1111, 1111, 1111, 0x4C, 0x23, 0xC2,
-			0x49, 0x8B, 0x08
-		});
-
 		func_table_t::func_table_t() : _nodes(hack::find_const_ptr<func_table_t::node_t *>({
 			// Reference from https://github.com/ivanmeler/OpenVHook
 			0x76, 0x61, 0x49, 0x8B, 0x7A, 0x40, 0x48, 0x8D, 0x0D
 		})) {}
-
-		func_table_t func_table;
 	} /* ntv */
 } /* nob */

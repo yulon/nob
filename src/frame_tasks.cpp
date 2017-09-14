@@ -1,4 +1,7 @@
 #include <nob.hpp>
+#include <nob/shv/main.hpp>
+
+#include <windows.h>
 
 #include <list>
 #include <forward_list>
@@ -19,7 +22,7 @@ namespace nob {
 	std::list<_ftask *>::iterator _cur_ftask_it;
 
 	uintptr_t add_frame_task(const std::function<void()> &handler) {
-		auto ftask = new _ftask{handler, false, false, {NULL, NULL}};
+		auto ftask = new _ftask{handler, false, false, {nullptr, nullptr}};
 		_ftasks.push_back(ftask);
 		if (_ftasks_it == _ftasks.end()) {
 			--_ftasks_it;
@@ -108,7 +111,7 @@ namespace nob {
 	static inline void _switch_idle_fiber() {
 		PVOID fiber;
 		if (_idle_fibers.empty()) {
-			fiber = CreateFiber(0, (LPFIBER_START_ROUTINE)&_handle_ftasks_loop, NULL);
+			fiber = CreateFiber(0, (LPFIBER_START_ROUTINE)&_handle_ftasks_loop, nullptr);
 		} else {
 			fiber = _idle_fibers.front();
 			_idle_fibers.pop_front();

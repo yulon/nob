@@ -33,7 +33,7 @@ namespace nob {
 
 		uintptr_t mem_match(const std::vector<uint16_t> &pattern, bool ret_gap_addr) {
 			MODULEINFO mi;
-			GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &mi, sizeof(MODULEINFO));
+			GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &mi, sizeof(MODULEINFO));
 			return mem_match(reinterpret_cast<const uint8_t *>(mi.lpBaseOfDll), mi.SizeOfImage, pattern, ret_gap_addr);
 		}
 

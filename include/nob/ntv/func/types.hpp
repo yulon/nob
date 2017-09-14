@@ -50,30 +50,22 @@ namespace nob {
 		template <uint8_t N>
 		class nt_lazy_func_t {
 			public:
-				nt_lazy_func_t() : _f(nullptr), _h(0) {}
-				nt_lazy_func_t(func_t func) : _f(func), _h(0) {}
-				nt_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : _f(nullptr), _h(hash), _tr(is_like_shv_hash) {}
+				constexpr nt_lazy_func_t() : _f(nullptr), _h(0) {}
+				constexpr nt_lazy_func_t(func_t func) : _f(func), _h(0) {}
+				constexpr nt_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : _f(nullptr), _h(hash), _tr(is_like_shv_hash) {}
 
-				uintptr_t operator()(std::array<uintptr_t, N> args) {
+				void operator()(std::array<uintptr_t, 20> &stack) {
 					if (!target()) {
-						return 0;
+						return;
 					}
 
 					call_context_t ctx;
-					uintptr_t result;
 
 					ctx.args_len = N;
-					if (N) {
-						ctx.args = args.data();
-						ctx.result = args;
-					} else {
-						ctx.args = &result;
-						ctx.result = &result;
-					}
+					ctx.args = stack.data();
+					ctx.result = ctx.args;
 
 					_f(&ctx);
-
-					return ctx.result[0];
 				}
 
 				func_t target() {
@@ -107,30 +99,44 @@ namespace nob {
 				bool _tr;
 		};
 
+		
+		template <typename T>
+		inline uintptr_t cast(T v) {
+			if (sizeof(T) == sizeof(uintptr_t)) {
+				return (uintptr_t)v;
+			}
+			uintptr_t r = 0;
+			*reinterpret_cast<T *>(&r) = v;
+			return r;
+		}
+
 		template <typename R, typename... A>
 		class lazy_func_t;
 
 		template <typename R, typename... A>
 		class lazy_func_t<R(A...)> : public nt_lazy_func_t<sizeof...(A)> {
 			public:
-				lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
-				lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
-				lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
+				constexpr lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
+				constexpr lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
+				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
 
 				R operator()(A... args) {
-					return static_cast<R>(nt_lazy_func_t<sizeof...(A)>::operator()({static_cast<uintptr_t>(args)...}));
+					std::array<uintptr_t, 20> stack{(cast<decltype(args)>(args))...};
+					nt_lazy_func_t<sizeof...(A)>::operator()(stack);
+					return *reinterpret_cast<R *>(stack.data());
 				}
 		};
 
 		template <typename... A>
 		class lazy_func_t<void(A...)> : public nt_lazy_func_t<sizeof...(A)> {
 			public:
-				lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
-				lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
-				lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
+				constexpr lazy_func_t() : nt_lazy_func_t<sizeof...(A)>() {}
+				constexpr lazy_func_t(func_t func) : nt_lazy_func_t<sizeof...(A)>(func) {}
+				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : nt_lazy_func_t<sizeof...(A)>(hash, is_like_shv_hash) {}
 
 				void operator()(A... args) {
-					nt_lazy_func_t<sizeof...(A)>::operator()({static_cast<uintptr_t>(args)...});
+					std::array<uintptr_t, 20> stack{(cast<decltype(args)>(args))...};
+					nt_lazy_func_t<sizeof...(A)>::operator()(stack);
 				}
 		};
 	} /* ntv */
