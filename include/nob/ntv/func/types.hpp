@@ -2,6 +2,10 @@
 
 #include "../../shv/fhtt.hpp"
 
+#ifdef NOB_USING_SHV_CALLER
+	#include "../../shv/nativeCaller.hpp"
+#endif
+
 namespace nob {
 	namespace ntv {
 		// Reference from http://www.dev-c.com/gtav/scripthookv/
@@ -49,11 +53,24 @@ namespace nob {
 
 		class lazy_func_t {
 			public:
-				constexpr lazy_func_t() : _f(nullptr), _h(0), _tr(false) {}
-				constexpr lazy_func_t(func_t func) : _f(func), _h(0), _tr(false) {}
-				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : _f(nullptr), _h(hash), _tr(is_like_shv_hash) {}
+				constexpr lazy_func_t() : _f(nullptr), _h(0), _shv_h(0) {}
+				constexpr lazy_func_t(func_t func) : _f(func), _h(0), _shv_h(0) {}
+				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) :
+					_f(nullptr), _h(is_like_shv_hash ? 0 : hash), _shv_h(is_like_shv_hash ? hash : 0)
+				{}
 
 				void operator()(call_context_t &ctx) {
+					#ifdef NOB_USING_SHV_CALLER
+						if (_shv_h) {
+							shv::nativeInit(_shv_h);
+							for (size_t i = 0; i < ctx.args_length; ++i) {
+								shv::nativePush(ctx.args_stack[i]);
+							}
+							ctx.result_stack = shv::nativeCall();
+							return;
+						}
+					#endif
+
 					if (!target()) {
 						return;
 					}
@@ -62,33 +79,32 @@ namespace nob {
 
 				func_t target() {
 					if (!_f) {
-						if (_h) {
-							if (_tr) {
-								_tr = false;
-								auto pair = shv::func_hash_tr_tab.find(_h);
+						if (!_h) {
+							if (_shv_h) {
+								auto pair = shv::func_hash_tr_tab.find(_shv_h);
 								if (pair == shv::func_hash_tr_tab.end()) {
-									_h = 0;
 									return 0;
 								}
 								_h = pair->second;
-							}
-
-							_f = func_table[_h];
-							if (!_f) {
-								_h = 0;
+								if (!_h) {
+									return 0;
+								}
+							} else {
 								return 0;
 							}
-						} else {
+						}
+						_f = func_table[_h];
+						if (!_f) {
 							return 0;
 						}
 					}
 					return _f;
 				}
 
-			private:
+			protected:
 				func_t _f;
 				uint64_t _h;
-				bool _tr;
+				uint64_t _shv_h;
 		};
 
 		template <typename T>
