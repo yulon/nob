@@ -38,7 +38,9 @@ func main() {
 	}
 	defer hpp.Close()
 
-	hpp.WriteString(`#include "func/types.hpp"
+	hpp.WriteString(`#pragma once
+
+#include "func/types.hpp"
 #include "func/consts.hpp"`)
 	gen(hpp, true)
 

@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <cassert>
 #include <array>
-#include <initializer_list>
 
 namespace nob {
 	namespace ntv {

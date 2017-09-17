@@ -1,3 +1,5 @@
+#pragma once
+
 #include "func/types.hpp"
 #include "func/consts.hpp"
 

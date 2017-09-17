@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../vars.hpp"
 
 #include "../../shv/fhtt.hpp"
