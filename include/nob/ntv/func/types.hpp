@@ -40,15 +40,14 @@ namespace nob {
 		typedef int ScrHandle;
 
 		#pragma pack(push, 1)
-		typedef struct
-		{
+		struct Vector3 {
 			float x;
 			unsigned int _paddingx;
 			float y;
 			unsigned int _paddingy;
 			float z;
 			unsigned int _paddingz;
-		} Vector3;
+		};
 		#pragma pack(pop)
 
 		////////////////////////////////////////////////////////////////////////////
@@ -66,9 +65,9 @@ namespace nob {
 						if (_shv_h) {
 							shv::nativeInit(_shv_h);
 							for (size_t i = 0; i < ctx.args_length; ++i) {
-								shv::nativePush(ctx.args_stack[i]);
+								shv::nativePush(ctx.args_ptr[i]);
 							}
-							ctx.result_stack = shv::nativeCall();
+							ctx.result_ptr = shv::nativeCall();
 							return;
 						}
 					#endif
@@ -109,15 +108,20 @@ namespace nob {
 				uint64_t _shv_h;
 		};
 
-		template <typename T>
-		inline uintptr_t argument_cast(T v) {
-			if (sizeof(T) == sizeof(uintptr_t)) {
-				return *reinterpret_cast<uintptr_t *>(&v);
-			}
-			uintptr_t r = 0;
-			*reinterpret_cast<T *>(&r) = v;
-			return r;
-		}
+		class buffered_call_context_t : public call_context_t {
+			public:
+				buffered_call_context_t(uint32_t args_len = 0) :
+					call_context_t(args_len, _buffer.data(), _buffer.data() + 20)
+				{}
+
+				template <typename ...T>
+				void set_args(T ...v) {
+					_buffer = { (argument_cast(v))... };
+				}
+
+			private:
+				std::array<uintptr_t, 30> _buffer;
+		};
 
 		template <typename R, typename ...A>
 		class typed_lazy_func_t;
@@ -130,8 +134,8 @@ namespace nob {
 				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
 
 				R operator()(A ...args) {
-					std::array<uintptr_t, 20> stack { (argument_cast<decltype(args)>(args))... };
-					call_context_t ctx(stack, sizeof...(A));
+					buffered_call_context_t ctx(sizeof...(A));
+					ctx.set_args<A...>(args...);
 					lazy_func_t::operator()(ctx);
 					return ctx.result<R>();
 				}
@@ -145,8 +149,8 @@ namespace nob {
 				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
 
 				void operator()(A ...args) {
-					std::array<uintptr_t, 20> stack { (argument_cast<decltype(args)>(args))... };
-					call_context_t ctx(stack, sizeof...(A));
+					buffered_call_context_t ctx(sizeof...(A));
+					ctx.set_args<A...>(args...);
 					lazy_func_t::operator()(ctx);
 				}
 		};

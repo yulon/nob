@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cassert>
 #include <array>
+#include <cstring>
 
 namespace nob {
 	namespace ntv {
@@ -95,29 +96,103 @@ namespace nob {
 
 		// Reference from https://github.com/ivanmeler/OpenVHook
 
+		/*template <typename T>
+		inline uintptr_t argument_cast(T v) {
+			switch (sizeof(T)) {
+				case 1:
+					return static_cast<uintptr_t>(*reinterpret_cast<uint8_t *>(&v));
+					break;
+				case 2:
+					return static_cast<uintptr_t>(*reinterpret_cast<uint16_t *>(&v));
+					break;
+				case 4:
+					return static_cast<uintptr_t>(*reinterpret_cast<uint32_t *>(&v));
+					break;
+				case 8:
+					return *reinterpret_cast<uintptr_t *>(&v);
+			}
+			return 0;
+		}*/
+
+		inline uintptr_t argument_cast(int32_t v) {
+			return static_cast<uintptr_t>(v);
+		}
+
+		inline uintptr_t argument_cast(uint32_t v) {
+			return static_cast<uintptr_t>(v);
+		}
+
+		inline uintptr_t argument_cast(float v) {
+			return static_cast<uintptr_t>(*reinterpret_cast<uint32_t *>(&v));
+		}
+
+		inline uintptr_t argument_cast(bool v) {
+			return static_cast<uintptr_t>(*reinterpret_cast<uint8_t *>(&v));
+		}
+
+		inline uintptr_t argument_cast(const char *v) {
+			return *reinterpret_cast<uintptr_t *>(&v);
+		}
+
+		inline uintptr_t argument_cast(int32_t *v) {
+			return *reinterpret_cast<uintptr_t *>(&v);
+		}
+
+		inline uintptr_t argument_cast(uint32_t *v) {
+			return *reinterpret_cast<uintptr_t *>(&v);
+		}
+
+		inline uintptr_t argument_cast(float *v) {
+			return *reinterpret_cast<uintptr_t *>(&v);
+		}
+
+		inline uintptr_t argument_cast(bool *v) {
+			return *reinterpret_cast<uintptr_t *>(&v);
+		}
+
+		inline uintptr_t argument_cast(struct Vector3 *v) {
+			return *reinterpret_cast<uintptr_t *>(&v);
+		}
+
 		struct call_context_t {
-			uintptr_t *result_stack;
+			uintptr_t *result_ptr;
 			uint32_t args_length;
-			uintptr_t *args_stack;
-			uint32_t data_length;
+			uintptr_t *args_ptr;
+			uint32_t result_size;
 
 			////////////////////////////////////////////////////////////////////////
 
-			call_context_t(std::array<uintptr_t, 20> &stack, size_t args_len = 0) :
-				result_stack(stack.data()),
+			call_context_t(uint32_t args_len = 0, uintptr_t *args_p = nullptr, uintptr_t *result_p = nullptr) :
+				result_ptr(result_p),
 				args_length(args_len),
-				args_stack(stack.data()),
-				data_length(0)
+				args_ptr(args_p),
+				result_size(0)
 			{}
 
 			template <typename T>
-			T &args(size_t i) {
-				return *reinterpret_cast<T *>(&args_stack[i]);
+			void set_arg(size_t i, T v) {
+				args_ptr[i] = argument_cast(v);
 			}
 
 			template <typename T>
-			T &result() {
-				return *reinterpret_cast<T *>(result_stack);
+			T arg(size_t i) const {
+				return *reinterpret_cast<T *>(&args_ptr[i]);
+			}
+
+			template <typename ...T>
+			void set_args(T ...v) {
+				std::array<uintptr_t, sizeof...(T)> buffer = { (argument_cast(v))... };
+				memcpy(args_ptr, buffer.data(), sizeof...(T));
+			}
+
+			template <typename T>
+			void set_result(size_t i, T v) {
+				*reinterpret_cast<T *>(result_ptr) = v;
+			}
+
+			template <typename T>
+			const T &result() const {
+				return *reinterpret_cast<T *>(result_ptr);
 			}
 		};
 
