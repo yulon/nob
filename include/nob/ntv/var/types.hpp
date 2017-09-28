@@ -14,9 +14,7 @@ namespace nob {
 				global_table_t();
 
 				uint64_t &operator[](uint32_t hash) {
-					#ifdef DEBUG
-						assert(*this);
-					#endif
+					assert(*this);
 
 					return _base_addr[hash >> 18 & 0x3F][hash & 0x3FFFF];
 				}
@@ -94,65 +92,36 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////////
 
-		// Reference from https://github.com/ivanmeler/OpenVHook
-
-		/*template <typename T>
+		template <typename T>
 		inline uintptr_t argument_cast(T v) {
-			switch (sizeof(T)) {
-				case 1:
-					return static_cast<uintptr_t>(*reinterpret_cast<uint8_t *>(&v));
-					break;
-				case 2:
-					return static_cast<uintptr_t>(*reinterpret_cast<uint16_t *>(&v));
-					break;
-				case 4:
-					return static_cast<uintptr_t>(*reinterpret_cast<uint32_t *>(&v));
-					break;
-				case 8:
-					return *reinterpret_cast<uintptr_t *>(&v);
-			}
-			return 0;
-		}*/
+			static_assert(sizeof(T) == 8, "nob::ntv::argument_cast: origin type size mismatch!");
 
-		inline uintptr_t argument_cast(int32_t v) {
+			return *reinterpret_cast<uintptr_t *>(&v);
+		}
+
+		template <>
+		inline uintptr_t argument_cast<int32_t>(int32_t v) {
 			return static_cast<uintptr_t>(v);
 		}
 
-		inline uintptr_t argument_cast(uint32_t v) {
+		template <>
+		inline uintptr_t argument_cast<uint32_t>(uint32_t v) {
 			return static_cast<uintptr_t>(v);
 		}
 
-		inline uintptr_t argument_cast(float v) {
+		template <>
+		inline uintptr_t argument_cast<float>(float v) {
 			return static_cast<uintptr_t>(*reinterpret_cast<uint32_t *>(&v));
 		}
 
-		inline uintptr_t argument_cast(bool v) {
+		template <>
+		inline uintptr_t argument_cast<bool>(bool v) {
 			return static_cast<uintptr_t>(*reinterpret_cast<uint8_t *>(&v));
 		}
 
-		inline uintptr_t argument_cast(const char *v) {
-			return *reinterpret_cast<uintptr_t *>(&v);
-		}
+		////////////////////////////////////////////////////////////////////////////
 
-		inline uintptr_t argument_cast(int32_t *v) {
-			return *reinterpret_cast<uintptr_t *>(&v);
-		}
-
-		inline uintptr_t argument_cast(uint32_t *v) {
-			return *reinterpret_cast<uintptr_t *>(&v);
-		}
-
-		inline uintptr_t argument_cast(float *v) {
-			return *reinterpret_cast<uintptr_t *>(&v);
-		}
-
-		inline uintptr_t argument_cast(bool *v) {
-			return *reinterpret_cast<uintptr_t *>(&v);
-		}
-
-		inline uintptr_t argument_cast(struct Vector3 *v) {
-			return *reinterpret_cast<uintptr_t *>(&v);
-		}
+		// Reference from https://github.com/ivanmeler/OpenVHook
 
 		struct call_context_t {
 			uintptr_t *result_ptr;
@@ -162,16 +131,14 @@ namespace nob {
 
 			////////////////////////////////////////////////////////////////////////
 
-			call_context_t(uint32_t args_len = 0, uintptr_t *args_p = nullptr, uintptr_t *result_p = nullptr) :
-				result_ptr(result_p),
-				args_length(args_len),
-				args_ptr(args_p),
-				result_size(0)
+			call_context_t(uintptr_t *stack_ptr) :
+				result_ptr(stack_ptr + 20),
+				args_ptr(stack_ptr)
 			{}
 
 			template <typename T>
 			void set_arg(size_t i, T v) {
-				args_ptr[i] = argument_cast(v);
+				args_ptr[i] = argument_cast<T>(v);
 			}
 
 			template <typename T>
@@ -179,10 +146,21 @@ namespace nob {
 				return *reinterpret_cast<T *>(&args_ptr[i]);
 			}
 
-			template <typename ...T>
-			void set_args(T ...v) {
-				std::array<uintptr_t, sizeof...(T)> buffer = { (argument_cast(v))... };
-				memcpy(args_ptr, buffer.data(), sizeof...(T));
+			template<size_t i, typename A>
+			void _set_args(A a) {
+				set_arg<A>(i, a);
+			}
+
+			template<size_t i, typename A, typename ...O>
+			void _set_args(A a, O ...o) {
+				_set_args<i, A>(a);
+				_set_args<i + 1, O...>(o...);
+			}
+
+			template<typename ...A>
+			void set_args(A ...a) {
+				args_length = sizeof...(A);
+				_set_args<0, A...>(a...);
 			}
 
 			template <typename T>

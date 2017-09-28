@@ -10,9 +10,8 @@ namespace nob {
 		})) {}
 
 		script_list_t::node_t *script_list_t::find(const char *name) const {
-			#ifdef DEBUG
-				assert(nodes);
-			#endif
+			assert(nodes);
+
 			int hash = ntv::GAMEPLAY::GET_HASH_KEY(name);
 			for (int i = 0; i < size; i++) {
 				if (nodes[i].hash == hash) {

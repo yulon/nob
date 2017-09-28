@@ -4,8 +4,23 @@
 
 #include "../../shv/fhtt.hpp"
 
-#ifdef NOB_USING_SHV_CALLER
-	#include "../../shv/nativeCaller.hpp"
+#ifdef NOB_USING_SHV_CALL
+	#include "../../shv/main.hpp"
+
+	namespace nob {
+		namespace shv {
+			template<typename A>
+			inline void nativePushs(A a) {
+				nativePush64(ntv::argument_cast<A>(a));
+			}
+
+			template<typename A, typename ...O>
+			inline void nativePushs(A a, O ...o) {
+				nativePushs<A>(a);
+				nativePushs<O...>(o...);
+			}
+		}
+	}
 #endif
 
 namespace nob {
@@ -61,11 +76,11 @@ namespace nob {
 				{}
 
 				void operator()(call_context_t &ctx) {
-					#ifdef NOB_USING_SHV_CALLER
+					#ifdef NOB_USING_SHV_CALL
 						if (_shv_h) {
 							shv::nativeInit(_shv_h);
 							for (size_t i = 0; i < ctx.args_length; ++i) {
-								shv::nativePush(ctx.args_ptr[i]);
+								shv::nativePush64(ctx.args_ptr[i]);
 							}
 							ctx.result_ptr = shv::nativeCall();
 							return;
@@ -110,14 +125,7 @@ namespace nob {
 
 		class buffered_call_context_t : public call_context_t {
 			public:
-				buffered_call_context_t(uint32_t args_len = 0) :
-					call_context_t(args_len, _buffer.data(), _buffer.data() + 20)
-				{}
-
-				template <typename ...T>
-				void set_args(T ...v) {
-					_buffer = { (argument_cast(v))... };
-				}
+				buffered_call_context_t() : call_context_t(_buffer.data()) {}
 
 			private:
 				std::array<uintptr_t, 30> _buffer;
@@ -134,8 +142,38 @@ namespace nob {
 				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
 
 				R operator()(A ...args) {
-					buffered_call_context_t ctx(sizeof...(A));
+					#ifdef NOB_USING_SHV_CALL
+						if (_shv_h) {
+							shv::nativeInit(_shv_h);
+							shv::nativePushs<A...>(args...);
+							return *reinterpret_cast<R *>(shv::nativeCall());
+						}
+					#endif
+
+					buffered_call_context_t ctx;
 					ctx.set_args<A...>(args...);
+					lazy_func_t::operator()(ctx);
+					return ctx.result<R>();
+				}
+		};
+
+		template <typename R>
+		class typed_lazy_func_t<R()> : public lazy_func_t {
+			public:
+				constexpr typed_lazy_func_t() : lazy_func_t() {}
+				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
+				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
+
+				R operator()() {
+					#ifdef NOB_USING_SHV_CALL
+						if (_shv_h) {
+							shv::nativeInit(_shv_h);
+							return *reinterpret_cast<R *>(shv::nativeCall());
+						}
+					#endif
+
+					buffered_call_context_t ctx;
+					ctx.args_length = 0;
 					lazy_func_t::operator()(ctx);
 					return ctx.result<R>();
 				}
@@ -149,8 +187,39 @@ namespace nob {
 				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
 
 				void operator()(A ...args) {
-					buffered_call_context_t ctx(sizeof...(A));
+					#ifdef NOB_USING_SHV_CALL
+						if (_shv_h) {
+							shv::nativeInit(_shv_h);
+							shv::nativePushs<A...>(args...);
+							shv::nativeCall();
+							return;
+						}
+					#endif
+
+					buffered_call_context_t ctx;
 					ctx.set_args<A...>(args...);
+					lazy_func_t::operator()(ctx);
+				}
+		};
+
+		template <>
+		class typed_lazy_func_t<void()> : public lazy_func_t {
+			public:
+				constexpr typed_lazy_func_t() : lazy_func_t() {}
+				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
+				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
+
+				void operator()() {
+					#ifdef NOB_USING_SHV_CALL
+						if (_shv_h) {
+							shv::nativeInit(_shv_h);
+							shv::nativeCall();
+							return;
+						}
+					#endif
+
+					buffered_call_context_t ctx;
+					ctx.args_length = 0;
 					lazy_func_t::operator()(ctx);
 				}
 		};
