@@ -21,48 +21,92 @@ namespace nob {
 
 		extern std::atomic<size_t> _hooking_count;
 
-		template <typename T, typename ...A>
-		class hook;
+		template <typename>
+		class detour_func_t;
 
-		template <typename T, typename ...A>
-		class hook<T(A...)> {
+		template <typename R, typename ...A>
+		class detour_func_t<R(A...)>;
+
+		template <typename>
+		class hooking_func_t;
+
+		template <typename R, typename ...A>
+		class hooking_func_t<R(A...)> {
 			public:
-				hook(T(*detour)(A...)) : _detour(reinterpret_cast<LPVOID>(detour)) {}
+				constexpr hooking_func_t() : _ptr(nullptr) {}
 
-				~hook() {
-					if (_target) {
-						uninstall();
+				hooking_func_t(hooking_func_t<R(A...)> &&src) : _ptr(src._ptr), _fn(src._fn) { src._ptr = nullptr; }
+
+				const hooking_func_t<R(A...)> &operator=(hooking_func_t<R(A...)> &&src) {
+					if (_ptr) {
+						MH_DisableHook(_ptr);
+						MH_RemoveHook(_ptr);
+					}
+					if (src._ptr) {
+						_ptr = src._ptr;
+						_fn = src._fn;
+
+						src._ptr = nullptr;
+					} else if (_ptr) {
+						_ptr = nullptr;
+						if (!--_hooking_count) {
+							MH_Uninitialize();
+						}
+					}
+					return *this;
+				}
+
+				~hooking_func_t() {
+					unhook();
+				}
+
+				R operator()(A ...a) {
+					return (*reinterpret_cast<R (*)(A...)>(_fn))(a...);
+				}
+
+				void unhook() {
+					if (_ptr) {
+						MH_DisableHook(_ptr);
+						MH_RemoveHook(_ptr);
+						_ptr = nullptr;
+						if (!--_hooking_count) {
+							MH_Uninitialize();
+						}
 					}
 				}
 
-				void install(T(*target)(A...)) {
-					if (++_hooking_count == 1) {
-						MH_Initialize();
-					}
-					_target = reinterpret_cast<LPVOID>(target);
-					MH_CreateHook(_target, _detour, &_original);
-					MH_EnableHook(_target);
-				}
-
-				void install(uintptr_t target) {
-					install(reinterpret_cast<T(*)(A...)>(target));
-				}
-
-				void call(A... a) {
-					(*reinterpret_cast<T (*)(A...)>(_original))(a...);
-				}
-
-				void uninstall() {
-					MH_DisableHook(_target);
-					MH_RemoveHook(_target);
-					_target = nullptr;
-					if (!--_hooking_count) {
-						MH_Uninitialize();
-					}
+				operator bool() {
+					return _ptr;
 				}
 
 			private:
-				LPVOID _target, _detour, _original;
+				LPVOID _ptr, _fn;
+				hooking_func_t(LPVOID pre_hook_func, LPVOID detour_func) : _ptr(pre_hook_func) {
+					if (++_hooking_count == 1) {
+						MH_Initialize();
+					}
+					MH_CreateHook(pre_hook_func, detour_func, &_fn);
+					MH_EnableHook(pre_hook_func);
+				}
+				friend detour_func_t<R(A...)>;
+		};
+
+		template <typename R, typename ...A>
+		class detour_func_t<R(A...)> {
+			public:
+				detour_func_t(R(*func)(A...)) : _stdfn(func) {}
+
+				hooking_func_t<R(A...)> install(R(*target)(A...)) {
+					hooking_func_t<R(A...)> r(reinterpret_cast<LPVOID>(target), reinterpret_cast<LPVOID>(_stdfn));
+					return r;
+				}
+
+				hooking_func_t<R(A...)> install(uintptr_t target) {
+					return install(reinterpret_cast<R(*)(A...)>(target));
+				}
+
+			private:
+				R(*_stdfn)(A...);
 		};
 	} /* hack */
 } /* nob */
