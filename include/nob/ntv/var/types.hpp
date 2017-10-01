@@ -169,10 +169,13 @@ namespace nob {
 			}
 
 			template <typename T>
-			const T &result() const {
+			T result() const {
 				return *reinterpret_cast<T *>(result_ptr);
 			}
 		};
+
+		template <>
+		inline void call_context_t::result<void>() const {}
 
 		typedef void (__cdecl *func_t)(call_context_t *cc);
 

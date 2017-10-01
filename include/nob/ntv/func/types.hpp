@@ -19,6 +19,16 @@
 				nativePushs<A>(a);
 				nativePushs<O...>(o...);
 			}
+
+			template<typename R>
+			inline R typedNativeCall() {
+				return *reinterpret_cast<R *>(shv::nativeCall());
+			}
+
+			template<>
+			inline void typedNativeCall<void>() {
+				shv::nativeCall();
+			}
 		}
 	}
 #endif
@@ -146,7 +156,7 @@ namespace nob {
 						if (_shv_h) {
 							shv::nativeInit(_shv_h);
 							shv::nativePushs<A...>(args...);
-							return *reinterpret_cast<R *>(shv::nativeCall());
+							return shv::typedNativeCall<R>();
 						}
 					#endif
 
@@ -168,7 +178,7 @@ namespace nob {
 					#ifdef NOB_USING_SHV_CALL
 						if (_shv_h) {
 							shv::nativeInit(_shv_h);
-							return *reinterpret_cast<R *>(shv::nativeCall());
+							return shv::typedNativeCall<R>();
 						}
 					#endif
 
@@ -176,51 +186,6 @@ namespace nob {
 					ctx.args_length = 0;
 					lazy_func_t::operator()(ctx);
 					return ctx.result<R>();
-				}
-		};
-
-		template <typename ...A>
-		class typed_lazy_func_t<void(A...)> : public lazy_func_t {
-			public:
-				constexpr typed_lazy_func_t() : lazy_func_t() {}
-				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
-				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
-
-				void operator()(A ...args) {
-					#ifdef NOB_USING_SHV_CALL
-						if (_shv_h) {
-							shv::nativeInit(_shv_h);
-							shv::nativePushs<A...>(args...);
-							shv::nativeCall();
-							return;
-						}
-					#endif
-
-					buffered_call_context_t ctx;
-					ctx.set_args<A...>(args...);
-					lazy_func_t::operator()(ctx);
-				}
-		};
-
-		template <>
-		class typed_lazy_func_t<void()> : public lazy_func_t {
-			public:
-				constexpr typed_lazy_func_t() : lazy_func_t() {}
-				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
-				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
-
-				void operator()() {
-					#ifdef NOB_USING_SHV_CALL
-						if (_shv_h) {
-							shv::nativeInit(_shv_h);
-							shv::nativeCall();
-							return;
-						}
-					#endif
-
-					buffered_call_context_t ctx;
-					ctx.args_length = 0;
-					lazy_func_t::operator()(ctx);
 				}
 		};
 	} /* ntv */
