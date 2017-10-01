@@ -131,7 +131,7 @@ namespace nob {
 				std::array<uintptr_t, 30> _buffer;
 		};
 
-		template <typename R, typename ...A>
+		template <typename>
 		class typed_lazy_func_t;
 
 		template <typename R, typename ...A>
