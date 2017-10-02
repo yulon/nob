@@ -20,6 +20,9 @@
 				nativePushs<O...>(o...);
 			}
 
+			template<typename ...>
+			inline void nativePushs() {}
+
 			template<typename R>
 			inline R typedNativeCall() {
 				return *reinterpret_cast<R *>(shv::nativeCall());
@@ -162,28 +165,6 @@ namespace nob {
 
 					buffered_call_context_t ctx;
 					ctx.set_args<A...>(args...);
-					lazy_func_t::operator()(ctx);
-					return ctx.result<R>();
-				}
-		};
-
-		template <typename R>
-		class typed_lazy_func_t<R()> : public lazy_func_t {
-			public:
-				constexpr typed_lazy_func_t() : lazy_func_t() {}
-				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
-				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
-
-				R operator()() {
-					#ifdef NOB_USING_SHV_CALL
-						if (_shv_h) {
-							shv::nativeInit(_shv_h);
-							return shv::typedNativeCall<R>();
-						}
-					#endif
-
-					buffered_call_context_t ctx;
-					ctx.args_length = 0;
 					lazy_func_t::operator()(ctx);
 					return ctx.result<R>();
 				}

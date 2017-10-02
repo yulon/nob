@@ -157,6 +157,9 @@ namespace nob {
 				_set_args<i + 1, O...>(o...);
 			}
 
+			template<size_t>
+			void _set_args() {}
+
 			template<typename ...A>
 			void set_args(A ...a) {
 				args_length = sizeof...(A);
