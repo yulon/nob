@@ -20,7 +20,7 @@ namespace nob {
 				}
 
 				uint64_t operator[](uint32_t hash) const {
-					return (*this)[hash];
+					return (*const_cast<global_table_t *>(this))[hash];
 				}
 
 				operator bool() const {
@@ -131,6 +131,8 @@ namespace nob {
 
 			////////////////////////////////////////////////////////////////////////
 
+			call_context_t() {}
+
 			call_context_t(uintptr_t *stack_ptr) :
 				result_ptr(stack_ptr + 20),
 				args_ptr(stack_ptr)
@@ -167,7 +169,7 @@ namespace nob {
 			}
 
 			template <typename T>
-			void set_result(size_t i, T v) {
+			void set_result(T v) {
 				*reinterpret_cast<T *>(result_ptr) = v;
 			}
 
@@ -210,7 +212,7 @@ namespace nob {
 				}
 
 				func_t operator[](uint64_t hash) const {
-					return (*this)[hash];
+					return (*const_cast<func_table_t *>(this))[hash];
 				}
 
 				operator bool() const {

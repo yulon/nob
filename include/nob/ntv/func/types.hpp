@@ -138,7 +138,10 @@ namespace nob {
 
 		class buffered_call_context_t : public call_context_t {
 			public:
-				buffered_call_context_t() : call_context_t(_buffer.data()) {}
+				buffered_call_context_t() {
+					args_ptr = _buffer.data();
+					result_ptr = _buffer.data() + 20;
+				}
 
 			private:
 				std::array<uintptr_t, 30> _buffer;
