@@ -103,7 +103,7 @@ namespace nob {
 					if (!target()) {
 						return;
 					}
-					_f(&ctx);
+					_f(ctx);
 				}
 
 				func_t target() {

@@ -4,6 +4,7 @@
 #include <cassert>
 #include <array>
 #include <cstring>
+#include <iostream>
 
 namespace nob {
 	namespace ntv {
@@ -177,12 +178,25 @@ namespace nob {
 			T result() const {
 				return *reinterpret_cast<T *>(result_ptr);
 			}
+
+			void print(const std::string &mark = nullptr) {
+				if (!mark.empty()) {
+					std::cout << mark << std::endl;
+				}
+
+				std::cout
+				<< "args_ptr: " << args_ptr << std::endl
+				<< "args_length: " << args_length << std::endl
+				<< "result_ptr: " << result_ptr << std::endl
+				<< "result_size: " << result_size << std::endl
+				<< std::endl;
+			}
 		};
 
 		template <>
 		inline void call_context_t::result<void>() const {}
 
-		typedef void (__cdecl *func_t)(call_context_t *cc);
+		typedef void (__cdecl *func_t)(call_context_t &);
 
 		static func_t nullfunc = nullptr;
 
