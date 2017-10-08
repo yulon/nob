@@ -96,13 +96,13 @@ namespace nob {
 			public:
 				detour_func_t(R(*func)(A...)) : _stdfn(func) {}
 
-				hooking_func_t<R(A...)> install(R(*target)(A...)) {
+				hooking_func_t<R(A...)> hook(R(*target)(A...)) {
 					hooking_func_t<R(A...)> r(reinterpret_cast<LPVOID>(target), reinterpret_cast<LPVOID>(_stdfn));
 					return r;
 				}
 
-				hooking_func_t<R(A...)> install(uintptr_t target) {
-					return install(reinterpret_cast<R(*)(A...)>(target));
+				hooking_func_t<R(A...)> hook(uintptr_t target) {
+					return hook(reinterpret_cast<R(*)(A...)>(target));
 				}
 
 			private:
