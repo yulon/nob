@@ -49,6 +49,9 @@ workspace "nob"
 		libdirs { "lib" }
 		links { "user32", "nob", "psapi", "MinHook" }
 
+		configuration { "gmake" }
+			linkoptions { "-Wl,--exclude-all-symbols" }
+
 		configuration "Debug"
 			defines { "DEBUG" }
 			symbols "On"
