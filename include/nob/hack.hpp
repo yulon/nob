@@ -94,6 +94,10 @@ namespace nob {
 		template <typename R, typename ...A>
 		class detour_func_t<R(A...)> {
 			public:
+				detour_func_t() : _stdfn([](A...)->R {
+					return (R)0;
+				}) {}
+
 				detour_func_t(R(*func)(A...)) : _stdfn(func) {}
 
 				hooking_func_t<R(A...)> hook(R(*target)(A...)) {
