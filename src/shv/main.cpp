@@ -39,12 +39,12 @@ namespace nob {
 
 		eGameVersion (*getGameVersion)();
 
-		constexpr const std::array<LPCWSTR, 2> _module_names {
+		constexpr const std::array<LPCWSTR, 2> _module_names {{
 			L"ScriptHookV.dll",
 			L"OpenVHook.dll"
-		};
+		}};
 
-		bool _init() {
+		const bool valid = ([]()->bool {
 			HMODULE dll;
 			for (size_t i = 0; i < _module_names.size(); ++i) {
 				dll = GetModuleHandleW(_module_names[i]);
@@ -98,8 +98,6 @@ namespace nob {
 			getGameVersion = (eGameVersion (*)())GetProcAddress(dll, "?getGameVersion@@YA?AW4eGameVersion@@XZ");
 
 			return true;
-		}
-
-		const bool valid = _init();
+		})();
 	} /* shv */
 } /* nob */

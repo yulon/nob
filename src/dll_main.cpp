@@ -1,28 +1,40 @@
+#include <nob.hpp>
 #include <nob/shv/main.hpp>
 
+#include <windows.h>
+
 namespace nob {
-	void _main();
-	bool _asi_mode = false;
+	namespace this_script {
+		bool asi_mode = false;
+		void _main();
+	} /* this_script */
+
+	HMODULE _this_module;
+
+	namespace window {
+		void _unhook_proc();
+	} /* window */
 } /* nob */
 
-BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID) {
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH:
 			if (nob::shv::valid) {
-				nob::_asi_mode = true;
-				nob::shv::scriptRegister(hinstDLL, nob::_main);
-				return TRUE;
+				nob::this_script::asi_mode = true;
+				nob::shv::scriptRegister(hinstDLL, nob::this_script::_main);
+			} else {
+				return FALSE;
 			}
-			return FALSE;
+			nob::_this_module = hinstDLL;
 			break;
 		case DLL_PROCESS_DETACH:
-			#ifndef DEBUG
-				if (nob::_asi_mode) {
+			nob::window::_unhook_proc();
+
+			#ifdef DEBUG
+				if (nob::this_script::asi_mode) {
 					nob::shv::scriptUnregister(hinstDLL);
-					return TRUE;
 				}
 			#endif
-			break;
 	}
 	return TRUE;
 }

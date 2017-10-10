@@ -3,12 +3,12 @@
 
 namespace nob {
 	namespace world {
-		uintptr_t _no_man_ft;
+		void clean_npcs(bool toggle) {
+			task t;
 
-		void no_man(bool toggle) {
 			if (toggle) {
-				if (!has_frame_task(_no_man_ft)) {
-					_no_man_ft = add_frame_task([]() {
+				if (!t) {
+					t = task([]() {
 						ntv::VEHICLE::SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0);
 						ntv::VEHICLE::SET_RANDOM_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0);
 						ntv::VEHICLE::SET_PARKED_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0);
@@ -34,7 +34,7 @@ namespace nob {
 							ntv::PED::DELETE_PED((ntv::Ped *)&a[i]);
 						}
 					});
-					auto pos = player::controlling().pos();
+					auto pos = player::body().pos();
 					ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, false, false, false, false);
 					ntv::AUDIO::_DISABLE_POLICE_REPORTS();
 					ntv::AUDIO::_FORCE_AMBIENT_SIREN(false);
@@ -45,7 +45,7 @@ namespace nob {
 					ntv::PED::SET_CREATE_RANDOM_COPS(false);
 				}
 			} else {
-				del_frame_task(_no_man_ft);
+				t.del();
 			}
 		}
 	} /* world */

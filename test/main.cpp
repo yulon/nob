@@ -1,55 +1,66 @@
 #include <nob.hpp>
+#include <nob/hack.hpp>
 
 #include <memory>
 #include <cstring>
+#include <iostream>
+#include <cstdlib>
 
-size_t fps;
-size_t fps_count;
+size_t fps = 0;
+size_t fps_count = 0;
 
-void nob::main() {
-	world::no_man();
-	world::clear_black_fog();
-	ui::disable_story_features();
-	ui::disable_wheel_slowmo();
-	vehicle::unlock_banned_vehicles();
+nob::task fps_zeroing([]() {
+	nob::wait(1000);
+	fps = fps_count;
+	fps_count = 0;
+});
 
-	if (ntv::CAM::IS_SCREEN_FADED_OUT()) {
-		wait(ntv::CAM::IS_SCREEN_FADING_IN);
+nob::task fps_output([]() {
+	++fps_count;
+	char str_buf[5];
+	itoa(fps, str_buf, 10);
+	nob::g2d::text(0, 0.9, 1, str_buf, 0.85, 255, 255, 255, 255, 1, true);
+});
+
+using c = nob::ui::component;
+
+nob::ui::menu ia_menu("Nob Tester", c::list("Interaction Menu", {
+	c::base("name"),
+	c::base("name"),
+	c::base("name"),
+	c::base("name"),
+	c::base("name"),
+}));
+
+nob::keyboard::listener ia_menu_hotkey([](int code, bool down)->bool {
+	if (code == 'M') {
+		if (down) {
+			ia_menu.toggle();
+		}
+		return false;
+	}
+	return true;
+});
+
+nob::initer main_initer([]() {
+	nob::world::clean_npcs();
+	nob::world::clear_black_fog();
+	nob::ui::disable_interaction_menu();
+	nob::ui::disable_story_features();
+	nob::ui::disable_wheel_slowmo();
+	nob::vehicle::unlock_banned_vehicles();
+
+	if (nob::ntv::CAM::IS_SCREEN_FADED_OUT()) {
+		nob::wait(nob::ntv::CAM::IS_SCREEN_FADING_IN);
 	}
 
-	auto plr_chr = player::controlling();
-	
-	ntv::ENTITY::SET_ENTITY_INVINCIBLE(plr_chr.ntv_ped, true);
+	nob::ui::info("you know!");
 
-	auto veh = vehicle("MOLOTOK", plr_chr.pos({0, 10, 0}));
-	veh.place_on_ground();
-	veh.set_best_mod();
+	nob::ui::tip("~b~~h~dog~h~~s~ killed ~r~~h~cat");
 
-	ntv::ENTITY::SET_ENTITY_INVINCIBLE(veh.ntv_vehicle, true);
-
-	ui::info("you know!");
-
-	ui::tip("~b~dog~s~ killed ~r~cat");
-
-	ui::message(
+	nob::ui::message(
 		"CHAR_MARTIN",
 		"馬丁",
 		"~r~你們休想取代我！"
 	);
-
-	fps = 0;
-	fps_count = 0;
-
-	add_frame_task([]() {
-		wait(1000);
-		fps = fps_count;
-		fps_count = 0;
-	});
-
-	add_frame_task([]() {
-		++fps_count;
-		char str_buf[5];
-		itoa(fps, str_buf, 10);
-		g2d::text(0, 0.9, 1, str_buf, 0.85, 255, 255, 255, 255, 1, true);
-	});
-}
+});

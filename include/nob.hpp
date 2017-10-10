@@ -8,23 +8,78 @@
 #include <array>
 #include <cstring>
 #include <thread>
+#include <stack>
+#include <initializer_list>
+#include <typeinfo>
+#include <list>
+#include <memory>
+#include <iostream>
 
 namespace nob {
-	void main();
-	extern std::thread::id main_thread_id;
-
-	uintptr_t add_frame_task(const std::function<void()> &handler);
-	void del_frame_task(uintptr_t id, bool wait_ran = true);
-	bool has_frame_task(uintptr_t id);
+	namespace this_script {
+		extern std::thread::id thread_id;
+		extern bool running;
+		extern bool asi_mode;
+	} /* this_script */
 
 	void wait(size_t ms);
-	inline void wait_next_frame() { wait(0);}
+	inline void wait_next_frame() { wait(0); }
 	void wait(const std::function<bool()> &cond);
+
+	void wait_s(size_t ms);
+	inline void wait_next_frame_s() { wait_s(0); }
+	void wait_s(const std::function<bool()> &cond);
+
+	class task {
+		public:
+			task(const std::function<void()> &);
+
+			task(const std::function<void(task)> &);
+
+			operator bool() const;
+
+			void del();
+
+			////////////////////////////////////////////////////////////////////
+
+			struct _info; _info *_inf; constexpr task(_info *p = nullptr) : _inf(p) {}
+	};
+
+	task this_task();
+
+	class initer {
+		public:
+			initer(const std::function<void()> &);
+			initer(const std::function<void(initer)> &);
+	};
 
 	// Call on non-main thread
 	uintptr_t call_onmt(const std::function<uintptr_t()> &);
 
-	////////////////////////////////////////////////////////////////////////////
+	namespace keyboard {
+		class listener {
+			public:
+				listener() : _null(true) {}
+
+				listener(const std::function<bool(int code, bool down)> &);
+
+				listener(listener &&);
+
+				const listener &operator=(listener &&);
+
+				~listener() {
+					del();
+				}
+
+				void del();
+
+			private:
+				std::list<std::function<bool(int, bool)>>::iterator _it;
+				bool _null;
+		};
+
+		bool is_down(int code);
+	} /* keyboard */
 
 	struct vector3 {
 		float x, y, z;
@@ -48,10 +103,14 @@ namespace nob {
 			return {coords.x, coords.y, get_ground_height(coords, load_scene)};
 		}
 
-		void no_man(bool toggle = true);
+		void clean_npcs(bool toggle = true);
 
 		inline void clear_black_fog() {
 			ntv::UI::_SET_MINIMAP_REVEALED(true);
+		}
+
+		inline void emp(bool toggle) {
+			ntv::GRAPHICS::_SET_BLACKOUT(toggle);
 		}
 	}
 
@@ -86,22 +145,36 @@ namespace nob {
 		public:
 			ntv::Ped ntv_ped;
 
-			character(model m, const vector3 &coords, bool no_brain = false) : ntv_ped(ntv::PED::CREATE_PED(4, m.ntv_model, coords.x, coords.y, coords.z, 0.0f, false, true)) {
-				if (no_brain) {
+			character(model m, const vector3 &coords, bool player_shadow = false) : ntv_ped(ntv::PED::CREATE_PED(4, m.ntv_model, coords.x, coords.y, coords.z, 0.0f, false, true)) {
+				if (player_shadow) {
 					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(ntv_ped, true);
 					ntv::PED::SET_PED_FLEE_ATTRIBUTES(ntv_ped, 0, 0);
 					ntv::PED::SET_PED_COMBAT_ATTRIBUTES(ntv_ped, 292, true);
+					ntv::PED::SET_PED_DIES_INSTANTLY_IN_WATER(ntv_ped, false);
+					ntv::PED::_SET_PED_RAGDOLL_BLOCKING_FLAGS(ntv_ped, 1); // Blocks ragdolling when shot.
+					ntv::WEAPON::SET_PED_DROPS_WEAPONS_WHEN_DEAD(ntv_ped, false);
 				}
+				ntv::PED::SET_PED_CONFIG_FLAG(ntv_ped, 281, true); // PED_FLAG_NO_WRITHE
 			}
 
 			character(ntv::Ped ped) : ntv_ped(ped) {}
 
-			void free() {
+			void del() {
+				ntv::PED::DELETE_PED(&ntv_ped);
+			}
+
+			void remove() {
 				ntv::ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&ntv_ped);
 			}
 
 			bool is_dead() {
 				return ntv::ENTITY::IS_ENTITY_DEAD(ntv_ped);
+			}
+
+			void resurrect() {
+				ntv::ENTITY::SET_ENTITY_HEALTH(ntv_ped, ntv::ENTITY::GET_ENTITY_MAX_HEALTH(ntv_ped));
+				ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(ntv_ped);
+				ntv::ENTITY::SET_ENTITY_COLLISION(ntv_ped, true, true);
 			}
 
 			vector3 pos(const vector3 &rcs_offset = {0, 0, 0}) const {
@@ -142,26 +215,21 @@ namespace nob {
 			void set_rotation(const vector3 &ro) {
 				ntv::ENTITY::SET_ENTITY_ROTATION(ntv_ped, ro.x, ro.y, ro.z, 2, true);
 			}
-
-			void show_name(const std::string &name, const std::string &tag = "") {
-				auto id = ntv::UI::_CREATE_MP_GAMER_TAG(ntv_ped, name.c_str(), true, true, tag.c_str(), 0);
-				ntv::UI::SET_MP_GAMER_TAG_VISIBILITY(id, 0, true);
-			}
 	};
 
 	namespace player {
 		extern ntv::Player ntv_player;
 
-		inline character controlling() {
+		inline character body() {
 			return ntv::PLAYER::PLAYER_PED_ID();
 		}
 
-		inline void control(character chr) {
+		inline void change_body(character chr) {
 			ntv::PLAYER::CHANGE_PLAYER_PED(ntv_player, chr.ntv_ped, true, true);
 		}
 
-		inline void possession(character chr) {
-			auto old_chr = controlling();
+		inline void switch_body(character chr) {
+			auto old_chr = body();
 			auto old_chr_coords = old_chr.pos({ 0, 0, 0 });
 			auto chr_coords = chr.pos({ 0, 0, 0 });
 
@@ -170,9 +238,9 @@ namespace nob {
 
 			wait(1000);
 
-			if (!ntv::ENTITY::IS_ENTITY_DEAD(chr.ntv_ped)) {
-				control(chr);
-				ntv::ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&old_chr.ntv_ped);
+			if (ntv::ENTITY::DOES_ENTITY_EXIST(chr.ntv_ped) && !ntv::ENTITY::IS_ENTITY_DEAD(chr.ntv_ped)) {
+				change_body(chr);
+				old_chr.remove();
 			}
 		}
 	}
@@ -181,11 +249,15 @@ namespace nob {
 		public:
 			ntv::Vehicle ntv_vehicle;
 
-			vehicle(model m, const vector3 &coords) : ntv_vehicle(ntv::VEHICLE::CREATE_VEHICLE(m.ntv_model, coords.x, coords.y, coords.z, 0.0, false, true)) {
+			vehicle(model m, const vector3 &coords, float heading = 0.0f) : ntv_vehicle(ntv::VEHICLE::CREATE_VEHICLE(m.ntv_model, coords.x, coords.y, coords.z, heading, false, true)) {
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(ntv_vehicle, 0);
 			}
 
-			void free() {
+			void del() {
+				ntv::VEHICLE::DELETE_VEHICLE(&ntv_vehicle);
+			}
+
+			void remove() {
 				ntv::ENTITY::SET_VEHICLE_AS_NO_LONGER_NEEDED(&ntv_vehicle);
 			}
 
@@ -193,11 +265,11 @@ namespace nob {
 				ntv::VEHICLE::SET_VEHICLE_ON_GROUND_PROPERLY(ntv_vehicle);
 			}
 
-			int get_mod_type_total() {
+			int get_mod_type_sum() {
 				return 50;
 			}
 
-			int get_mod_total(int mod_type) {
+			int get_mod_sum(int mod_type) {
 				return ntv::VEHICLE::GET_NUM_VEHICLE_MODS(ntv_vehicle, mod_type);
 			}
 
@@ -209,13 +281,41 @@ namespace nob {
 				ntv::VEHICLE::GET_VEHICLE_MOD(ntv_vehicle, mod_type);
 			}
 
-			void set_best_mod() {
-				for (size_t i = 0; i < 50; i++) {
-					auto n = get_mod_total(i);
+			void set_best_mods() {
+				for (int i = 0; i < get_mod_type_sum(); i++) {
+					auto n = get_mod_sum(i);
 					if (n > 0) {
 						ntv::VEHICLE::SET_VEHICLE_MOD(ntv_vehicle, i, n - 1, false);
 					}
 				}
+			}
+
+			bool has(const character &chr) {
+				return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(chr.ntv_ped, ntv_vehicle);
+			}
+
+			bool is_playing_radio() {
+				return ntv::AUDIO::_IS_VEHICLE_RADIO_LOUD(ntv_vehicle);
+			}
+
+			std::string get_radio_station() {
+				if (has(player::body()) && is_playing_radio()) {
+					return ntv::AUDIO::GET_PLAYER_RADIO_STATION_NAME();
+				}
+				return nullptr;
+			}
+
+			void set_radio_station(const std::string &radio_station = nullptr) {
+				if (radio_station.empty()) {
+					if (is_playing_radio()) {
+						ntv::AUDIO::SET_VEHICLE_RADIO_LOUD(ntv_vehicle, false);
+					}
+					return;
+				}
+				if (!is_playing_radio()) {
+					ntv::AUDIO::SET_VEHICLE_RADIO_LOUD(ntv_vehicle, true);
+				}
+				ntv::AUDIO::SET_VEH_RADIO_STATION(ntv_vehicle, radio_station.c_str());
 			}
 
 			////////////////////////////////////////////////////////////////////
@@ -225,8 +325,8 @@ namespace nob {
 
 	namespace g2d {
 		inline void text(
-			float x, float y, float height,
-			const char *str,
+			float x, float y, float width,
+			const std::string &str,
 			float scale,
 			uint8_t r, uint8_t g, uint8_t b, uint8_t a,
 			uint8_t align = 0,
@@ -234,7 +334,7 @@ namespace nob {
 		) {
 			float nx;
 			if (align) {
-				nx = x + height / 2;
+				nx = x + width / 2;
 			} else {
 				nx = x;
 			}
@@ -242,7 +342,7 @@ namespace nob {
 			ntv::UI::SET_TEXT_FONT(0);
 			ntv::UI::SET_TEXT_SCALE(scale, scale);
 			ntv::UI::SET_TEXT_COLOUR(r, g, b, a);
-			ntv::UI::SET_TEXT_WRAP(x, x + height);
+			ntv::UI::SET_TEXT_WRAP(x, x + width);
 			switch (align) {
 				case 1:
 					ntv::UI::SET_TEXT_CENTRE(true);
@@ -254,50 +354,202 @@ namespace nob {
 			ntv::UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
 
 			ntv::UI::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
-			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(str);
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(str.c_str());
 			ntv::UI::END_TEXT_COMMAND_DISPLAY_TEXT(nx, y);
 		}
 
-		inline void text(
-			float x, float y, float height,
-			const std::string &str,
-			float scale,
-			uint8_t r, uint8_t g, uint8_t b, uint8_t a,
-			uint8_t align = 0,
-			bool outline = false
-		) {
-			text(x, y, height, str.c_str(), scale, r, g, b, a, align, outline);
+		constexpr float calc_text_height(float scale) {
+			return (((((38.0f + 42.0f) / 0.9f) / 105.0f) * 0.1f) * scale);
 		}
 
 		inline void rect(
 			float x, float y, float width, float height,
-			uint8_t r, uint8_t g, uint8_t b, uint8_t a
+			uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255
 		) {
-			ntv::GRAPHICS::DRAW_RECT((x + (width * 0.5f)), (y + (height * 0.5f)), width, height, r, g, b, a);
+			ntv::GRAPHICS::DRAW_RECT((x + (width / 2)), (y + (height / 2)), width, height, r, g, b, a);
+		}
+
+		inline void wait_texture_dict_valid(const char *texture_dict) {
+			if (!ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(texture_dict)) {
+				ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(texture_dict, false);
+				wait([texture_dict]()->bool {
+					return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(texture_dict);
+				});
+			}
+		}
+
+		inline void sprite(const char *texture_dict, const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
+			ntv::GRAPHICS::DRAW_SPRITE(texture_dict, texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 2, 255, 255, a);
 		}
 	} /* g2d */
 
 	namespace ui {
-		struct component {
-			std::string name;
-			std::string desc;
+		class component {
+			public:
+				#define _NOB_UI_COMPONENT_PTRSH_MEMBERS(T) \
+					prototype *operator->() { \
+						return _ptr.get(); \
+					} \
+					\
+					std::shared_ptr<prototype> get() { \
+						return _ptr; \
+					} \
+					\
+					T(const T &src) : _ptr(src._ptr) {} \
+					\
+					T(T &&src) : _ptr(std::move(src._ptr)) {} \
+					\
+					const T &operator=(const T &src) { \
+						_ptr = src._ptr; \
+						return *this; \
+					} \
+					\
+					const T &operator=(T &&src) { \
+						_ptr = std::move(src._ptr); \
+						return *this; \
+					} \
+					\
+					T(const std::shared_ptr<prototype> &ptr) : _ptr(ptr) {} \
+					\
+					T(std::shared_ptr<prototype> &&ptr) : _ptr(std::move(ptr)) {} \
+					\
+					const T &operator=(const std::shared_ptr<prototype> &ptr) { \
+						_ptr = ptr; \
+						return *this; \
+					} \
+					\
+					const T &operator=(std::shared_ptr<prototype> &&ptr) { \
+						_ptr = std::move(ptr); \
+						return *this; \
+					} \
+					\
+				private: \
+					std::shared_ptr<prototype> _ptr;
+
+				class base {
+					public:
+						struct prototype {
+							std::string name;
+							std::string desc;
+
+							prototype(
+								const std::string &name,
+								const std::string &desc = ""
+							) : name(name), desc(desc) {}
+						};
+
+						base(
+							const std::string &name,
+							const std::string &desc = ""
+						) : _ptr(std::make_shared<prototype>(name, desc)) {}
+
+						_NOB_UI_COMPONENT_PTRSH_MEMBERS(base)
+				};
+
+				class item {
+					public:
+						struct prototype : base::prototype {
+							std::function<void()> handler;
+
+							prototype(
+								const std::string &name,
+								const std::function<void()> &handler,
+								const std::string &desc = ""
+							) : base::prototype(name, desc), handler(handler) {}
+						};
+
+						item(
+							const std::string &name,
+							const std::function<void()> &handler,
+							const std::string &desc = ""
+						) : _ptr(std::make_shared<prototype>(name, handler, desc)) {}
+
+						_NOB_UI_COMPONENT_PTRSH_MEMBERS(item)
+				};
+
+				class list {
+					public:
+						struct prototype : base::prototype {
+							std::vector<component> components;
+							std::function<void(list &)> on_loading;
+
+							prototype(
+								const std::string &name,
+								std::initializer_list<component> il,
+								const std::string &desc = "",
+								const std::function<void(list &)> &on_loading = nullptr
+							) : base::prototype(name, desc), components(il), on_loading(on_loading) {}
+						};
+
+						list(
+							const std::string &name,
+							std::initializer_list<component> il,
+							const std::string &desc = "",
+							const std::function<void(list &)> &on_loading = nullptr
+						) : _ptr(std::make_shared<prototype>(name, il, desc, on_loading)) {}
+
+						_NOB_UI_COMPONENT_PTRSH_MEMBERS(list)
+				};
+
+				const std::type_info &type;
+
+				component(base c) : type(typeid(base)), _base_pp(c.get()) {}
+
+				component(item c) : type(typeid(item)), _base_pp(std::static_pointer_cast<base::prototype>(c.get())) {}
+
+				component(list c) : type(typeid(list)), _base_pp(std::static_pointer_cast<base::prototype>(c.get())) {}
+
+				base::prototype *operator->() {
+					return _base_pp.get();
+				}
+
+				base to_base() {
+					assert(type == typeid(base));
+
+					return _base_pp;
+				}
+
+				item to_item() {
+					assert(type == typeid(item));
+
+					return std::static_pointer_cast<item::prototype>(_base_pp);
+				}
+
+				list to_list() {
+					assert(type == typeid(list));
+
+					return std::static_pointer_cast<list::prototype>(_base_pp);
+				}
+
+			private:
+				std::shared_ptr<base::prototype> _base_pp;
 		};
 
-		struct item : public component {
-			std::function<void()> action;
+		class menu {
+			public:
+				menu(const std::string &title, const component::list &li) : _tit(title), _top_list(li), _selecting({0}) {}
+
+				void toggle();
+
+			private:
+				std::string _tit;
+				component::list _top_list;
+				std::stack<size_t> _selecting;
+				task _ft;
 		};
 
-		struct list : public component {
-			std::vector<item> items;
-			size_t selected = 0;
-		};
-
-		struct option_list : public list {
-			std::function<void()> on_select;
-		};
-
-		void open_menu(const std::string &title, const list &);
-		void close_menu();
+		inline void disable_interaction_menu(bool toggle = true) {
+			static nob::task t;
+			if (toggle) {
+				if (!t) {
+					t = task([]() {
+						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::InteractionMenu, true);
+					});
+				}
+			} else {
+				t.del();
+			}
+		}
 
 		////////////////////////////////////////////////////////////////////////
 
@@ -344,15 +596,13 @@ namespace nob {
 		}
 
 		inline void info(const std::string &content, float duration = 1.0f) {
-			auto ft = add_frame_task([content]() {
+			task ft([content]() {
 				info_this_frame(content);
 			});
-			auto ft2 = new uintptr_t;
-			*ft2 = add_frame_task([ft, ft2, duration]() {
+			task ft2([ft, duration]() mutable {
 				wait(duration * 15000);
-				del_frame_task(ft);
-				del_frame_task(*ft2);
-				delete ft2;
+				ft.del();
+				this_task().del();
 			});
 		};
 
@@ -362,10 +612,25 @@ namespace nob {
 		void disable_wheel_slowmo(bool toggle = true);
 	} /* ui */
 
-	namespace i18n {
-		inline std::string get(const char *n) {
-			return ntv::UI::_GET_LABEL_TEXT(n);
+	namespace vision {
+		inline void night(bool toggle) {
+			nob::ntv::GRAPHICS::SET_NIGHTVISION(toggle);
 		}
+
+		inline bool is_night_active() {
+			return nob::ntv::GRAPHICS::_IS_NIGHTVISION_ACTIVE();
+		}
+
+		inline void heat(bool toggle) {
+			nob::ntv::GRAPHICS::SET_SEETHROUGH(toggle);
+		}
+
+		inline bool is_heat_active() {
+			return nob::ntv::GRAPHICS::_IS_SEETHROUGH_ACTIVE();
+		}
+	} /* vision */
+
+	namespace i18n {
 		inline std::string get(const std::string &n) {
 			return ntv::UI::_GET_LABEL_TEXT(n.c_str());
 		}
@@ -376,4 +641,4 @@ namespace nob {
 			return ntv::VEHICLE::GET_MOD_TEXT_LABEL(v.ntv_vehicle, mod_type, mod);
 		}
 	} /* i18n */
-}
+} /* nob */
