@@ -112,7 +112,7 @@ namespace nob {
 	static inline void _sleep(_sleeping_task &&pre_st) {
 		_tasks.erase(_cur_task_it);
 		pre_st.task._inf->sleeping = true;
-		_sleeping_tasks.push_back(std::move(pre_st));
+		_sleeping_tasks.push_front(std::move(pre_st));
 		_switch_task_fiber();
 	}
 
@@ -316,12 +316,14 @@ namespace nob {
 					_pre_add_tasks_mtx.unlock();
 				}
 	
-				for (auto it = _sleeping_tasks.begin(); it != _sleeping_tasks.end(); ++it) {
+				for (auto it = _sleeping_tasks.begin(); it != _sleeping_tasks.end();) {
 					if (it->cond) {
 						if (!it->cond()) {
+							++it;
 							continue;
 						}
 					} else if (_cur_tick <= it->start_tick + it->duration) {
+						++it;
 						continue;
 					}
 		
