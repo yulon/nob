@@ -70,19 +70,31 @@ namespace nob {
 					y += h;
 					h = 0.0345f;
 					g2d::rect(x, y, w, h);
-					g2d::text(x + 0.01f, y + ((h - g2d::calc_text_height(0.426f)) / 2), w, this->_top_list->name, 0.426f, 100, 179, 211, 255, 0);
+					g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, this->_top_list->name, 0.355f, 100, 179, 211, 255, 0);
 
 					auto sz = this->_top_list->components.size();
 					if (sz) {
+						auto ix = this->_selecting.top();
+
 						y += h;
 						g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, sz * h);
 	
 						for (size_t i = 0; i < sz; ++i) {
-							g2d::text(x + 0.01f, y + ((h - g2d::calc_text_height(0.426f)) / 2), w, this->_top_list->components[i]->name, 0.426f, 255, 255, 255, 255, 0);
+							uint8_t r, g, b;
+
+							if (i == ix) {
+								g2d::sprite("CommonMenu", "gradient_nav", x, y, w, h);
+								r = g = b = 0;
+							} else {
+								r = g = b = 255;
+							}
+
+							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, this->_top_list->components[i]->name, 0.355f, r, g, b, 255, 0);
+
 							y += h;
 						}
 	
-						if (!this->_top_list->components[this->_selecting.top()]->desc.empty()) {
+						if (!this->_top_list->components[ix]->desc.empty()) {
 							h = 0.005;
 							//blank
 	
@@ -92,8 +104,10 @@ namespace nob {
 	
 							y += h;
 							y = y - 0.0015f;
-							h = 0.0315f * 2;
+							h = 0.0315f * 1;
 							g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, h);
+
+							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, this->_top_list->components[ix]->desc, 0.355f, 255, 255, 255, 255, 0);
 						}
 					}
 				});
