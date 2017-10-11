@@ -8,7 +8,7 @@
 #include <array>
 #include <cstring>
 #include <thread>
-#include <stack>
+#include <forward_list>
 #include <initializer_list>
 #include <typeinfo>
 #include <list>
@@ -445,7 +445,7 @@ namespace nob {
 						_NOB_UI_COMPONENT_PTRSH_MEMBERS(base)
 				};
 
-				class item {
+				class action {
 					public:
 						struct prototype : base::prototype {
 							std::function<void()> handler;
@@ -457,13 +457,13 @@ namespace nob {
 							) : base::prototype(name, desc), handler(handler) {}
 						};
 
-						item(
+						action(
 							const std::string &name,
 							const std::function<void()> &handler,
 							const std::string &desc = ""
 						) : _ptr(std::make_shared<prototype>(name, handler, desc)) {}
 
-						_NOB_UI_COMPONENT_PTRSH_MEMBERS(item)
+						_NOB_UI_COMPONENT_PTRSH_MEMBERS(action)
 				};
 
 				class list {
@@ -494,7 +494,7 @@ namespace nob {
 
 				component(base c) : type(typeid(base)), _base_pp(c.get()) {}
 
-				component(item c) : type(typeid(item)), _base_pp(std::static_pointer_cast<base::prototype>(c.get())) {}
+				component(action c) : type(typeid(action)), _base_pp(std::static_pointer_cast<base::prototype>(c.get())) {}
 
 				component(list c) : type(typeid(list)), _base_pp(std::static_pointer_cast<base::prototype>(c.get())) {}
 
@@ -508,10 +508,10 @@ namespace nob {
 					return _base_pp;
 				}
 
-				item to_item() {
-					assert(type == typeid(item));
+				action to_action() {
+					assert(type == typeid(action));
 
-					return std::static_pointer_cast<item::prototype>(_base_pp);
+					return std::static_pointer_cast<action::prototype>(_base_pp);
 				}
 
 				list to_list() {
@@ -526,15 +526,19 @@ namespace nob {
 
 		class menu {
 			public:
-				menu(const std::string &title, const component::list &li) : _tit(title), _top_list(li), _selecting({0}) {}
+				menu(const std::string &title, const component::list &li) : _tit(title), _list_stack({{li, 0}}) {}
 
 				void toggle();
 
 			private:
 				std::string _tit;
-				component::list _top_list;
-				std::stack<size_t> _selecting;
-				task _ft;
+				struct _list_info {
+					component::list li;
+					size_t si;
+				};
+				std::forward_list<_list_info> _list_stack;
+				task _t;
+				keyboard::listener _kl;
 		};
 
 		inline void disable_interaction_menu(bool toggle = true) {

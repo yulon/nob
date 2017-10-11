@@ -56,8 +56,15 @@ namespace nob {
 		}
 
 		void menu::toggle() {
-			if (!_ft) {
-				_ft = task([this]() {
+			if (!_t) {
+				_t = task([this]() {
+					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
+
+					//////////////////////////////////////////////////////////////////////////
+
+					auto &cur = this->_list_stack.front();
+					auto sz = cur.li->components.size();
+
 					g2d::wait_texture_dict_valid("CommonMenu");
 
 					float x = 0.0155f;
@@ -70,31 +77,28 @@ namespace nob {
 					y += h;
 					h = 0.0345f;
 					g2d::rect(x, y, w, h);
-					g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, this->_top_list->name, 0.355f, 100, 179, 211, 255, 0);
+					g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur.li->name, 0.355f, 100, 179, 211, 255, 0);
 
-					auto sz = this->_top_list->components.size();
 					if (sz) {
-						auto ix = this->_selecting.top();
-
 						y += h;
 						g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, sz * h);
 	
 						for (size_t i = 0; i < sz; ++i) {
 							uint8_t r, g, b;
 
-							if (i == ix) {
+							if (i == cur.si) {
 								g2d::sprite("CommonMenu", "gradient_nav", x, y, w, h);
 								r = g = b = 0;
 							} else {
 								r = g = b = 255;
 							}
 
-							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, this->_top_list->components[i]->name, 0.355f, r, g, b, 255, 0);
+							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur.li->components[i]->name, 0.355f, r, g, b, 255, 0);
 
 							y += h;
 						}
 	
-						if (!this->_top_list->components[ix]->desc.empty()) {
+						if (!cur.li->components[cur.si]->desc.empty()) {
 							h = 0.005;
 							//blank
 	
@@ -107,12 +111,68 @@ namespace nob {
 							h = 0.0315f * 1;
 							g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, h);
 
-							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, this->_top_list->components[ix]->desc, 0.355f, 255, 255, 255, 255, 0);
+							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur.li->components[cur.si]->desc, 0.355f, 255, 255, 255, 255, 0);
 						}
 					}
 				});
+				_kl = keyboard::listener([this](int code, bool down)->bool {
+					switch (code) {
+						case VK_ESCAPE:
+							if (down) {
+								if (++this->_list_stack.begin() != this->_list_stack.end()) {
+									this->_list_stack.pop_front();
+								} else {
+									this->toggle();
+
+									static task det;
+									static size_t det_i;
+									if (det) {
+										det_i = 150;
+									} else {
+										det = task([](task tt) {
+											for (det_i = 0; det_i < 150; ++det_i) {
+												nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
+												wait_next_frame();
+											}
+											tt.del();
+										});
+									}
+								}
+							}
+							return false;
+
+						case VK_DOWN:
+							if (down) {
+								auto &cur = this->_list_stack.front();
+								if (cur.si < cur.li->components.size() - 1) {
+									++cur.si;
+								}
+							}
+							return false;
+
+						case VK_UP:
+							if (down && this->_list_stack.front().si) {
+								--this->_list_stack.front().si;
+							}
+							return false;
+
+						case VK_RETURN:
+							if (down) {
+								auto &cur = this->_list_stack.front();
+								auto cur_it = cur.li->components[cur.si];
+								if (cur_it.type == typeid(component::action)) {
+									cur_it.to_action()->handler();
+								} else if (cur_it.type == typeid(component::list)) {
+									this->_list_stack.push_front({cur_it.to_list(), 0});
+								}
+							}
+							return false;
+					}
+					return true;
+				});
 			} else {
-				_ft.del();
+				_t.del();
+				_kl.del();
 			}
 		}
 	} /* ui */

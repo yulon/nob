@@ -25,11 +25,21 @@ nob::task fps_output([]() {
 using c = nob::ui::component;
 
 nob::ui::menu ia_menu("Nob Tester", c::list("Interaction Menu", {
-	c::base("name"),
-	c::base("name"),
-	c::base("name"),
-	c::base("name"),
-	c::base("name"),
+	c::list("ui", {
+		c::action("info", []() {
+			nob::ui::info("you know!");
+		}),
+		c::action("tip", []() {
+			nob::ui::tip("~b~~h~dog~h~~s~ killed ~r~~h~cat");
+		}),
+		c::action("message", []() {
+			nob::ui::message(
+				"CHAR_MARTIN",
+				"馬丁",
+				"~r~你們休想取代我！"
+			);
+		})
+	})
 }));
 
 nob::keyboard::listener ia_menu_hotkey([](int code, bool down)->bool {
@@ -53,14 +63,4 @@ nob::initer main_initer([]() {
 	if (nob::ntv::CAM::IS_SCREEN_FADED_OUT()) {
 		nob::wait(nob::ntv::CAM::IS_SCREEN_FADING_IN);
 	}
-
-	nob::ui::info("you know!");
-
-	nob::ui::tip("~b~~h~dog~h~~s~ killed ~r~~h~cat");
-
-	nob::ui::message(
-		"CHAR_MARTIN",
-		"馬丁",
-		"~r~你們休想取代我！"
-	);
 });
