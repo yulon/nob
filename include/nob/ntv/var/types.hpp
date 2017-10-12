@@ -149,19 +149,14 @@ namespace nob {
 				return *reinterpret_cast<T *>(&args_ptr[i]);
 			}
 
-			template<size_t i, typename A>
-			void _set_args(A a) {
-				set_arg<A>(i, a);
-			}
+			template<size_t>
+			void _set_args() {}
 
 			template<size_t i, typename A, typename ...O>
 			void _set_args(A a, O ...o) {
-				_set_args<i, A>(a);
+				set_arg<A>(i, a);
 				_set_args<i + 1, O...>(o...);
 			}
-
-			template<size_t>
-			void _set_args() {}
 
 			template<typename ...A>
 			void set_args(A ...a) {

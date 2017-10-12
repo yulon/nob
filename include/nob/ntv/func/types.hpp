@@ -9,19 +9,13 @@
 
 	namespace nob {
 		namespace shv {
-			template<typename A>
-			inline void nativePushs(A a) {
-				nativePush64(ntv::argument_cast<A>(a));
-			}
+			inline void nativePushs() {}
 
 			template<typename A, typename ...O>
 			inline void nativePushs(A a, O ...o) {
-				nativePushs<A>(a);
+				nativePush64(ntv::argument_cast<A>(a));
 				nativePushs<O...>(o...);
 			}
-
-			template<typename ...>
-			inline void nativePushs() {}
 
 			template<typename R>
 			inline R typedNativeCall() {
