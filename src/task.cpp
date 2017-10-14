@@ -4,7 +4,7 @@
 #include <windows.h>
 
 #include <list>
-#include <forward_list>
+#include <stack>
 #include <mutex>
 #include <memory>
 #include <cassert>
@@ -64,9 +64,9 @@ namespace nob {
 		handler(*_cur_task_it);
 	}) {}
 
-	size_t _cur_tick;
+	size_t _cur_tick = 0;
 
-	std::forward_list<PVOID> _idle_task_fibers;
+	std::stack<PVOID> _idle_task_fibers;
 
 	struct _sleeping_task {
 		PVOID fiber;
@@ -84,7 +84,7 @@ namespace nob {
 	}
 
 	static inline void _wakeup_fiber(PVOID fiber) {
-		_idle_task_fibers.push_front(this_script::_cur_fiber);
+		_idle_task_fibers.push(this_script::_cur_fiber);
 		_switch_fiber(fiber);
 	}
 
@@ -98,13 +98,13 @@ namespace nob {
 		}
 	}
 
-	static inline void _switch_task_fiber() {
+	static inline void _start_new_task_fiber() {
 		PVOID fiber;
 		if (_idle_task_fibers.empty()) {
 			fiber = CreateFiber(0, (LPFIBER_START_ROUTINE)&_handle_tasks_loop, nullptr);
 		} else {
-			fiber = _idle_task_fibers.front();
-			_idle_task_fibers.pop_front();
+			fiber = _idle_task_fibers.top();
+			_idle_task_fibers.pop();
 		}
 		_switch_fiber(fiber);
 	}
@@ -113,7 +113,7 @@ namespace nob {
 		_tasks.erase(_cur_task_it);
 		pre_st.task._inf->sleeping = true;
 		_sleeping_tasks.push_front(std::move(pre_st));
-		_switch_task_fiber();
+		_start_new_task_fiber();
 	}
 
 	void wait(size_t ms) {
@@ -194,24 +194,24 @@ namespace nob {
 		if (_inf) {
 			if (_inf == _cur_task_it->_inf) {
 				_tasks.erase(_cur_task_it);
-	
+
 				_task_info_ptr_trash.reset(_inf);
 				_inf = nullptr;
 				return;
 			}
-	
+
 			if (_inf->sleeping) {
 				for (auto it = _sleeping_tasks.begin(); it != _sleeping_tasks.end(); ++it) {
 					if (it->task._inf == _inf) {
 						_sleeping_tasks.erase(it);
-	
+
 						delete _inf;
 						_inf = nullptr;
 						return;
 					}
 				}
 			}
-	
+
 			for (auto it = _tasks.begin(); it != _tasks.end(); ++it) {
 				if (it->_inf == _inf) {
 					if (it == _tasks_it) {
@@ -219,7 +219,7 @@ namespace nob {
 					} else {
 						_tasks.erase(it);
 					}
-	
+
 					delete _inf;
 					_inf = nullptr;
 					return;
@@ -235,7 +235,7 @@ namespace nob {
 			if (_inf == _cur_task_it->_inf) {
 				return true;
 			}
-	
+
 			if (_inf->sleeping) {
 				for (auto it = _sleeping_tasks.begin(); it != _sleeping_tasks.end(); ++it) {
 					if (it->task._inf == _inf) {
@@ -243,7 +243,7 @@ namespace nob {
 					}
 				}
 			}
-	
+
 			for (auto it = _tasks.begin(); it != _tasks.end(); ++it) {
 				if (it->_inf == _inf) {
 					return true;
@@ -272,27 +272,27 @@ namespace nob {
 	namespace this_script {
 		void _main() {
 			player::ntv_player = ntv::PLAYER::PLAYER_ID();
-	
+
 			thread_id = std::this_thread::get_id();
-	
+
 			_cur_fiber = GetCurrentFiber();
 			if (!_cur_fiber) {
 				_main_fiber = _cur_fiber = ConvertThreadToFiber(nullptr);
 			} else {
 				_main_fiber = _cur_fiber;
 			}
-	
+
 			_task_info_ptr_trash.reset(nullptr);
-	
+
 			window::_hook_proc();
-	
+
 			for (auto &handler : _initers) {
 				task([&handler]() {
 					handler();
 					_cur_task_it->del();
 				});
 			}
-	
+
 			_tasks_it = _tasks.end();
 
 			_input_events.resize(0);
@@ -315,7 +315,7 @@ namespace nob {
 					}
 					_pre_add_tasks_mtx.unlock();
 				}
-	
+
 				for (auto it = _sleeping_tasks.begin(); it != _sleeping_tasks.end();) {
 					if (it->cond) {
 						if (!it->cond()) {
@@ -326,19 +326,19 @@ namespace nob {
 						++it;
 						continue;
 					}
-		
+
 					it->task._inf->sleeping = false;
 					_tasks.push_back(it->task);
 					_cur_task_it = --_tasks.end();
-		
+
 					auto fiber = it->fiber;
 					it = _sleeping_tasks.erase(it);
 					_wakeup_fiber(fiber);
 				}
-	
+
 				_tasks_it = _tasks.begin();
-				_switch_task_fiber();
-	
+				_start_new_task_fiber();
+
 				running = false;
 				_wait(0);
 			}
