@@ -28,6 +28,7 @@ nob::ui::menu ia_menu("Nob Tester", c::list("Interaction Menu", {
 	c::list("UI", {
 		c::action("info", []() {
 			nob::ui::info("you know!");
+			ia_menu.toggle();
 		}),
 		c::action("tip", []() {
 			nob::ui::tip("~b~~h~dog~h~~s~ killed ~r~~h~cat");
@@ -42,12 +43,12 @@ nob::ui::menu ia_menu("Nob Tester", c::list("Interaction Menu", {
 	}),
 	c::list("Vehicle", {
 		c::list("Spawn", [](c::list li) {
-			/*for (auto mn : nob::model::vehicles) {
-				li->components.push_back(c::action(mn, [mn]() {
+			for (auto mn : nob::model::vehicles) {
+				li->components.push_back(c::action(nob::i18n::get(mn), [mn]() {
 					auto veh = nob::vehicle(mn, nob::player::body().pos({0, 5, 0}));
 					veh.place_on_ground();
 				}));
-			}*/
+			}
 
 			nob::vehicle::unlock_banned_vehicles();
 			for (auto mn : nob::model::banned_vehicles) {

@@ -2,6 +2,8 @@
 #include <nob/ntv.hpp>
 #include <nob/hack.hpp>
 
+#include <sstream>
+
 namespace nob {
 	namespace ui {
 		void disable_story_features(bool toggle) {
@@ -57,9 +59,10 @@ namespace nob {
 
 		void menu::toggle() {
 			if (!_t) {
-				auto &cur = this->_list_stack.top();
-				if (cur.li->on_show) {
-					cur.li->on_show(cur.li);
+				auto &cur_li = this->_list_stack.top();
+				if (cur_li->on_show) {
+					cur_li->on_show(cur_li);
+					cur_li->fix_start();
 				}
 
 				_t = task([this]() {
@@ -76,47 +79,67 @@ namespace nob {
 					g2d::sprite("CommonMenu", "interaction_bgd", x, y, w, h);
 					g2d::text(x, y + ((h - g2d::calc_text_height(0.9f)) / 2), w, this->_tit, 0.9f, 255, 255, 255, 255, 1);
 
-					auto &cur = this->_list_stack.top();
-					auto sz = cur.li->components.size();
+					auto &cur_li = this->_list_stack.top();
+					auto sz = cur_li->components.size();
 
 					y += h;
 					h = 0.0345f;
 					g2d::rect(x, y, w, h);
-					g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur.li->name, 0.355f, 100, 179, 211, 255, 0);
+					g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, cur_li->name, 0.355f, 100, 179, 211, 255, 0);
 
 					if (sz) {
-						y += h;
-						g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, sz * h);
+						size_t len;
+						if (sz < 10) {
+							len = sz;
+						} else {
+							std::stringstream ss;
+							ss << cur_li->selected + 1 << " / " << sz;
+							g2d::text(x - 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, ss.str(), 0.355f, 255, 255, 255, 255, 2);
 
-						for (size_t i = 0; i < sz; ++i) {
+							len = 10;
+						}
+
+						size_t end = cur_li->start + len;
+
+						y += h;
+						g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, len * h);
+
+						for (size_t i = cur_li->start; i < end; ++i) {
 							uint8_t r, g, b;
 
-							if (i == cur.si) {
+							if (i == cur_li->selected) {
 								g2d::sprite("CommonMenu", "gradient_nav", x, y, w, h);
 								r = g = b = 0;
 							} else {
 								r = g = b = 255;
 							}
 
-							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur.li->components[i]->name, 0.355f, r, g, b, 255, 0);
+							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, cur_li->components[i]->name, 0.355f, r, g, b, 255, 0);
 
 							y += h;
 						}
 
-						if (!cur.li->components[cur.si]->desc.empty()) {
-							h = 0.005;
-							//blank
+						if (sz < 10) {
+							h = 0.005f;
+						} else {
+							y += 0.001f;
+							g2d::rect(x, y, w, h);
+							g2d::text(x, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, "...", 0.355f, 255, 255, 255, 255, 1);
 
+							h = 0.003f;
+						}
+
+						if (!cur_li->components[cur_li->selected]->desc.empty()) {
 							y += h;
 							h = 0.003f;
 							g2d::rect(x, y, w, h);
 
 							y += h;
 							y = y - 0.0015f;
-							h = 0.0315f * 1;
+							h = 0.0315f * 1.0f;
 							g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, h);
 
-							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur.li->components[cur.si]->desc, 0.355f, 255, 255, 255, 255, 0);
+							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur_li->components[cur_li->selected]->desc, 0.355f, 255, 255, 255, 255, 0);
 						}
 					}
 				});
@@ -149,31 +172,29 @@ namespace nob {
 
 						case VK_DOWN:
 							if (down) {
-								auto &cur = this->_list_stack.top();
-								if (cur.si < cur.li->components.size() - 1) {
-									++cur.si;
-								}
+								this->_list_stack.top()->down();
 							}
 							return false;
 
 						case VK_UP:
-							if (down && this->_list_stack.top().si) {
-								--this->_list_stack.top().si;
+							if (down) {
+								this->_list_stack.top()->up();
 							}
 							return false;
 
 						case VK_RETURN:
 							if (down) {
-								auto &cur = this->_list_stack.top();
-								auto cur_it = cur.li->components[cur.si];
+								auto &cur_li = this->_list_stack.top();
+								auto cur_it = cur_li->components[cur_li->selected];
 								if (cur_it.type == typeid(component::action)) {
 									cur_it.to_action()->handler();
 								} else if (cur_it.type == typeid(component::list)) {
-									this->_list_stack.push({cur_it.to_list(), 0});
+									this->_list_stack.push(cur_it.to_list());
 
-									auto &cur = this->_list_stack.top();
-									if (cur.li->on_show) {
-										cur.li->on_show(cur.li);
+									auto &cur_li = this->_list_stack.top();
+									if (cur_li->on_show) {
+										cur_li->on_show(cur_li);
+										cur_li->fix_start();
 									}
 								}
 							}

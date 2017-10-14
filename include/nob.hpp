@@ -467,14 +467,53 @@ namespace nob {
 						struct prototype : base::prototype {
 							std::vector<component> components;
 							std::function<void(list)> on_show;
+							size_t selected;
+							size_t start;
+
+							void fix_start() {
+								auto sz = components.size();
+								if (sz > 10) {
+									if (start > selected) {
+										start = selected;
+									} else if (selected - start > 9) {
+										auto min_start = selected - 9;
+										if (start < min_start) {
+											start = min_start;
+										}
+									}
+								}
+							}
+
+							void down() {
+								if (selected < components.size() - 1) {
+									++selected;
+								} else {
+									selected = 0;
+								}
+								fix_start();
+							}
+
+							void up() {
+								if (selected) {
+									--selected;
+								} else {
+									selected = components.size() - 1;
+								}
+								fix_start();
+							}
 						};
+
+						list() : _this(std::make_shared<prototype>()) {
+							_this->selected = 0;
+							_this->start = 0;
+						}
 
 						list(
 							const std::string &name,
 							std::vector<component> &&cmpts,
 							const std::function<void(list)> &on_show,
 							const std::string &desc
-						) : _this(std::make_shared<prototype>()) {
+						) : list() {
 							_this->name = name;
 							_this->desc = desc;
 							_this->components = std::move(cmpts);
@@ -485,7 +524,7 @@ namespace nob {
 							const std::string &name,
 							const std::string &desc,
 							std::vector<component> &&cmpts
-						) : _this(std::make_shared<prototype>()) {
+						) : list() {
 							_this->name = name;
 							_this->desc = desc;
 							_this->components = std::move(cmpts);
@@ -494,7 +533,7 @@ namespace nob {
 						list(
 							const std::string &name,
 							std::vector<component> &&cmpts
-						) : _this(std::make_shared<prototype>()) {
+						) : list() {
 							_this->name = name;
 							_this->components = std::move(cmpts);
 						}
@@ -503,7 +542,7 @@ namespace nob {
 							const std::string &name,
 							const std::string &desc,
 							const std::function<void(list)> &on_show
-						) : _this(std::make_shared<prototype>()) {
+						) : list() {
 							_this->name = name;
 							_this->desc = desc;
 							_this->on_show = on_show;
@@ -512,7 +551,7 @@ namespace nob {
 						list(
 							const std::string &name,
 							const std::function<void(list)> &on_show
-						) : _this(std::make_shared<prototype>()) {
+						) : list() {
 							_this->name = name;
 							_this->on_show = on_show;
 						}
@@ -557,18 +596,14 @@ namespace nob {
 		class menu {
 			public:
 				menu(const std::string &title, const component::list &li) : _tit(title) {
-					_list_stack.push({li, 0});
+					_list_stack.push(li);
 				}
 
 				void toggle();
 
 			private:
 				std::string _tit;
-				struct _list_info {
-					component::list li;
-					size_t si;
-				};
-				std::stack<_list_info> _list_stack;
+				std::stack<component::list> _list_stack;
 				task _t;
 				keyboard::listener _kl;
 		};
