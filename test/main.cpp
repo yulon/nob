@@ -25,7 +25,7 @@ nob::task fps_output([]() {
 using c = nob::ui::component;
 
 nob::ui::menu ia_menu("Nob Tester", c::list("Interaction Menu", {
-	c::list("ui", {
+	c::list("UI", {
 		c::action("info", []() {
 			nob::ui::info("you know!");
 		}),
@@ -38,6 +38,27 @@ nob::ui::menu ia_menu("Nob Tester", c::list("Interaction Menu", {
 				"馬丁",
 				"~r~你們休想取代我！"
 			);
+		})
+	}),
+	c::list("Vehicle", {
+		c::list("Spawn", [](c::list li) {
+			/*for (auto mn : nob::model::vehicles) {
+				li->components.push_back(c::action(mn, [mn]() {
+					auto veh = nob::vehicle(mn, nob::player::body().pos({0, 5, 0}));
+					veh.place_on_ground();
+				}));
+			}*/
+
+			nob::vehicle::unlock_banned_vehicles();
+			for (auto mn : nob::model::banned_vehicles) {
+				li->components.push_back(c::action(nob::i18n::get(mn), [mn]() {
+					auto veh = nob::vehicle(mn, nob::player::body().pos({0, 5, 0}));
+					veh.place_on_ground();
+					veh.set_best_mods();
+				}));
+			}
+
+			li->on_show = nullptr;
 		})
 	})
 }));
@@ -58,7 +79,6 @@ nob::initer main_initer([]() {
 	nob::ui::disable_interaction_menu();
 	nob::ui::disable_story_features();
 	nob::ui::disable_wheel_slowmo();
-	nob::vehicle::unlock_banned_vehicles();
 
 	if (nob::ntv::CAM::IS_SCREEN_FADED_OUT()) {
 		nob::wait(nob::ntv::CAM::IS_SCREEN_FADING_IN);

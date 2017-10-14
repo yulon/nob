@@ -8,12 +8,52 @@
 #include <array>
 #include <cstring>
 #include <thread>
-#include <forward_list>
+#include <stack>
 #include <initializer_list>
 #include <typeinfo>
 #include <list>
 #include <memory>
 #include <iostream>
+
+#define _NOB_SHARED_OBJ(T) \
+		prototype *operator->() { \
+			return _this.get(); \
+		} \
+		\
+		std::shared_ptr<prototype> get() { \
+			return _this; \
+		} \
+		\
+		T(const T &src) : _this(src._this) {} \
+		\
+		T(T &&src) : _this(std::move(src._this)) {} \
+		\
+		const T &operator=(const T &src) { \
+			_this = src._this; \
+			return *this; \
+		} \
+		\
+		const T &operator=(T &&src) { \
+			_this = std::move(src._this); \
+			return *this; \
+		} \
+		\
+		T(const std::shared_ptr<prototype> &ptr) : _this(ptr) {} \
+		\
+		T(std::shared_ptr<prototype> &&ptr) : _this(std::move(ptr)) {} \
+		\
+		const T &operator=(const std::shared_ptr<prototype> &ptr) { \
+			_this = ptr; \
+			return *this; \
+		} \
+		\
+		const T &operator=(std::shared_ptr<prototype> &&ptr) { \
+			_this = std::move(ptr); \
+			return *this; \
+		} \
+		\
+	private: \
+		std::shared_ptr<prototype> _this;
 
 namespace nob {
 	namespace this_script {
@@ -385,109 +425,99 @@ namespace nob {
 	namespace ui {
 		class component {
 			public:
-				#define _NOB_UI_COMPONENT_PTRSH_MEMBERS(T) \
-					prototype *operator->() { \
-						return _ptr.get(); \
-					} \
-					\
-					std::shared_ptr<prototype> get() { \
-						return _ptr; \
-					} \
-					\
-					T(const T &src) : _ptr(src._ptr) {} \
-					\
-					T(T &&src) : _ptr(std::move(src._ptr)) {} \
-					\
-					const T &operator=(const T &src) { \
-						_ptr = src._ptr; \
-						return *this; \
-					} \
-					\
-					const T &operator=(T &&src) { \
-						_ptr = std::move(src._ptr); \
-						return *this; \
-					} \
-					\
-					T(const std::shared_ptr<prototype> &ptr) : _ptr(ptr) {} \
-					\
-					T(std::shared_ptr<prototype> &&ptr) : _ptr(std::move(ptr)) {} \
-					\
-					const T &operator=(const std::shared_ptr<prototype> &ptr) { \
-						_ptr = ptr; \
-						return *this; \
-					} \
-					\
-					const T &operator=(std::shared_ptr<prototype> &&ptr) { \
-						_ptr = std::move(ptr); \
-						return *this; \
-					} \
-					\
-				private: \
-					std::shared_ptr<prototype> _ptr;
-
 				class base {
 					public:
 						struct prototype {
 							std::string name;
 							std::string desc;
-
-							prototype(
-								const std::string &name,
-								const std::string &desc = ""
-							) : name(name), desc(desc) {}
 						};
 
 						base(
 							const std::string &name,
 							const std::string &desc = ""
-						) : _ptr(std::make_shared<prototype>(name, desc)) {}
+						) : _this(std::make_shared<prototype>()) {
+							_this->name = name;
+							_this->desc = desc;
+						}
 
-						_NOB_UI_COMPONENT_PTRSH_MEMBERS(base)
+						_NOB_SHARED_OBJ(base)
 				};
 
 				class action {
 					public:
 						struct prototype : base::prototype {
 							std::function<void()> handler;
-
-							prototype(
-								const std::string &name,
-								const std::function<void()> &handler,
-								const std::string &desc = ""
-							) : base::prototype(name, desc), handler(handler) {}
 						};
 
 						action(
 							const std::string &name,
 							const std::function<void()> &handler,
 							const std::string &desc = ""
-						) : _ptr(std::make_shared<prototype>(name, handler, desc)) {}
+						) : _this(std::make_shared<prototype>()) {
+							_this->name = name;
+							_this->desc = desc;
+							_this->handler = handler;
+						}
 
-						_NOB_UI_COMPONENT_PTRSH_MEMBERS(action)
+						_NOB_SHARED_OBJ(action)
 				};
 
 				class list {
 					public:
 						struct prototype : base::prototype {
 							std::vector<component> components;
-							std::function<void(list &)> on_loading;
-
-							prototype(
-								const std::string &name,
-								std::initializer_list<component> il,
-								const std::string &desc = "",
-								const std::function<void(list &)> &on_loading = nullptr
-							) : base::prototype(name, desc), components(il), on_loading(on_loading) {}
+							std::function<void(list)> on_show;
 						};
 
 						list(
 							const std::string &name,
-							std::initializer_list<component> il,
-							const std::string &desc = "",
-							const std::function<void(list &)> &on_loading = nullptr
-						) : _ptr(std::make_shared<prototype>(name, il, desc, on_loading)) {}
+							std::vector<component> &&cmpts,
+							const std::function<void(list)> &on_show,
+							const std::string &desc
+						) : _this(std::make_shared<prototype>()) {
+							_this->name = name;
+							_this->desc = desc;
+							_this->components = std::move(cmpts);
+							_this->on_show = on_show;
+						}
 
-						_NOB_UI_COMPONENT_PTRSH_MEMBERS(list)
+						list(
+							const std::string &name,
+							const std::string &desc,
+							std::vector<component> &&cmpts
+						) : _this(std::make_shared<prototype>()) {
+							_this->name = name;
+							_this->desc = desc;
+							_this->components = std::move(cmpts);
+						}
+
+						list(
+							const std::string &name,
+							std::vector<component> &&cmpts
+						) : _this(std::make_shared<prototype>()) {
+							_this->name = name;
+							_this->components = std::move(cmpts);
+						}
+
+						list(
+							const std::string &name,
+							const std::string &desc,
+							const std::function<void(list)> &on_show
+						) : _this(std::make_shared<prototype>()) {
+							_this->name = name;
+							_this->desc = desc;
+							_this->on_show = on_show;
+						}
+
+						list(
+							const std::string &name,
+							const std::function<void(list)> &on_show
+						) : _this(std::make_shared<prototype>()) {
+							_this->name = name;
+							_this->on_show = on_show;
+						}
+
+						_NOB_SHARED_OBJ(list)
 				};
 
 				const std::type_info &type;
@@ -526,7 +556,9 @@ namespace nob {
 
 		class menu {
 			public:
-				menu(const std::string &title, const component::list &li) : _tit(title), _list_stack({{li, 0}}) {}
+				menu(const std::string &title, const component::list &li) : _tit(title) {
+					_list_stack.push({li, 0});
+				}
 
 				void toggle();
 
@@ -536,7 +568,7 @@ namespace nob {
 					component::list li;
 					size_t si;
 				};
-				std::forward_list<_list_info> _list_stack;
+				std::stack<_list_info> _list_stack;
 				task _t;
 				keyboard::listener _kl;
 		};

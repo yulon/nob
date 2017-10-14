@@ -57,13 +57,15 @@ namespace nob {
 
 		void menu::toggle() {
 			if (!_t) {
+				auto &cur = this->_list_stack.top();
+				if (cur.li->on_show) {
+					cur.li->on_show(cur.li);
+				}
+
 				_t = task([this]() {
 					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
 
 					//////////////////////////////////////////////////////////////////////////
-
-					auto &cur = this->_list_stack.front();
-					auto sz = cur.li->components.size();
 
 					g2d::wait_texture_dict_valid("CommonMenu");
 
@@ -74,6 +76,9 @@ namespace nob {
 					g2d::sprite("CommonMenu", "interaction_bgd", x, y, w, h);
 					g2d::text(x, y + ((h - g2d::calc_text_height(0.9f)) / 2), w, this->_tit, 0.9f, 255, 255, 255, 255, 1);
 
+					auto &cur = this->_list_stack.top();
+					auto sz = cur.li->components.size();
+
 					y += h;
 					h = 0.0345f;
 					g2d::rect(x, y, w, h);
@@ -82,7 +87,7 @@ namespace nob {
 					if (sz) {
 						y += h;
 						g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, sz * h);
-	
+
 						for (size_t i = 0; i < sz; ++i) {
 							uint8_t r, g, b;
 
@@ -97,15 +102,15 @@ namespace nob {
 
 							y += h;
 						}
-	
+
 						if (!cur.li->components[cur.si]->desc.empty()) {
 							h = 0.005;
 							//blank
-	
+
 							y += h;
 							h = 0.003f;
 							g2d::rect(x, y, w, h);
-	
+
 							y += h;
 							y = y - 0.0015f;
 							h = 0.0315f * 1;
@@ -115,12 +120,13 @@ namespace nob {
 						}
 					}
 				});
+
 				_kl = keyboard::listener([this](int code, bool down)->bool {
 					switch (code) {
 						case VK_ESCAPE:
 							if (down) {
-								if (++this->_list_stack.begin() != this->_list_stack.end()) {
-									this->_list_stack.pop_front();
+								if (this->_list_stack.size() > 1) {
+									this->_list_stack.pop();
 								} else {
 									this->toggle();
 
@@ -143,7 +149,7 @@ namespace nob {
 
 						case VK_DOWN:
 							if (down) {
-								auto &cur = this->_list_stack.front();
+								auto &cur = this->_list_stack.top();
 								if (cur.si < cur.li->components.size() - 1) {
 									++cur.si;
 								}
@@ -151,25 +157,31 @@ namespace nob {
 							return false;
 
 						case VK_UP:
-							if (down && this->_list_stack.front().si) {
-								--this->_list_stack.front().si;
+							if (down && this->_list_stack.top().si) {
+								--this->_list_stack.top().si;
 							}
 							return false;
 
 						case VK_RETURN:
 							if (down) {
-								auto &cur = this->_list_stack.front();
+								auto &cur = this->_list_stack.top();
 								auto cur_it = cur.li->components[cur.si];
 								if (cur_it.type == typeid(component::action)) {
 									cur_it.to_action()->handler();
 								} else if (cur_it.type == typeid(component::list)) {
-									this->_list_stack.push_front({cur_it.to_list(), 0});
+									this->_list_stack.push({cur_it.to_list(), 0});
+
+									auto &cur = this->_list_stack.top();
+									if (cur.li->on_show) {
+										cur.li->on_show(cur.li);
+									}
 								}
 							}
 							return false;
 					}
 					return true;
 				});
+
 			} else {
 				_t.del();
 				_kl.del();
