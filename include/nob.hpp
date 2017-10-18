@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nob/ntv.hpp"
+#include "nob/util/shared_obj.hpp"
 
 #include <string>
 #include <functional>
@@ -10,50 +11,8 @@
 #include <thread>
 #include <stack>
 #include <initializer_list>
-#include <typeinfo>
 #include <list>
-#include <memory>
 #include <iostream>
-
-#define _NOB_SHARED_OBJ(T) \
-		prototype *operator->() { \
-			return _this.get(); \
-		} \
-		\
-		std::shared_ptr<prototype> get() { \
-			return _this; \
-		} \
-		\
-		T(const T &src) : _this(src._this) {} \
-		\
-		T(T &&src) : _this(std::move(src._this)) {} \
-		\
-		const T &operator=(const T &src) { \
-			_this = src._this; \
-			return *this; \
-		} \
-		\
-		const T &operator=(T &&src) { \
-			_this = std::move(src._this); \
-			return *this; \
-		} \
-		\
-		T(const std::shared_ptr<prototype> &ptr) : _this(ptr) {} \
-		\
-		T(std::shared_ptr<prototype> &&ptr) : _this(std::move(ptr)) {} \
-		\
-		const T &operator=(const std::shared_ptr<prototype> &ptr) { \
-			_this = ptr; \
-			return *this; \
-		} \
-		\
-		const T &operator=(std::shared_ptr<prototype> &&ptr) { \
-			_this = std::move(ptr); \
-			return *this; \
-		} \
-		\
-	private: \
-		std::shared_ptr<prototype> _this;
 
 namespace nob {
 	namespace this_script {
@@ -120,6 +79,14 @@ namespace nob {
 
 		bool is_down(int code);
 	} /* keyboard */
+
+	struct vector2_i {
+		int x, y;
+	};
+
+	struct vector2 {
+		float x, y;
+	};
 
 	struct vector3 {
 		float x, y, z;
@@ -423,187 +390,288 @@ namespace nob {
 	} /* g2d */
 
 	namespace ui {
-		class component {
+		inline vector2_i screen_resolution() {
+			vector2_i v2;
+			ntv::GRAPHICS::_GET_ACTIVE_SCREEN_RESOLUTION(&v2.x, &v2.y);
+			return v2;
+		}
+
+		inline constexpr float aspect_ratio() {
+			return 9.0f / 16.0f;
+		}
+
+		////////////////////////////////////////////////////////////////////////
+
+		struct item_s {
+			std::string name;
+			std::string desc;
+		};
+
+		struct action_s : item_s {
+			std::function<void()> handler;
+		};
+
+		class action : public shared_obj<action_s> {
 			public:
-				class base {
-					public:
-						struct prototype {
-							std::string name;
-							std::string desc;
-						};
+				action() {}
 
-						base(
-							const std::string &name,
-							const std::string &desc = ""
-						) : _this(std::make_shared<prototype>()) {
-							_this->name = name;
-							_this->desc = desc;
-						}
-
-						_NOB_SHARED_OBJ(base)
-				};
-
-				class action {
-					public:
-						struct prototype : base::prototype {
-							std::function<void()> handler;
-						};
-
-						action(
-							const std::string &name,
-							const std::function<void()> &handler,
-							const std::string &desc = ""
-						) : _this(std::make_shared<prototype>()) {
-							_this->name = name;
-							_this->desc = desc;
-							_this->handler = handler;
-						}
-
-						_NOB_SHARED_OBJ(action)
-				};
-
-				class list {
-					public:
-						struct prototype : base::prototype {
-							std::vector<component> components;
-							std::function<void(list)> on_show;
-							size_t selected;
-							size_t start;
-
-							void fix_start() {
-								auto sz = components.size();
-								if (sz > 10) {
-									if (start > selected) {
-										start = selected;
-									} else if (selected - start > 9) {
-										auto min_start = selected - 9;
-										if (start < min_start) {
-											start = min_start;
-										}
-									}
-								}
-							}
-
-							void down() {
-								if (selected < components.size() - 1) {
-									++selected;
-								} else {
-									selected = 0;
-								}
-								fix_start();
-							}
-
-							void up() {
-								if (selected) {
-									--selected;
-								} else {
-									selected = components.size() - 1;
-								}
-								fix_start();
-							}
-						};
-
-						list() : _this(std::make_shared<prototype>()) {
-							_this->selected = 0;
-							_this->start = 0;
-						}
-
-						list(
-							const std::string &name,
-							std::vector<component> &&cmpts,
-							const std::function<void(list)> &on_show,
-							const std::string &desc
-						) : list() {
-							_this->name = name;
-							_this->desc = desc;
-							_this->components = std::move(cmpts);
-							_this->on_show = on_show;
-						}
-
-						list(
-							const std::string &name,
-							const std::string &desc,
-							std::vector<component> &&cmpts
-						) : list() {
-							_this->name = name;
-							_this->desc = desc;
-							_this->components = std::move(cmpts);
-						}
-
-						list(
-							const std::string &name,
-							std::vector<component> &&cmpts
-						) : list() {
-							_this->name = name;
-							_this->components = std::move(cmpts);
-						}
-
-						list(
-							const std::string &name,
-							const std::string &desc,
-							const std::function<void(list)> &on_show
-						) : list() {
-							_this->name = name;
-							_this->desc = desc;
-							_this->on_show = on_show;
-						}
-
-						list(
-							const std::string &name,
-							const std::function<void(list)> &on_show
-						) : list() {
-							_this->name = name;
-							_this->on_show = on_show;
-						}
-
-						_NOB_SHARED_OBJ(list)
-				};
-
-				const std::type_info &type;
-
-				component(base c) : type(typeid(base)), _base_pp(c.get()) {}
-
-				component(action c) : type(typeid(action)), _base_pp(std::static_pointer_cast<base::prototype>(c.get())) {}
-
-				component(list c) : type(typeid(list)), _base_pp(std::static_pointer_cast<base::prototype>(c.get())) {}
-
-				base::prototype *operator->() {
-					return _base_pp.get();
+				action(
+					const std::string &name,
+					const std::string &desc,
+					const std::function<void()> &handler
+				) {
+					alloc();
+					_m->name = name;
+					_m->desc = desc;
+					_m->handler = handler;
 				}
 
-				base to_base() {
-					assert(type == typeid(base));
+				action(
+					const std::string &name,
+					const std::function<void()> &handler
+				) {
+					alloc();
+					_m->name = name;
+					_m->handler = handler;
+				}
+		};
 
-					return _base_pp;
+		class item;
+		class list;
+
+		struct list_s : item_s {
+			std::vector<item> items;
+			std::function<void(list)> on_show;
+			size_t page_top = 0;
+			size_t selected = 0;
+
+			void fix() {
+				if (selected >= items.size()) {
+					selected = 0;
+				}
+				if (items.size() > 10) {
+					if (page_top > selected) {
+						page_top = selected;
+					} else if (selected - page_top > 9) {
+						auto min_start = selected - 9;
+						if (page_top < min_start) {
+							page_top = min_start;
+						}
+					}
+				}
+			}
+
+			void next() {
+				if (items.size()) {
+					if (selected < items.size() - 1) {
+						++selected;
+					} else {
+						selected = 0;
+					}
+					fix();
+				}
+			}
+
+			void prev() {
+				if (items.size()) {
+					if (selected) {
+						--selected;
+					} else {
+						selected = items.size() - 1;
+					}
+					fix();
+				}
+			}
+		};
+
+		class list : public shared_obj<list_s> {
+			public:
+				list() {}
+
+				list(
+					const std::string &name,
+					const std::string &desc,
+					std::initializer_list<item> items,
+					const std::function<void(list)> &on_show
+				) {
+					alloc();
+					_m->name = name;
+					_m->desc = desc;
+					_m->items = std::vector<item>(items);
+					_m->on_show = on_show;
 				}
 
-				action to_action() {
-					assert(type == typeid(action));
-
-					return std::static_pointer_cast<action::prototype>(_base_pp);
+				list(
+					const std::string &name,
+					const std::string &desc,
+					std::initializer_list<item> items
+				) {
+					alloc();
+					_m->name = name;
+					_m->desc = desc;
+					_m->items = std::vector<item>(items);
 				}
 
-				list to_list() {
-					assert(type == typeid(list));
-
-					return std::static_pointer_cast<list::prototype>(_base_pp);
+				list(
+					const std::string &name,
+					std::initializer_list<item> items
+				) {
+					alloc();
+					_m->name = name;
+					_m->items = std::vector<item>(items);
 				}
 
-			private:
-				std::shared_ptr<base::prototype> _base_pp;
+				list(
+					const std::string &name,
+					const std::string &desc,
+					const std::function<void(list)> &on_show
+				) {
+					alloc();
+					_m->name = name;
+					_m->desc = desc;
+					_m->on_show = on_show;
+				}
+
+				list(
+					const std::string &name,
+					const std::function<void(list)> &on_show
+				) {
+					alloc();
+					_m->name = name;
+					_m->on_show = on_show;
+				}
+		};
+
+		struct flag_s : item_s {
+			bool value;
+			std::function<void(bool)> on_change;
+		};
+
+		class flag : public shared_obj<flag_s> {
+			public:
+				flag() {}
+
+				flag(
+					const std::string &name,
+					const std::string &desc,
+					bool value,
+					const std::function<void(bool)> &on_change
+				) {
+					alloc();
+					_m->name = name;
+					_m->desc = desc;
+					_m->value = value;
+					_m->on_change = on_change;
+				}
+
+				flag(
+					const std::string &name,
+					bool value,
+					const std::function<void(bool)> &on_change
+				) {
+					alloc();
+					_m->name = name;
+					_m->value = value;
+					_m->on_change = on_change;
+				}
+
+				flag(
+					const std::string &name,
+					const std::function<void(bool)> &on_change
+				) {
+					alloc();
+					_m->name = name;
+					_m->value = false;
+					_m->on_change = on_change;
+				}
+		};
+
+		class item : public dynamic_shared_obj<item_s> {
+			public:
+				item() {}
+
+				item(
+					const std::string &name,
+					const std::string &desc
+				) {
+					alloc();
+					_m->name = name;
+					_m->desc = desc;
+				}
+
+				item(
+					const std::string &name
+				) {
+					alloc();
+					_m->name = name;
+				}
+
+				item(const action &it) : item(it.cast_with_type<item>()) {}
+				item(const list &it) : item(it.cast_with_type<item>()) {}
+				item(const flag &it) : item(it.cast_with_type<item>()) {}
 		};
 
 		class menu {
 			public:
-				menu(const std::string &title, const component::list &li) : _tit(title) {
+				menu(const std::string &title, const list &li) : _tit(title) {
 					_list_stack.push(li);
 				}
 
 				void toggle();
 
+				////////////////////////////////////////////////////////////////
+
+				static constexpr float left() {
+					return 0.0155f;
+				}
+
+				static constexpr float top() {
+					return 0.015f;
+				}
+
+				static float width() {
+					return 432.0f / 1920.0f / 1080.0f * screen_resolution().y;
+				}
+
+				static constexpr float title_bg_height() {
+					return 0.1f;
+				}
+
+				static constexpr float title_font_size() {
+					return 0.9f;
+				}
+
+				static constexpr float title_font_height() {
+					return g2d::calc_text_height(title_font_size());
+				}
+
+				static constexpr float font_size() {
+					return 0.355f;
+				}
+
+				static constexpr float font_height() {
+					return g2d::calc_text_height(font_size());
+				}
+
+				static constexpr float margin() {
+					return 11.0f / 1920.0f;
+				}
+
+				static constexpr float item_height() {
+					return 0.0345f;
+				}
+
+				static constexpr float icon_height() {
+					return item_height() / 0.77f;
+				}
+
+				static constexpr float icon_width() {
+					return icon_height() * aspect_ratio();
+				}
+
 			private:
 				std::string _tit;
-				std::stack<component::list> _list_stack;
+				std::stack<list> _list_stack;
 				task _t;
 				keyboard::listener _kl;
 		};
@@ -684,19 +752,19 @@ namespace nob {
 
 	namespace vision {
 		inline void night(bool toggle) {
-			nob::ntv::GRAPHICS::SET_NIGHTVISION(toggle);
+			ntv::GRAPHICS::SET_NIGHTVISION(toggle);
 		}
 
 		inline bool is_night_active() {
-			return nob::ntv::GRAPHICS::_IS_NIGHTVISION_ACTIVE();
+			return ntv::GRAPHICS::_IS_NIGHTVISION_ACTIVE();
 		}
 
 		inline void heat(bool toggle) {
-			nob::ntv::GRAPHICS::SET_SEETHROUGH(toggle);
+			ntv::GRAPHICS::SET_SEETHROUGH(toggle);
 		}
 
 		inline bool is_heat_active() {
-			return nob::ntv::GRAPHICS::_IS_SEETHROUGH_ACTIVE();
+			return ntv::GRAPHICS::_IS_SEETHROUGH_ACTIVE();
 		}
 	} /* vision */
 

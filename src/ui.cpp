@@ -59,33 +59,34 @@ namespace nob {
 
 		void menu::toggle() {
 			if (!_t) {
-				auto &cur_li = this->_list_stack.top();
+				auto cur_li = this->_list_stack.top();
 				if (cur_li->on_show) {
 					cur_li->on_show(cur_li);
-					cur_li->fix_start();
+					cur_li->fix();
 				}
 
 				_t = task([this]() {
 					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
+					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::Phone, true);
 
 					//////////////////////////////////////////////////////////////////////////
 
 					g2d::wait_texture_dict_valid("CommonMenu");
 
-					float x = 0.0155f;
-					float y = 0.015f;
-					float w = 0.25f;
-					float h = 0.1f;
+					float x = left();
+					float y = top();
+					float w = width();
+					float h = title_bg_height();
 					g2d::sprite("CommonMenu", "interaction_bgd", x, y, w, h);
-					g2d::text(x, y + ((h - g2d::calc_text_height(0.9f)) / 2), w, this->_tit, 0.9f, 255, 255, 255, 255, 1);
+					g2d::text(x, y + ((h - title_font_height()) / 2), w, this->_tit, title_font_size(), 255, 255, 255, 255, 1);
 
-					auto &cur_li = this->_list_stack.top();
-					auto sz = cur_li->components.size();
+					auto cur_li = this->_list_stack.top();
+					auto sz = cur_li->items.size();
 
 					y += h;
-					h = 0.0345f;
+					h = item_height();
 					g2d::rect(x, y, w, h);
-					g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, cur_li->name, 0.355f, 100, 179, 211, 255, 0);
+					g2d::text(x + margin(), y + ((h - font_height()) / 2.0f), w, cur_li->name, font_size(), 100, 179, 211, 255, 0);
 
 					if (sz) {
 						size_t len;
@@ -94,27 +95,46 @@ namespace nob {
 						} else {
 							std::stringstream ss;
 							ss << cur_li->selected + 1 << " / " << sz;
-							g2d::text(x - 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, ss.str(), 0.355f, 255, 255, 255, 255, 2);
+							g2d::text(x - margin(), y + ((h - font_height()) / 2.0f), w, ss.str(), font_size(), 255, 255, 255, 255, 2);
 
 							len = 10;
 						}
 
-						size_t end = cur_li->start + len;
+						size_t end = cur_li->page_top + len;
 
 						y += h;
 						g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, len * h);
 
-						for (size_t i = cur_li->start; i < end; ++i) {
+						for (size_t i = cur_li->page_top; i < sz && i < end; ++i) {
 							uint8_t r, g, b;
 
 							if (i == cur_li->selected) {
-								g2d::sprite("CommonMenu", "gradient_nav", x, y, w, h);
 								r = g = b = 0;
+
+								g2d::sprite("CommonMenu", "gradient_nav", x, y, w, h);
+
+								if (cur_li->items[i].type_is<flag>()) {
+									auto flg_val = cur_li->items[i].cast<flag>()->value;
+									if (flg_val) {
+										g2d::sprite("CommonMenu", "shop_box_tickb", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+									} else {
+										g2d::sprite("CommonMenu", "shop_box_blankb", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+									}
+								}
 							} else {
 								r = g = b = 255;
+
+								if (cur_li->items[i].type_is<flag>()) {
+									auto flg_val = cur_li->items[i].cast<flag>()->value;
+									if (flg_val) {
+										g2d::sprite("CommonMenu", "shop_box_tick", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+									} else {
+										g2d::sprite("CommonMenu", "shop_box_blank", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+									}
+								}
 							}
 
-							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, cur_li->components[i]->name, 0.355f, r, g, b, 255, 0);
+							g2d::text(x + margin(), y + ((h - font_height()) / 2.0f), w, cur_li->items[i]->name, font_size(), r, g, b, 255, 0);
 
 							y += h;
 						}
@@ -123,29 +143,31 @@ namespace nob {
 							h = 0.005f;
 						} else {
 							y += 0.001f;
-							g2d::rect(x, y, w, h);
-							g2d::text(x, y + ((h - g2d::calc_text_height(0.355f)) / 2.0f), w, "...", 0.355f, 255, 255, 255, 255, 1);
+							g2d::rect(x, y, w, h, 0, 0, 0, 200);
+							g2d::sprite("CommonMenu", "shop_arrows_upanddown", x + ((w - icon_width()) / 2.0f), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+							y += h;
 
-							h = 0.003f;
+							h = 0.0025f;
 						}
 
-						if (!cur_li->components[cur_li->selected]->desc.empty()) {
+						if (!cur_li->items[cur_li->selected]->desc.empty()) {
 							y += h;
 							h = 0.003f;
 							g2d::rect(x, y, w, h);
 
 							y += h;
 							y = y - 0.0015f;
-							h = 0.0315f * 1.0f;
-							g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, h);
+							h = item_height() * 1.0f;
+							g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, h, 200);
 
-							g2d::text(x + 0.006f, y + ((h - g2d::calc_text_height(0.355f)) / 2), w, cur_li->components[cur_li->selected]->desc, 0.355f, 255, 255, 255, 255, 0);
+							g2d::text(x + margin(), y + ((h - font_height()) / 2), w, cur_li->items[cur_li->selected]->desc, font_size(), 255, 255, 255, 255, 0);
 						}
 					}
 				});
 
 				_kl = keyboard::listener([this](int code, bool down)->bool {
 					switch (code) {
+						case VK_BACK:
 						case VK_ESCAPE:
 							if (down) {
 								if (this->_list_stack.size() > 1) {
@@ -172,29 +194,44 @@ namespace nob {
 
 						case VK_DOWN:
 							if (down) {
-								this->_list_stack.top()->down();
+								this->_list_stack.top()->next();
 							}
 							return false;
 
 						case VK_UP:
 							if (down) {
-								this->_list_stack.top()->up();
+								this->_list_stack.top()->prev();
 							}
 							return false;
 
 						case VK_RETURN:
 							if (down) {
-								auto &cur_li = this->_list_stack.top();
-								auto cur_it = cur_li->components[cur_li->selected];
-								if (cur_it.type == typeid(component::action)) {
-									cur_it.to_action()->handler();
-								} else if (cur_it.type == typeid(component::list)) {
-									this->_list_stack.push(cur_it.to_list());
+								auto cur_li = this->_list_stack.top();
+								if (cur_li->items.size()) {
+									auto cur_it = cur_li->items[cur_li->selected];
 
-									auto &cur_li = this->_list_stack.top();
-									if (cur_li->on_show) {
-										cur_li->on_show(cur_li);
-										cur_li->fix_start();
+									if (cur_it.type_is<action>()) {
+										auto a = cur_it.cast<action>();
+										if (a->handler) {
+											a->handler();
+										}
+									} else
+
+									if (cur_it.type_is<list>()) {
+										cur_li = cur_it.cast<list>();
+										this->_list_stack.push(cur_li);
+										if (cur_li->on_show) {
+											cur_li->on_show(cur_li);
+											cur_li->fix();
+										}
+									} else
+
+									if (cur_it.type_is<flag>()) {
+										auto flg = cur_it.cast<flag>();
+										flg->value = !flg->value;
+										if (flg->on_change) {
+											flg->on_change(flg->value);
+										}
 									}
 								}
 							}
