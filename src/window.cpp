@@ -1,4 +1,4 @@
-#include <nob.hpp>
+#include <nob/keyboard.hpp>
 
 #include <windows.h>
 

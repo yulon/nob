@@ -1,11 +1,11 @@
-#include <nob.hpp>
+#include <nob/script.hpp>
+
 #include <nob/shv/main.hpp>
 
 #include <windows.h>
 
 namespace nob {
 	namespace this_script {
-		bool asi_mode = false;
 		void _main();
 	} /* this_script */
 

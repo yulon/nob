@@ -1,4 +1,4 @@
-#include <nob.hpp>
+#include <nob/keyboard.hpp>
 
 #include <windows.h>
 
@@ -28,7 +28,7 @@ namespace nob {
 			} else {
 				_null = false;
 				_it = src._it;
-	
+
 				src._null = true;
 			}
 		}
@@ -41,7 +41,7 @@ namespace nob {
 			if (!src._null) {
 				_null = false;
 				_it = src._it;
-	
+
 				src._null = true;
 			}
 			return *this;
@@ -52,7 +52,7 @@ namespace nob {
 				return;
 			}
 			_null = true;
-	
+
 			_listeners.erase(_it);
 		}
 

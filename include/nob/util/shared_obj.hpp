@@ -38,11 +38,11 @@ class shared_obj {
 			return _m.get() != mp;
 		}
 
-		bool operator==(nullptr_t) const {
+		bool operator==(std::nullptr_t) const {
 			return _m.get() == nullptr;
 		}
 
-		bool operator!=(nullptr_t) const {
+		bool operator!=(std::nullptr_t) const {
 			return _m.get() != nullptr;
 		}
 

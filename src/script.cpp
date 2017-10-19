@@ -1,4 +1,7 @@
-#include <nob.hpp>
+#include <nob/script.hpp>
+#include <nob/ntv.hpp>
+#include <nob/model.hpp>
+
 #include <nob/shv/main.hpp>
 
 #include <windows.h>
@@ -14,6 +17,7 @@ namespace nob {
 	namespace this_script {
 		std::thread::id thread_id;
 		bool running = false;
+		bool asi_mode = false;
 
 		static inline void _wait(size_t ms) {
 			if (asi_mode) {

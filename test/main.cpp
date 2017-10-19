@@ -1,9 +1,6 @@
 #include <nob.hpp>
-#include <nob/hack.hpp>
 
-#include <memory>
 #include <cstring>
-#include <iostream>
 #include <cstdlib>
 
 size_t fps = 0;

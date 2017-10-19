@@ -1,4 +1,5 @@
-#include <nob.hpp>
+#include <nob/vehicle.hpp>
+#include <nob/script.hpp>
 #include <nob/hack.hpp>
 
 namespace nob {

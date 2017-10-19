@@ -1,4 +1,4 @@
-#include <nob.hpp>
+#include <nob/model.hpp>
 
 namespace nob {
 	constexpr std::array<const char *, 696> model::characters;
