@@ -73,20 +73,20 @@ namespace nob {
 
 					g2d::wait_texture_dict_valid("CommonMenu");
 
-					float x = left();
-					float y = top();
+					float x = left;
+					float y = top;
 					float w = width();
-					float h = title_bg_height();
+					float h = title_bg_height;
 					g2d::sprite("CommonMenu", "interaction_bgd", x, y, w, h);
-					g2d::text(x, y + ((h - title_font_height()) / 2), w, this->_tit, title_font_size(), 255, 255, 255, 255, 1);
+					g2d::text(x, y + ((h - title_font_height) / 2), w, this->_tit, title_font_size, 255, 255, 255, 255, 1);
 
 					auto cur_li = this->_list_stack.top();
 					auto sz = cur_li->items.size();
 
 					y += h;
-					h = item_height();
+					h = item_height;
 					g2d::rect(x, y, w, h);
-					g2d::text(x + margin(), y + ((h - font_height()) / 2.0f), w, cur_li->name, font_size(), 100, 179, 211, 255, 0);
+					g2d::text(x + margin, y + ((h - font_height) / 2.0f), w, cur_li->name, font_size, 100, 179, 211, 255, 0);
 
 					if (sz) {
 						size_t len;
@@ -95,7 +95,7 @@ namespace nob {
 						} else {
 							std::stringstream ss;
 							ss << cur_li->selected + 1 << " / " << sz;
-							g2d::text(x - margin(), y + ((h - font_height()) / 2.0f), w, ss.str(), font_size(), 255, 255, 255, 255, 2);
+							g2d::text(x - margin, y + ((h - font_height) / 2.0f), w, ss.str(), font_size, 255, 255, 255, 255, 2);
 
 							len = 10;
 						}
@@ -116,9 +116,9 @@ namespace nob {
 								if (cur_li->items[i].type_is<flag>()) {
 									auto flg_val = cur_li->items[i].cast<flag>()->value;
 									if (flg_val) {
-										g2d::sprite("CommonMenu", "shop_box_tickb", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+										g2d::sprite("CommonMenu", "shop_box_tickb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
-										g2d::sprite("CommonMenu", "shop_box_blankb", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+										g2d::sprite("CommonMenu", "shop_box_blankb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									}
 								}
 							} else {
@@ -127,14 +127,14 @@ namespace nob {
 								if (cur_li->items[i].type_is<flag>()) {
 									auto flg_val = cur_li->items[i].cast<flag>()->value;
 									if (flg_val) {
-										g2d::sprite("CommonMenu", "shop_box_tick", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+										g2d::sprite("CommonMenu", "shop_box_tick", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
-										g2d::sprite("CommonMenu", "shop_box_blank", x + w - icon_width(), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+										g2d::sprite("CommonMenu", "shop_box_blank", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									}
 								}
 							}
 
-							g2d::text(x + margin(), y + ((h - font_height()) / 2.0f), w, cur_li->items[i]->name, font_size(), r, g, b, 255, 0);
+							g2d::text(x + margin, y + ((h - font_height) / 2.0f), w, cur_li->items[i]->name, font_size, r, g, b, 255, 0);
 
 							y += h;
 						}
@@ -144,7 +144,7 @@ namespace nob {
 						} else {
 							y += 0.001f;
 							g2d::rect(x, y, w, h, 0, 0, 0, 200);
-							g2d::sprite("CommonMenu", "shop_arrows_upanddown", x + ((w - icon_width()) / 2.0f), y + ((h - icon_height()) / 2.0f), icon_width(), icon_height());
+							g2d::sprite("CommonMenu", "shop_arrows_upanddown", x + ((w - icon_width) / 2.0f), y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 							y += h;
 
 							h = 0.0025f;
@@ -157,10 +157,10 @@ namespace nob {
 
 							y += h;
 							y = y - 0.0015f;
-							h = item_height() * 1.0f;
+							h = item_height * 1.0f;
 							g2d::sprite("CommonMenu", "gradient_bgd", x, y, w, h, 200);
 
-							g2d::text(x + margin(), y + ((h - font_height()) / 2), w, cur_li->items[cur_li->selected]->desc, font_size(), 255, 255, 255, 255, 0);
+							g2d::text(x + margin, y + ((h - font_height) / 2), w, cur_li->items[cur_li->selected]->desc, font_size, 255, 255, 255, 255, 0);
 						}
 					}
 				});
