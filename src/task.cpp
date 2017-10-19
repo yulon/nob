@@ -295,6 +295,8 @@ namespace nob {
 
 			_tasks_it = _tasks.end();
 
+			model::banned_vehicles.resize(0);
+
 			_input_events.resize(0);
 
 			for (;;) {

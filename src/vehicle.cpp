@@ -19,7 +19,7 @@ namespace nob {
 					int64_t case_off = (int64_t)shop_ctrllr->pos_addr(start_off + jump_off);
 					uint8_t code = *(uint8_t *)case_off;
 					size_t hash;
-		
+
 					if (code == 0x28) { //push int
 						hash = *(uint32_t *)(case_off + 1);
 					} else if(code == 0x61) { //push int 24
@@ -36,7 +36,7 @@ namespace nob {
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 	void vehicle::unlock_banned_vehicles() {
-		if (!ntv::script_list || !ntv::global_table) {
+		if (model::banned_vehicles.size() || !ntv::script_list || !ntv::global_table) {
 			return;
 		}
 		auto shop_ctrllr = ntv::script_list->find("shop_controller")->script;
