@@ -3827,7 +3827,7 @@ namespace nob {
 			typed_lazy_func_t<void(Ped ped, float x, float y, float z, float speed, int timeout, float stoppingRange, bool persistFollowing, float unk)> TASK_FOLLOW_NAV_MESH_TO_COORD(0x15D3A79D4E44B913, true);
 			typed_lazy_func_t<bool(Ped ped)> IS_DRIVEBY_TASK_UNDERNEATH_DRIVING_TASK(0x8785E6E40C7A8818, true);
 			typed_lazy_func_t<bool(Ped ped)> IS_MOUNTED_WEAPON_TASK_UNDERNEATH_DRIVING_TASK(0xA320EF046186FA3B, true);
-			typed_lazy_func_t<void(Ped ped, bool unused)> TASK_JUMP(0x0AE4086104E067B1, true);
+			typed_lazy_func_t<void(Ped ped, bool unused, bool flag1, bool flag2)> TASK_JUMP(0x0AE4086104E067B1, true);
 			typed_lazy_func_t<void(Ped ped, float x, float y, float z, float speed, Any p5, bool p6, int walkingStyle, float p8, Any p9, Any p10, Any p11)> TASK_GO_TO_COORD_ANY_MEANS_EXTRA_PARAMS(0x1DD45F9ECFDB1BC9, true);
 			typed_lazy_func_t<void(Ped ped, float x, float y, float z, float heading, float p5, float p6)> TASK_PED_SLIDE_TO_COORD_HDG_RATE(0x5A4A6A6D3DC64F52, true);
 			typed_lazy_func_t<int(Ped ped)> GET_PED_WAYPOINT_PROGRESS(0x2720AAA75001E094, true);

@@ -5124,7 +5124,7 @@ namespace nob {
 			extern typed_lazy_func_t<void(Ped ped, float x, float y, float z, float heading, float p5, float p6)> TASK_PED_SLIDE_TO_COORD_HDG_RATE;
 			extern typed_lazy_func_t<int(Ped ped)> GET_PED_WAYPOINT_PROGRESS;
 			extern typed_lazy_func_t<Any(Any p0, Any p1, Any p2, Any p3)> SET_PED_WAYPOINT_ROUTE_OFFSET;
-			extern typed_lazy_func_t<void(Ped ped, bool unused)> TASK_JUMP;
+			extern typed_lazy_func_t<void(Ped ped, bool unused, bool flag1, bool flag2)> TASK_JUMP;
 			extern typed_lazy_func_t<void(Ped ped, float x, float y, float z, float speed, Any p5, bool p6, int walkingStyle, float p8, Any p9, Any p10, Any p11)> TASK_GO_TO_COORD_ANY_MEANS_EXTRA_PARAMS;
 			extern typed_lazy_func_t<void(Ped pedDriver, Vehicle boat, Any p2, Any p3, float x, float y, float z, Any p7, float maxSpeed, int drivingStyle, float p10, Any p11)> TASK_BOAT_MISSION;
 			extern typed_lazy_func_t<void(Ped ped, const char* anim, const char* p2, const char* p3, const char* p4, int p5, Vehicle vehicle, float p7, float p8)> TASK_SWEEP_AIM_ENTITY;
