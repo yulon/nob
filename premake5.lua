@@ -5,7 +5,7 @@ workspace "nob"
 	configurations { "Debug", "Release" }
 	platforms {"x64"}
 	objdir("build/obj")
-	includedirs { "include" }
+	includedirs { "include", "deps" }
 
 	project "nob"
 		kind "StaticLib"
