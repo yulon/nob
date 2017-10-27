@@ -23,7 +23,7 @@ namespace nob {
 			return {coords.x, coords.y, get_ground_height(coords, load_scene)};
 		}
 
-		void clean_npcs(bool toggle = true);
+		void no_mans_island(bool toggle = true);
 
 		inline void clear_black_fog() {
 			ntv::UI::_SET_MINIMAP_REVEALED(true);
