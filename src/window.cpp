@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include <cstdio>
+#include <queue>
 #include <iostream>
 
 namespace nob {
@@ -11,7 +12,7 @@ namespace nob {
 		extern std::list<std::function<bool(int, bool)>> _listeners;
 	} /* keyboard */
 
-	extern std::list<std::function<void()>> _input_events;
+	extern std::queue<std::function<void()>> _input_events;
 
 	namespace window {
 		HWND _handle = ([]()->HWND {
@@ -41,7 +42,7 @@ namespace nob {
 				case WM_KEYDOWN:
 					if (!keyboard::_downs[wParam]) {
 						keyboard::_downs[wParam] = true;
-						_input_events.push_back([wParam]() {
+						_input_events.push([wParam]() {
 							for (auto &listener : keyboard::_listeners) {
 								if (!listener(wParam, true)) {
 									return;
@@ -52,7 +53,7 @@ namespace nob {
 					break;
 				case WM_KEYUP:
 					keyboard::_downs[wParam] = false;
-					_input_events.push_back([wParam]() {
+					_input_events.push([wParam]() {
 						for (auto &listener : keyboard::_listeners) {
 							if (!listener(wParam, false)) {
 								return;

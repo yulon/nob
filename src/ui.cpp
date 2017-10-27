@@ -1,6 +1,7 @@
 #include <nob/ui.hpp>
 #include <nob/hack.hpp>
 
+#include <thread>
 #include <sstream>
 
 namespace nob {
@@ -33,21 +34,26 @@ namespace nob {
 			static hack::detour_func_t<void()> df;
 			static hack::hooking_func_t<void()> hf;
 
-			if (!sf) {
-				sf = call_onmt([]()->uintptr_t {
-					return hack::mem_match({
-						// Reference from https://www.unknowncheats.me/forum/grand-theft-auto-v/181752-weapon-wheel-slowmotion.html
-						0x48, 0x89, 0x5C, 0x24, 0x08, 0x57, 0x48, 0x83, 0xEC, 0x20,
-						0x33, 0xC0, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x83, 0xFA, 0x01,
-						0x75, 1111, 0x38, 0x05, 1111, 1111, 1111, 1111, 0x0F, 0x45,
-						0xF8
-					});
-				});
-				if (!sf) {
-					return;
-				}
-			}
 			if (toggle) {
+				if (!sf) {
+					chan<uintptr_t> ch;
+
+					std::thread([ch]() mutable {
+						ch << hack::mem_match({
+							// Reference from https://www.unknowncheats.me/forum/grand-theft-auto-v/181752-weapon-wheel-slowmotion.html
+							0x48, 0x89, 0x5C, 0x24, 0x08, 0x57, 0x48, 0x83, 0xEC, 0x20,
+							0x33, 0xC0, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x83, 0xFA, 0x01,
+							0x75, 1111, 0x38, 0x05, 1111, 1111, 1111, 1111, 0x0F, 0x45,
+							0xF8
+						});
+					}).detach();
+
+					ch >> sf;
+
+					if (!sf) {
+						return;
+					}
+				}
 				if (!hf) {
 					hf = df.hook(sf);
 				}
@@ -58,7 +64,7 @@ namespace nob {
 
 		void menu::toggle() {
 			if (!_t) {
-				auto cur_li = this->_list_stack.top();
+				auto cur_li = _list_stack.top();
 				if (cur_li->on_show) {
 					cur_li->on_show(cur_li);
 					cur_li->fix();
@@ -77,9 +83,9 @@ namespace nob {
 					float w = width();
 					float h = title_bg_height;
 					g2d::sprite("CommonMenu", "interaction_bgd", x, y, w, h);
-					g2d::text(x, y + ((h - title_font_height) / 2), w, this->_tit, title_font_size, 255, 255, 255, 255, 1);
+					g2d::text(x, y + ((h - title_font_height) / 2), w, _tit, title_font_size, 255, 255, 255, 255, 1);
 
-					auto cur_li = this->_list_stack.top();
+					auto cur_li = _list_stack.top();
 					auto sz = cur_li->items.size();
 
 					y += h;
@@ -169,22 +175,21 @@ namespace nob {
 						case VK_BACK:
 						case VK_ESCAPE:
 							if (down) {
-								if (this->_list_stack.size() > 1) {
-									this->_list_stack.pop();
+								if (_list_stack.size() > 1) {
+									_list_stack.pop();
 								} else {
-									this->toggle();
+									toggle();
 
 									static task det;
 									static size_t det_i;
 									if (det) {
 										det_i = 150;
 									} else {
-										det = task([](task tt) {
+										det = go([]() {
 											for (det_i = 0; det_i < 150; ++det_i) {
 												nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
 												wait_next_frame();
 											}
-											tt.del();
 										});
 									}
 								}
@@ -193,19 +198,19 @@ namespace nob {
 
 						case VK_DOWN:
 							if (down) {
-								this->_list_stack.top()->next();
+								_list_stack.top()->next();
 							}
 							return false;
 
 						case VK_UP:
 							if (down) {
-								this->_list_stack.top()->prev();
+								_list_stack.top()->prev();
 							}
 							return false;
 
 						case VK_RETURN:
 							if (down) {
-								auto cur_li = this->_list_stack.top();
+								auto cur_li = _list_stack.top();
 								if (cur_li->items.size()) {
 									auto cur_it = cur_li->items[cur_li->selected];
 
@@ -218,7 +223,7 @@ namespace nob {
 
 									if (cur_it.type_is<list>()) {
 										cur_li = cur_it.cast<list>();
-										this->_list_stack.push(cur_li);
+										_list_stack.push(cur_li);
 										if (cur_li->on_show) {
 											cur_li->on_show(cur_li);
 											cur_li->fix();

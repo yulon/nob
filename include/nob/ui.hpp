@@ -6,7 +6,7 @@
 #include "script.hpp"
 #include "keyboard.hpp"
 
-#include "util/shared_obj.hpp"
+#include <tmd/shared_obj.hpp>
 
 #include <string>
 #include <functional>
@@ -26,6 +26,8 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
+		class item;
+
 		struct item_s {
 			std::string name;
 			std::string desc;
@@ -35,7 +37,7 @@ namespace nob {
 			std::function<void()> handler;
 		};
 
-		class action : public shared_obj<action_s> {
+		class action : public tmd::shared_obj<action_s> {
 			public:
 				action() {}
 
@@ -60,7 +62,6 @@ namespace nob {
 				}
 		};
 
-		class item;
 		class list;
 
 		struct list_s : item_s {
@@ -108,7 +109,7 @@ namespace nob {
 			}
 		};
 
-		class list : public shared_obj<list_s> {
+		class list : public tmd::shared_obj<list_s> {
 			public:
 				list() {}
 
@@ -171,7 +172,7 @@ namespace nob {
 			std::function<void(bool)> on_change;
 		};
 
-		class flag : public shared_obj<flag_s> {
+		class flag : public tmd::shared_obj<flag_s> {
 			public:
 				flag() {}
 
@@ -210,7 +211,7 @@ namespace nob {
 				}
 		};
 
-		class item : public dynamic_shared_obj<item_s> {
+		class item : public tmd::dynamic_shared_obj<item_s> {
 			public:
 				item() {}
 
@@ -326,14 +327,9 @@ namespace nob {
 		}
 
 		inline void info(const std::string &content, float duration = 1.0f) {
-			task ft([content]() {
+			task([content]() {
 				info_this_frame(content);
-			});
-			task ft2([ft, duration]() mutable {
-				wait(duration * 15000);
-				ft.del();
-				this_task().del();
-			});
+			}, duration * 15000);
 		};
 
 		////////////////////////////////////////////////////////////////////////

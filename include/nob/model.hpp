@@ -15,9 +15,9 @@ namespace nob {
 			model(const char *name) : ntv_model(ntv::GAMEPLAY::GET_HASH_KEY(name)) {
 				if (ntv::STREAMING::IS_MODEL_IN_CDIMAGE(ntv_model) && ntv::STREAMING::IS_MODEL_VALID(ntv_model)) {
 					ntv::STREAMING::REQUEST_MODEL(ntv_model);
-					do {
-						wait_next_frame();
-					} while (!ntv::STREAMING::HAS_MODEL_LOADED(ntv_model));
+					wait([this]()->bool {
+						return ntv::STREAMING::HAS_MODEL_LOADED(ntv_model);
+					});
 				}
 			}
 

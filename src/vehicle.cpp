@@ -1,6 +1,9 @@
-#include <nob/vehicle.hpp>
-#include <nob/script.hpp>
+#include <nob/object.hpp>
 #include <nob/hack.hpp>
+#include <nob/ntv.hpp>
+#include <nob/script.hpp>
+
+#include <thread>
 
 namespace nob {
 	std::vector<std::string> model::banned_vehicles;
@@ -44,7 +47,10 @@ namespace nob {
 		if (!shop_ctrllr || !shop_ctrllr->is_valid()) {
 			return;
 		}
-		uint32_t id = call_onmt([shop_ctrllr]()->uintptr_t {
+
+		chan<uint32_t> ch;
+
+		std::thread([shop_ctrllr, ch]() mutable {
 			for (int i = 0; i < shop_ctrllr->page_count(); i++) {
 				auto addr = hack::mem_match(
 					(const uint8_t *)shop_ctrllr->page_addr(i), shop_ctrllr->page_size(i),
@@ -62,7 +68,7 @@ namespace nob {
 								for (k = k + 1; k < 30; k++) {
 									if (*(uint8_t *)shop_ctrllr->pos_addr(func_off + k) == 0x5F) {
 										_find_banned_vehicles(shop_ctrllr, real_code_off - j);
-										return *(uint32_t *)shop_ctrllr->pos_addr(func_off + k + 1) & 0xFFFFFF;
+										ch << (*(uint32_t *)shop_ctrllr->pos_addr(func_off + k + 1) & 0xFFFFFF);
 									}
 								}
 								break;
@@ -74,7 +80,12 @@ namespace nob {
 				break;
 			}
 			return 0;
-		});
+		}).detach();
+
+		uint32_t id;
+
+		ch >> id;
+
 		if (id) {
 			ntv::global_table[id] = 1;
 		}

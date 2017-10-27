@@ -1,6 +1,6 @@
 #include <nob/script.hpp>
 #include <nob/ntv.hpp>
-#include <nob/player.hpp>
+#include <nob/object.hpp>
 
 #include <nob/shv/main.hpp>
 
@@ -30,13 +30,13 @@ namespace nob {
 						ntv::VEHICLE::SET_RANDOM_BOATS(false);
 						ntv::VEHICLE::SET_RANDOM_TRAINS(false);
 
-						int a[10];
+						/*int a[10];
 						int c = shv::worldGetAllPeds(a, 10);
 						for (int i = 0; i < c; ++i) {
 							ntv::PED::DELETE_PED((ntv::Ped *)&a[i]);
-						}
+						}*/
 					});
-					auto pos = player::body().pos();
+					auto pos = player::body()->pos();
 					ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, false, false, false, false);
 					ntv::AUDIO::_DISABLE_POLICE_REPORTS();
 					ntv::AUDIO::_FORCE_AMBIENT_SIREN(false);
