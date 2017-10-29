@@ -9,6 +9,7 @@
 
 	namespace nob {
 		namespace shv {
+			template<typename...>
 			inline void nativePushs() {}
 
 			template<typename A, typename ...O>
