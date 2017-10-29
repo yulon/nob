@@ -69,6 +69,7 @@ namespace nob {
 									if (*(uint8_t *)shop_ctrllr->pos_addr(func_off + k) == 0x5F) {
 										_find_banned_vehicles(shop_ctrllr, real_code_off - j);
 										ch << (*(uint32_t *)shop_ctrllr->pos_addr(func_off + k + 1) & 0xFFFFFF);
+										return;
 									}
 								}
 								break;
@@ -79,7 +80,7 @@ namespace nob {
 				}
 				break;
 			}
-			return 0;
+			ch << 0;
 		}).detach();
 
 		uint32_t id;
