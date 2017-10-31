@@ -21,20 +21,28 @@ namespace nob {
 		public:
 			task(std::nullptr_t np = nullptr) : _cp_tsk(np) {}
 
-			task(const std::function<void()> &handler, int life_duration = -1);
+			task(const std::function<void()> &handler, int duration_of_life = -1);
 
 			operator bool() const;
 
 			void del();
 
+			void reset_dol(int duration_of_life = -1);
+
 		private:
 			tmd::coro_pool::task _cp_tsk;
 	};
 
-	task go(const std::function<void()> &handler);
+	inline void go(const std::function<void()> &handler) {
+		task(handler, 0);
+	}
 
 	bool in_task();
-	void del_this_task();
+
+	namespace this_task {
+		void del();
+		void reset_dol(int duration_of_life = -1);
+	}
 
 	class initer {
 		public:

@@ -23,22 +23,32 @@ namespace nob {
 		}
 	} /* this_script */
 
-	tmd::coro_pool _cp;
+	tmd::coro_pool _cp(2048 * 1024);
 
 	bool in_task() {
 		return _cp.in_task();
 	}
 
-	void del_this_task() {
-		_cp.del_this_task();
-	}
-
-	task::task(const std::function<void()> &handler, int life_duration) :
-		_cp_tsk(_cp.add_task(handler, life_duration))
+	task::task(const std::function<void()> &handler, int duration_of_life) :
+		_cp_tsk(_cp.add_task(handler, duration_of_life))
 	{}
 
-	task go(const std::function<void()> &handler) {
-		return task(handler, 0);
+	void task::del() {
+		_cp.del_task(_cp_tsk);
+		_cp_tsk.reset();
+	}
+
+	void task::reset_dol(int duration_of_life) {
+		_cp.reset_task_dol(_cp_tsk, duration_of_life);
+	}
+
+	namespace this_task {
+		void del() {
+			_cp.del_task(_cp.get_this_task());
+		}
+		void reset_dol(int duration_of_life) {
+			_cp.reset_task_dol(_cp.get_this_task(), duration_of_life);
+		}
 	}
 
 	void wait(size_t ms) {
@@ -47,11 +57,6 @@ namespace nob {
 
 	void wait(const std::function<bool()> &cond) {
 		_cp.wait(cond);
-	}
-
-	void task::del() {
-		_cp.del_task(_cp_tsk);
-		_cp_tsk.reset();
 	}
 
 	task::operator bool() const {
@@ -72,6 +77,8 @@ namespace nob {
 
 	namespace this_script {
 		void _main() {
+			thread_id = std::this_thread::get_id();
+
 			window::_hook_proc();
 
 			for (auto &handler : _initers) {
