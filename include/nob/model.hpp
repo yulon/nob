@@ -10,24 +10,65 @@
 namespace nob {
 	class model {
 		public:
-			uint32_t ntv_model;
-
-			model(const char *name) : ntv_model(ntv::GAMEPLAY::GET_HASH_KEY(name)) {
-				if (ntv::STREAMING::IS_MODEL_IN_CDIMAGE(ntv_model) && ntv::STREAMING::IS_MODEL_VALID(ntv_model) && !ntv::STREAMING::HAS_MODEL_LOADED(ntv_model)) {
-					ntv::STREAMING::REQUEST_MODEL(ntv_model);
-					wait([this]()->bool {
-						return ntv::STREAMING::HAS_MODEL_LOADED(ntv_model);
-					});
+			model(const char *name) : _ntv_model(ntv::GAMEPLAY::GET_HASH_KEY(name)), _owner(false) {
+				if (ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_ntv_model) && ntv::STREAMING::IS_MODEL_VALID(_ntv_model)) {
+					if (!ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model)) {
+						_owner = true;
+						ntv::STREAMING::REQUEST_MODEL(_ntv_model);
+						wait([this]()->bool {
+							return ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model);
+						});
+					}
 				}
 			}
 
 			model(const std::string &name) : model(name.c_str()) {}
 
-			~model() {
-				ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(ntv_model);
+			void free() {
+				if (_owner) {
+					_owner = false;
+					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(_ntv_model);
+				}
 			}
 
+			~model() {
+				free();
+			}
+
+			int native_handle() const {
+				return _ntv_model;
+			}
+
+			model(const model &src) : _ntv_model(src._ntv_model), _owner(false) {}
+
+			model(model &&src) : _ntv_model(src._ntv_model), _owner(src._owner) {
+				src._owner = false;
+			}
+
+			model &operator=(const model &src) {
+				free();
+				_ntv_model = src._ntv_model;
+				_owner = false;
+				return *this;
+			}
+
+			model &operator=(model &&src) {
+				free();
+				_ntv_model = _ntv_model;
+				if (src._owner) {
+					src._owner = false;
+					_owner = true;
+				}
+				return *this;
+			}
+
+		private:
+			int _ntv_model;
+			bool _owner;
+
 			////////////////////////////////////////////////////////////////////
+
+		public:
 
 			// These data from ScriptHookV/NativeTrainer
 
