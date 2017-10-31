@@ -7,11 +7,11 @@
 namespace nob {
 	namespace ui {
 		void disable_story_features(bool toggle) {
-			static task t;
+			static task tsk;
 
 			if (toggle) {
-				if (!t) {
-					t = task([]() {
+				if (!tsk) {
+					tsk = task([]() {
 						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::MultiplayerInfo, true);
 						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::CharacterWheel, true);
 						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::SelectCharacterMichael, true);
@@ -23,9 +23,11 @@ namespace nob {
 						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::CinematicSlowMo, true);
 						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::VehicleSlowMoUpDown, true);
 					});
+
+					ntv::MOBILE::DESTROY_MOBILE_PHONE();
 				}
 			} else {
-				t.del();
+				tsk.del();
 			}
 		}
 
@@ -60,17 +62,19 @@ namespace nob {
 			} else {
 				hf.unhook();
 			}
+
+			ntv::AUDIO::SET_AUDIO_FLAG("ActivateSwitchWheelAudio", !toggle);
 		}
 
 		void menu::toggle() {
-			if (!_t) {
+			if (!_tsk) {
 				auto cur_li = _list_stack.top();
 				if (cur_li->on_show) {
 					cur_li->on_show(cur_li);
 					cur_li->fix();
 				}
 
-				_t = task([this]() {
+				_tsk = task([this]() {
 					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
 					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::Phone, true);
 
@@ -181,16 +185,12 @@ namespace nob {
 									toggle();
 
 									static task det;
-									static size_t det_i;
 									if (det) {
-										det_i = 150;
+										det.reset_dol(1000);
 									} else {
-										det = go([]() {
-											for (det_i = 0; det_i < 150; ++det_i) {
-												nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
-												wait_next_frame();
-											}
-										});
+										det = task([]() {
+											nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
+										}, 1000);
 									}
 								}
 							}
@@ -245,8 +245,21 @@ namespace nob {
 				});
 
 			} else {
-				_t.del();
+				_tsk.del();
 				_kl.del();
+			}
+		}
+
+		void disable_interaction_menu(bool toggle) {
+			static nob::task tsk;
+			if (toggle) {
+				if (!tsk) {
+					tsk = task([]() {
+						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::InteractionMenu, true);
+					});
+				}
+			} else {
+				tsk.del();
 			}
 		}
 	} /* ui */

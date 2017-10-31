@@ -265,22 +265,11 @@ namespace nob {
 			private:
 				std::string _tit;
 				std::stack<list> _list_stack;
-				task _t;
+				task _tsk;
 				keyboard::listener _kl;
 		};
 
-		inline void disable_interaction_menu(bool toggle = true) {
-			static nob::task t;
-			if (toggle) {
-				if (!t) {
-					t = task([]() {
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::InteractionMenu, true);
-					});
-				}
-			} else {
-				t.del();
-			}
-		}
+		void disable_interaction_menu(bool toggle = true);
 
 		////////////////////////////////////////////////////////////////////////
 
