@@ -23,7 +23,7 @@ namespace nob {
 		}
 	} /* this_script */
 
-	tmd::coro_pool _cp(2048 * 1024);
+	tmd::co_pool _cp(2048 * 1024);
 
 	bool in_task() {
 		return _cp.in_task();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tmd/coro_pool.hpp>
+#include <tmd/co_pool.hpp>
 #include <tmd/chan.hpp>
 
 #include <functional>
@@ -30,7 +30,7 @@ namespace nob {
 			void reset_dol(int duration_of_life = -1);
 
 		private:
-			tmd::coro_pool::task _cp_tsk;
+			tmd::co_pool::task _cp_tsk;
 	};
 
 	inline void go(const std::function<void()> &handler) {
