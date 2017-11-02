@@ -32,5 +32,10 @@ namespace nob {
 		inline void emp(bool toggle) {
 			ntv::GRAPHICS::_SET_BLACKOUT(toggle);
 		}
+
+		inline void clean_pickups() {
+			nob::ntv::PLAYER::FORCE_CLEANUP_FOR_ALL_THREADS_WITH_THIS_NAME("pickup_controller", 8);
+			nob::ntv::GAMEPLAY::TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("pickup_controller");
+		}
 	}
 } /* nob */
