@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <atomic>
+#include <cassert>
 
 namespace nob {
 	namespace hack {
@@ -33,22 +34,22 @@ namespace nob {
 		template <typename R, typename ...A>
 		class hooking_func_t<R(A...)> {
 			public:
-				constexpr hooking_func_t() : _ptr(nullptr) {}
+				constexpr hooking_func_t() : _t(nullptr) {}
 
-				hooking_func_t(hooking_func_t<R(A...)> &&src) : _ptr(src._ptr), _fn(src._fn) { src._ptr = nullptr; }
+				hooking_func_t(hooking_func_t<R(A...)> &&src) : _t(src._t), _o(src._o) { src._t = nullptr; }
 
 				const hooking_func_t<R(A...)> &operator=(hooking_func_t<R(A...)> &&src) {
-					if (_ptr) {
-						MH_DisableHook(_ptr);
-						MH_RemoveHook(_ptr);
+					if (_t) {
+						MH_DisableHook(_t);
+						MH_RemoveHook(_t);
 					}
-					if (src._ptr) {
-						_ptr = src._ptr;
-						_fn = src._fn;
+					if (src._t) {
+						_t = src._t;
+						_o = src._o;
 
-						src._ptr = nullptr;
-					} else if (_ptr) {
-						_ptr = nullptr;
+						src._t = nullptr;
+					} else if (_t) {
+						_t = nullptr;
 						if (!--_hooking_count) {
 							MH_Uninitialize();
 						}
@@ -61,14 +62,17 @@ namespace nob {
 				}
 
 				R operator()(A ...a) {
-					return (*reinterpret_cast<R (*)(A...)>(_fn))(a...);
+					if (_stdcall) {
+						return (*reinterpret_cast<R (__stdcall *)(A...)>(_o))(a...);
+					}
+					return (*reinterpret_cast<R (*)(A...)>(_o))(a...);
 				}
 
 				void unhook() {
-					if (_ptr) {
-						MH_DisableHook(_ptr);
-						MH_RemoveHook(_ptr);
-						_ptr = nullptr;
+					if (_t) {
+						MH_DisableHook(_t);
+						MH_RemoveHook(_t);
+						_t = nullptr;
 						if (!--_hooking_count) {
 							MH_Uninitialize();
 						}
@@ -76,33 +80,38 @@ namespace nob {
 				}
 
 				operator bool() {
-					return _ptr;
+					return _t;
 				}
 
 			private:
-				LPVOID _ptr, _fn;
-				hooking_func_t(LPVOID pre_hook_func, LPVOID detour_func) : _ptr(pre_hook_func) {
+				LPVOID _t, _o;
+				bool _stdcall;
+
+				hooking_func_t(LPVOID target, LPVOID detour_func, bool stdcall) : _t(target), _stdcall(stdcall) {
 					if (++_hooking_count == 1) {
 						MH_Initialize();
 					}
-					MH_CreateHook(pre_hook_func, detour_func, &_fn);
-					MH_EnableHook(pre_hook_func);
+					MH_CreateHook(target, detour_func, &_o);
+					MH_EnableHook(target);
 				}
+
 				friend detour_func_t<R(A...)>;
 		};
 
 		template <typename R, typename ...A>
 		class detour_func_t<R(A...)> {
 			public:
-				detour_func_t() : _stdfn([](A...)->R {
-					return (R)0;
-				}) {}
+				detour_func_t() :
+					_d([](A...)->R {
+						return (R)0;
+					}),
+					_stdcall(false)
+				{}
 
-				detour_func_t(R(*func)(A...)) : _stdfn(func) {}
+				detour_func_t(R(*func)(A...), bool stdcall = false) : _d(func), _stdcall(stdcall) {}
 
 				hooking_func_t<R(A...)> hook(R(*target)(A...)) {
-					hooking_func_t<R(A...)> r(reinterpret_cast<LPVOID>(target), reinterpret_cast<LPVOID>(_stdfn));
-					return r;
+					return hooking_func_t<R(A...)>(reinterpret_cast<LPVOID>(target), reinterpret_cast<LPVOID>(_d), _stdcall);
 				}
 
 				hooking_func_t<R(A...)> hook(uintptr_t target) {
@@ -110,7 +119,8 @@ namespace nob {
 				}
 
 			private:
-				R(*_stdfn)(A...);
+				R(*_d)(A...);
+				bool _stdcall;
 		};
 	} /* hack */
 } /* nob */
