@@ -62,8 +62,6 @@ namespace nob {
 			} else {
 				hf.unhook();
 			}
-
-			ntv::AUDIO::SET_AUDIO_FLAG("ActivateSwitchWheelAudio", !toggle);
 		}
 
 		void menu::toggle() {
@@ -89,7 +87,7 @@ namespace nob {
 					g2d::sprite("CommonMenu", "interaction_bgd", x, y, w, h);
 					g2d::text(x, y + ((h - title_font_height) / 2), w, _tit, title_font_size, 255, 255, 255, 255, 1);
 
-					auto cur_li = _list_stack.top();
+					auto &cur_li = _list_stack.top();
 					auto sz = cur_li->items.size();
 
 					y += h;
@@ -223,11 +221,11 @@ namespace nob {
 
 									if (cur_it.type_is<list>()) {
 										cur_li = cur_it.cast<list>();
-										_list_stack.push(cur_li);
 										if (cur_li->on_show) {
 											cur_li->on_show(cur_li);
 											cur_li->fix();
 										}
+										_list_stack.push(cur_li);
 									} else
 
 									if (cur_it.type_is<flag>()) {

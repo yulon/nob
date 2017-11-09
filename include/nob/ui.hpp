@@ -247,7 +247,8 @@ namespace nob {
 				////////////////////////////////////////////////////////////////
 
 				static float width() {
-					return 432.0f / 1920.0f / 1080.0f * screen_resolution().y;
+					auto sr = screen_resolution();
+					return 432.0f / 1080.0f * sr.y / sr.x;
 				}
 
 				static constexpr float left = 0.0155f;
