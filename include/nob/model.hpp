@@ -15,8 +15,9 @@ namespace nob {
 					if (!ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model)) {
 						_owner = true;
 						ntv::STREAMING::REQUEST_MODEL(_ntv_model);
-						wait([this]()->bool {
-							return ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model);
+						auto m = _ntv_model;
+						wait([m]()->bool {
+							return ntv::STREAMING::HAS_MODEL_LOADED(m);
 						});
 					}
 				}
