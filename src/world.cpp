@@ -44,7 +44,7 @@ namespace nob {
 						ntv::AUDIO::STOP_ALL_ALARMS(true);
 					});
 
-					auto pos = player::body()->pos();
+					auto pos = player::body().pos();
 					ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, false, false, false, false);
 					ntv::AUDIO::_DISABLE_POLICE_REPORTS();
 					for (size_t i = 1; i < 16; ++i) {

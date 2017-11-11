@@ -5,11 +5,13 @@
 #include "vector.hpp"
 #include "script.hpp"
 
-#include <tmd/shared_obj.hpp>
-
 namespace nob {
-	class entity_c {
+	class entity {
 		public:
+			entity() = default;
+
+			entity(int e) : _ntv_hdl(e) {}
+
 			int native_handle() const {
 				return _ntv_hdl;
 			}
@@ -22,8 +24,12 @@ namespace nob {
 				ntv::ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&_ntv_hdl);
 			}
 
-			bool is_dead() {
+			bool is_dead() const {
 				return ntv::ENTITY::IS_ENTITY_DEAD(_ntv_hdl);
+			}
+
+			bool is_exist() const {
+				return ntv::ENTITY::DOES_ENTITY_EXIST(_ntv_hdl);
 			}
 
 			vector3 pos(const vector3 &rcs_offset = {0, 0, 0}) const {
@@ -35,22 +41,84 @@ namespace nob {
 				ntv::ENTITY::SET_ENTITY_COORDS(_ntv_hdl, coords.x, coords.y, coords.z, true, true, true, true);
 			}
 
-			vector3 get_rotation() const {
+			vector3 rotation() const {
 				auto ro = ntv::ENTITY::GET_ENTITY_ROTATION(_ntv_hdl, 2);
 				return {ro.x, ro.y, ro.z};
 			}
 
-			void set_rotation(const vector3 &ro) {
+			void rotation(const vector3 &ro) {
 				ntv::ENTITY::SET_ENTITY_ROTATION(_ntv_hdl, ro.x, ro.y, ro.z, 2, true);
+			}
+
+			vector4 quaternion() const {
+				vector4 quat;
+				ntv::ENTITY::GET_ENTITY_QUATERNION(_ntv_hdl, &quat.x, &quat.y, &quat.z, &quat.w);
+				return quat;
+			}
+
+			void quaternion(const vector4 &quat) {
+				ntv::ENTITY::SET_ENTITY_QUATERNION(_ntv_hdl, quat.x, quat.y, quat.z, quat.w);
+			}
+
+			int alpha() const {
+				return ntv::ENTITY::GET_ENTITY_ALPHA(_ntv_hdl);
+			}
+
+			void alpha(int alpha) {
+				ntv::ENTITY::SET_ENTITY_ALPHA(_ntv_hdl, alpha, true);
+			}
+
+			void reset_alpha() {
+				ntv::ENTITY::RESET_ENTITY_ALPHA(_ntv_hdl);
+			}
+
+			void invincible(bool toggle = true) {
+				ntv::ENTITY::SET_ENTITY_INVINCIBLE(_ntv_hdl, toggle);
 			}
 
 		protected:
 			int _ntv_hdl;
 	};
 
-	template <typename SO>
-	class character_c : public entity_c { friend SO;
+	class character : public entity {
 		public:
+			enum class motion_state : uint8_t {
+				null = 0,
+				still,
+				walking,
+				runing,
+				sprinting,
+				jumping,
+				falling,
+				skydiving,
+				parachuting,
+				climbing
+			};
+
+			static constexpr float speed_walk = 1.0f;
+			static constexpr float speed_run = 1.2f;
+			static constexpr float speed_sprint = 3.0f;
+
+			////////////////////////////////////////////////////////////////////
+
+			character() {}
+
+			character(model m, const vector3 &coords, bool player_shadow = false) :
+				entity(ntv::PED::CREATE_PED(4, m.native_handle(), coords.x, coords.y, coords.z, 0.0f, false, true))
+			{
+				if (player_shadow) {
+					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(_ntv_hdl, true);
+					ntv::PED::SET_PED_FLEE_ATTRIBUTES(_ntv_hdl, 0, 0);
+					ntv::PED::SET_PED_COMBAT_ATTRIBUTES(_ntv_hdl, 292, true);
+					ntv::PED::SET_PED_DIES_INSTANTLY_IN_WATER(_ntv_hdl, false);
+					ntv::PED::_SET_PED_RAGDOLL_BLOCKING_FLAGS(_ntv_hdl, 1); // Blocks ragdolling when shot.
+					ntv::WEAPON::SET_PED_DROPS_WEAPONS_WHEN_DEAD(_ntv_hdl, false);
+				}
+				ntv::PED::SET_PED_CONFIG_FLAG(_ntv_hdl, 281, true); // PED_FLAG_NO_WRITHE
+			}
+
+			character(ntv::Ped ped) : entity(ped) {}
+
 			void del() {
 				ntv::PED::DELETE_PED(&_ntv_hdl);
 			}
@@ -83,85 +151,95 @@ namespace nob {
 			}
 
 			void still() {
-				if (_run) {
-					_run.del();
-				}
 				ntv::AI::TASK_STAND_STILL(_ntv_hdl, -1);
 			}
 
-			void run(float speed = SO::speed_walk) {
-				_run_speed = speed;
-
-				if (!_run) {
-					_run = task([this]() {
-						ntv::AI::TASK_GO_STRAIGHT_TO_COORD(
-							_ntv_hdl,
-							_face.x, _face.y, _face.z,
-							_run_speed,
-							-1, 0, 0
-						);
-					});
-				}
-			}
-
-			void face(vector3 co, float heading) {
-				_face = co;
-				if (ntv::PED::IS_PED_JUMPING(_ntv_hdl)) {
-					ntv::ENTITY::SET_ENTITY_HEADING(_ntv_hdl, heading);
-				}
-			}
-
 			void jump() {
-				if (_run) {
-					_run.del();
-				}
 				ntv::AI::TASK_JUMP(_ntv_hdl, false, false, false);
 			}
 
-		private:
-			task _run;
-			float _run_speed;
-			vector3 _face;
-	};
-
-	class character : public tmd::shared_obj<character_c<character>> {
-		public:
-			enum class motion_state : uint8_t {
-				still,
-				walking,
-				runing,
-				sprinting,
-				jumping,
-				falling
-			};
-
-			static constexpr float speed_walk = 1.0f;
-			static constexpr float speed_run = 1.2f;
-			static constexpr float speed_sprint = 3.0f;
-
-			////////////////////////////////////////////////////////////////////
-
-			character() {}
-
-			character(model m, const vector3 &coords, bool player_shadow = false) {
-				alloc();
-
-				_m->_ntv_hdl = ntv::PED::CREATE_PED(4, m.ntv_model, coords.x, coords.y, coords.z, 0.0f, false, true);
-
-				if (player_shadow) {
-					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(_m->_ntv_hdl, true);
-					ntv::PED::SET_PED_FLEE_ATTRIBUTES(_m->_ntv_hdl, 0, 0);
-					ntv::PED::SET_PED_COMBAT_ATTRIBUTES(_m->_ntv_hdl, 292, true);
-					ntv::PED::SET_PED_DIES_INSTANTLY_IN_WATER(_m->_ntv_hdl, false);
-					ntv::PED::_SET_PED_RAGDOLL_BLOCKING_FLAGS(_m->_ntv_hdl, 1); // Blocks ragdolling when shot.
-					ntv::WEAPON::SET_PED_DROPS_WEAPONS_WHEN_DEAD(_m->_ntv_hdl, false);
+			void go_to(const vector3 &target, float speed) {
+				if (get_motion_state() == character::motion_state::parachuting) {
+					ntv::AI::TASK_PARACHUTE_TO_TARGET(_ntv_hdl, target.x, target.y, target.z);
+					return;
 				}
-				ntv::PED::SET_PED_CONFIG_FLAG(_m->_ntv_hdl, 281, true); // PED_FLAG_NO_WRITHE
+
+				ntv::AI::TASK_GO_STRAIGHT_TO_COORD(
+					_ntv_hdl,
+					target.x, target.y, target.z,
+					speed,
+					-1, 0, 0
+				);
+				if (speed == character::speed_run) {
+					ntv::AI::SET_PED_DESIRED_MOVE_BLEND_RATIO(_ntv_hdl, 2.0f);
+				} else {
+					ntv::AI::SET_PED_DESIRED_MOVE_BLEND_RATIO(_ntv_hdl, speed);
+				}
 			}
 
-			character(ntv::Ped ped) {
-				alloc();
-				_m->_ntv_hdl = ped;
+			void open_parachute() {
+				ntv::PED::FORCE_PED_TO_OPEN_PARACHUTE(_ntv_hdl);
+			}
+
+			void leave_vehicle(bool jump = false) {
+				auto veh = ntv::PED::GET_VEHICLE_PED_IS_IN(_ntv_hdl, false);
+				if (veh) {
+					int flag;
+					if (!jump) {
+						flag = 0;
+					} else {
+						flag = 4160;
+					}
+					ntv::AI::TASK_LEAVE_VEHICLE(_ntv_hdl, veh, flag);
+				}
+			}
+
+			character::motion_state get_motion_state() const {
+				auto ps = ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl);
+				if (ps == 1 || ps == 2) {
+					return character::motion_state::parachuting;
+				}
+
+				if (nob::ntv::PED::IS_PED_IN_PARACHUTE_FREE_FALL(_ntv_hdl)) {
+					return character::motion_state::skydiving;
+				}
+
+				if (nob::ntv::PED::IS_PED_FALLING(_ntv_hdl)) {
+					return character::motion_state::falling;
+				}
+
+				if (nob::ntv::PED::IS_PED_JUMPING(_ntv_hdl)) {
+					/*if (nob::ntv::AI::IS_PED_WALKING(_ntv_hdl)) {
+
+					} else if (nob::ntv::AI::IS_PED_RUNNING(_ntv_hdl)) {
+
+					} else if (nob::ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
+
+					}*/
+					return character::motion_state::jumping;
+				}
+
+				if (nob::ntv::PED::IS_PED_CLIMBING(_ntv_hdl)) {
+					return character::motion_state::climbing;
+				}
+
+				if (nob::ntv::AI::IS_PED_STILL(_ntv_hdl)) {
+					return character::motion_state::still;
+				}
+
+				if (nob::ntv::AI::IS_PED_WALKING(_ntv_hdl)) {
+					return character::motion_state::walking;
+				}
+
+				if (nob::ntv::AI::IS_PED_RUNNING(_ntv_hdl)) {
+					return character::motion_state::runing;
+				}
+
+				if (nob::ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
+					return character::motion_state::sprinting;
+				}
+
+				return character::motion_state::null;
 			}
 	};
 
@@ -174,30 +252,41 @@ namespace nob {
 			return ntv::PLAYER::PLAYER_PED_ID();
 		}
 
-		inline void change_body(const character &chr) {
-			ntv::PLAYER::CHANGE_PLAYER_PED(native_handle(), chr->native_handle(), true, true);
+		inline void change_body(character chr) {
+			ntv::PLAYER::CHANGE_PLAYER_PED(native_handle(), chr.native_handle(), true, true);
 		}
 
-		inline void switch_body(const character &chr) {
+		inline void switch_body(character chr) {
 			auto old_chr = body();
-			auto old_chr_coords = old_chr->pos({ 0, 0, 0 });
-			auto chr_coords = chr->pos({ 0, 0, 0 });
+			auto old_chr_coords = old_chr.pos({ 0, 0, 0 });
+			auto chr_coords = chr.pos({ 0, 0, 0 });
 
 			int st = ntv::STREAMING::GET_IDEAL_PLAYER_SWITCH_TYPE(old_chr_coords.x, old_chr_coords.y, old_chr_coords.z, chr_coords.x, chr_coords.y, chr_coords.z);
-			ntv::STREAMING::START_PLAYER_SWITCH(old_chr->native_handle(), chr->native_handle(), 0, st);
+			ntv::STREAMING::START_PLAYER_SWITCH(old_chr.native_handle(), chr.native_handle(), 0, st);
 
 			wait(1000);
 
-			if (ntv::ENTITY::DOES_ENTITY_EXIST(chr->native_handle()) && !ntv::ENTITY::IS_ENTITY_DEAD(chr->native_handle())) {
+			if (ntv::ENTITY::DOES_ENTITY_EXIST(chr.native_handle()) && !ntv::ENTITY::IS_ENTITY_DEAD(chr.native_handle())) {
 				change_body(chr);
-				old_chr->free();
+				old_chr.free();
 			}
 		}
 	}
 
-	template <typename SO>
-	class vehicle_c : public entity_c { friend SO;
+	class vehicle : public entity {
 		public:
+			static void unlock_banned_vehicles();
+
+			////////////////////////////////////////////////////////////////////
+
+			vehicle() {}
+
+			vehicle(model m, const vector3 &coords, float heading = 0.0f) :
+				entity(ntv::VEHICLE::CREATE_VEHICLE(m.native_handle(), coords.x, coords.y, coords.z, heading, false, true))
+			{
+				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_ntv_hdl, 0);
+			}
+
 			void del() {
 				ntv::VEHICLE::DELETE_VEHICLE(&_ntv_hdl);
 			}
@@ -210,33 +299,31 @@ namespace nob {
 				ntv::VEHICLE::SET_VEHICLE_ON_GROUND_PROPERLY(_ntv_hdl);
 			}
 
-			constexpr int get_mod_type_sum() {
-				return 50;
-			}
+			static constexpr int mod_type_sum = 50;
 
-			int get_mod_sum(int mod_type) {
+			int mod_sum(int mod_type) {
 				return ntv::VEHICLE::GET_NUM_VEHICLE_MODS(_ntv_hdl, mod_type);
 			}
 
-			void set_mod(int mod_type, int mod) {
+			void mod(int mod_type, int mod) {
 				ntv::VEHICLE::SET_VEHICLE_MOD(_ntv_hdl, mod_type, mod, true);
 			}
 
-			void get_mod(int mod_type) {
+			void mod(int mod_type) {
 				ntv::VEHICLE::GET_VEHICLE_MOD(_ntv_hdl, mod_type);
 			}
 
 			void set_best_mods() {
-				for (int i = 0; i < get_mod_type_sum(); i++) {
-					auto n = get_mod_sum(i);
+				for (int i = 0; i < mod_type_sum; i++) {
+					if (i == 15 || i == 23 || i == 24) {
+						continue;
+					}
+
+					auto n = mod_sum(i);
 					if (n > 0) {
-						ntv::VEHICLE::SET_VEHICLE_MOD(_ntv_hdl, i, n - 1, false);
+						mod(i, n - 1);
 					}
 				}
-			}
-
-			bool has(const character &chr) {
-				return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(chr->native_handle(), _ntv_hdl);
 			}
 
 			bool is_playing_radio() {
@@ -244,7 +331,7 @@ namespace nob {
 			}
 
 			std::string get_radio_station() {
-				if (has(player::body()) && is_playing_radio()) {
+				if (ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(ntv::PLAYER::PLAYER_PED_ID(), _ntv_hdl) && is_playing_radio()) {
 					return ntv::AUDIO::GET_PLAYER_RADIO_STATION_NAME();
 				}
 				return nullptr;
@@ -262,20 +349,68 @@ namespace nob {
 				}
 				ntv::AUDIO::SET_VEH_RADIO_STATION(_ntv_hdl, radio_station.c_str());
 			}
-	};
 
-	class vehicle : public tmd::shared_obj<vehicle_c<vehicle>> {
-		public:
-			static void unlock_banned_vehicles();
+			static constexpr float min_engine_health = -4000.0f;
+			static constexpr float max_engine_health = 1000.0f;
 
-			////////////////////////////////////////////////////////////////////
+			/*
+				-4000: Engine is destroyed
+				0 and below: Engine catches fire and health rapidly declines
+				300: Engine is smoking and losing functionality
+				1000: Engine is perfect
+			*/
 
-			vehicle() {}
+			float engine_health() {
+				return ntv::VEHICLE::GET_VEHICLE_ENGINE_HEALTH(_ntv_hdl);
+			}
 
-			vehicle(model m, const vector3 &coords, float heading = 0.0f) {
-				alloc();
-				_m->_ntv_hdl = ntv::VEHICLE::CREATE_VEHICLE(m.ntv_model, coords.x, coords.y, coords.z, heading, false, true);
-				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_m->_ntv_hdl, 0);
+			void engine_health(float v) {
+				ntv::VEHICLE::SET_VEHICLE_ENGINE_HEALTH(_ntv_hdl, v);
+			}
+
+			static constexpr float min_petrol_tank_health = -4000.0f;
+			static constexpr float max_petrol_tank_health = 1000.0f;
+
+			/*
+				1000 is max health
+				Begins leaking gas at around 650 health
+				-999.90002441406 appears to be minimum health, although nothing special occurs
+			*/
+
+			float petrol_tank_health() {
+				return ntv::VEHICLE::GET_VEHICLE_PETROL_TANK_HEALTH(_ntv_hdl);
+			}
+
+			void petrol_tank_health(float v) {
+				ntv::VEHICLE::SET_VEHICLE_PETROL_TANK_HEALTH(_ntv_hdl, v);
+			}
+
+			void explode() {
+				ntv::VEHICLE::EXPLODE_VEHICLE(_ntv_hdl, true, false);
+			}
+
+			void catches_fire() {
+				ntv::VEHICLE::EXPLODE_VEHICLE(_ntv_hdl, false, false);
+			}
+
+			bool has(character chr) {
+				return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(chr.native_handle(), _ntv_hdl);
+			}
+
+			character passenger(int seat) {
+				return ntv::VEHICLE::GET_PED_IN_VEHICLE_SEAT(_ntv_hdl, seat);
+			}
+
+			bool has_passenger(int seat) {
+				return !ntv::VEHICLE::IS_VEHICLE_SEAT_FREE(_ntv_hdl, seat);
+			}
+
+			int max_passengers() {
+				return ntv::VEHICLE::GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(_ntv_hdl);
+			}
+
+			void disable_crash_damage(bool toggle = true) {
+				ntv::VEHICLE::SET_VEHICLE_STRONG(_ntv_hdl, toggle);
 			}
 	};
 } /* nob */

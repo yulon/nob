@@ -30,30 +30,95 @@ menu ia_menu("Nob Tester", list("Interaction Menu", {
 		list("Spawn", [](list li) {
 			for (auto mn : nob::model::vehicles) {
 				li->items.emplace_back(action(nob::i18n::get(mn), mn, [mn]() {
-					auto veh = nob::vehicle(mn, nob::player::body()->pos({0, 5, 0}));
-					veh->place_on_ground();
-					veh->set_best_mods();
+					auto veh = nob::vehicle(mn, nob::player::body().pos({0, 5, 0}));
+					veh.place_on_ground();
+					veh.set_best_mods();
+					veh.invincible();
 				}));
 			}
 
 			nob::vehicle::unlock_banned_vehicles();
 			for (auto mn : nob::model::banned_vehicles) {
 				li->items.emplace_back(action(nob::i18n::get(mn), mn, [mn]() {
-					auto veh = nob::vehicle(mn, nob::player::body()->pos({0, 5, 0}));
-					veh->place_on_ground();
-					veh->set_best_mods();
+					auto veh = nob::vehicle(mn, nob::player::body().pos({0, 5, 0}));
+					veh.place_on_ground();
+					veh.set_best_mods();
+					veh.invincible();
 				}));
 			}
 
 			li->on_show = nullptr;
 		})
 	}),
+	list("Player", {
+		flag("Invincible", [](bool val) {
+			nob::player::body().invincible(val);
+		}),
+		flag("Auto Get Parachute in Plane", [](bool val) {
+			nob::ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, val);
+		}),
+		action("State Capturer", []() {
+			/*auto plr_chr = nob::player::body();
+			auto pos = plr_chr.pos();
+			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos({pos.x + 5, pos.y, pos.z + 10}), true);
+			auto old_h = std::make_shared<float>(nob::ntv::ENTITY::GET_ENTITY_HEADING(plr_chr.native_handle()));
+
+			nob::task([chr, plr_chr, old_h]() mutable {
+				//if (!nob::ntv::AI::IS_PED_STILL(plr_chr.native_handle())) {
+					float h = nob::ntv::ENTITY::GET_ENTITY_HEADING(plr_chr.native_handle());
+					if (h != *old_h) {
+						auto pos = plr_chr.pos({0, 10, 0});
+						chr.face({pos.x + 5, pos.y, pos.x}, h);
+						*old_h = h;
+					}
+				//}
+			});
+
+			plr_chr.on_motion([](nob::character::motion_state ms) {
+				switch (ms) {
+					case nob::character::motion_state::still:
+						std::cout << "still" << std::endl << std::endl;
+						break;
+					case nob::character::motion_state::jumping:
+						std::cout << "jumping" << std::endl;
+						break;
+					case nob::character::motion_state::walking:
+						std::cout << "walking" << std::endl;
+						break;
+					case nob::character::motion_state::runing:
+						std::cout << "runing" << std::endl;
+						break;
+					case nob::character::motion_state::sprinting:
+						std::cout << "sprinting" << std::endl;
+						break;
+					case nob::character::motion_state::falling:
+						std::cout << "falling" << std::endl;
+						break;
+					case nob::character::motion_state::skydiving:
+						std::cout << "skydiving" << std::endl;
+						break;
+					case nob::character::motion_state::parachuting:
+						std::cout << "parachuting" << std::endl;
+						break;
+					case nob::character::motion_state::climbing:
+						std::cout << "climbing" << std::endl;
+						break;
+					case nob::character::motion_state::null:
+						std::cout << "null" << std::endl;
+						break;
+				}
+			});*/
+		})
+	}),
 	list("World", {
-		flag("Clean NPCs", [](bool val) {
-			nob::world::clean_npcs(val);
+		flag("No Man's Island", [](bool val) {
+			nob::world::no_mans_island(val);
 		}),
 		action("Clear Black Fog", []() {
 			nob::world::clear_black_fog();
+		}),
+		action("Clean Pickups", []() {
+			nob::world::clean_pickups();
 		})
 	}),
 	list("UI", {
@@ -64,11 +129,11 @@ menu ia_menu("Nob Tester", list("Interaction Menu", {
 			disable_wheel_slowmo(val);
 		}),
 		action("Pops", []() {
-			info("you know!");
+			nob::ui::info("you know!");
 
-			tip("~b~~h~dog~h~~s~ killed ~r~~h~cat");
+			nob::ui::tip("~b~~h~dog~h~~s~ killed ~r~~h~cat");
 
-			message(
+			nob::ui::message(
 				"CHAR_MARTIN",
 				"馬丁",
 				"~r~你們休想取代我！"
@@ -77,80 +142,9 @@ menu ia_menu("Nob Tester", list("Interaction Menu", {
 			ia_menu.toggle();
 		})
 	}),
-	list("Other", {
-		action("Char", []() {
-			auto plr_chr = nob::player::body();
-			auto pos = plr_chr->pos();
-			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos({pos.x + 5, pos.y, pos.z + 10}), true);
-			auto old_h = std::make_shared<float>(nob::ntv::ENTITY::GET_ENTITY_HEADING(plr_chr->native_handle()));
-
-			nob::task([chr, plr_chr, old_h]() mutable {
-				//if (!nob::ntv::AI::IS_PED_STILL(plr_chr->native_handle())) {
-					float h = nob::ntv::ENTITY::GET_ENTITY_HEADING(plr_chr->native_handle());
-					if (h != *old_h) {
-						auto pos = plr_chr->pos({0, 10, 0});
-						chr->face({pos.x + 5, pos.y, pos.x}, h);
-						*old_h = h;
-					}
-				//}
-			});
-
-			nob::task([chr, plr_chr]() mutable {
-				if (nob::ntv::AI::IS_PED_STILL(plr_chr->native_handle())) {
-					std::cout << std::endl << "IS_PED_STILL" << std::endl;
-					chr->still();
-					nob::wait([plr_chr]()->bool {
-						return !nob::ntv::AI::IS_PED_STILL(plr_chr->native_handle());
-					});
-					return;
-				}
-
-				if (nob::ntv::PED::IS_PED_JUMPING(plr_chr->native_handle())) {
-					chr->jump();
-					nob::wait([plr_chr]()->bool {
-						return !nob::ntv::PED::IS_PED_JUMPING(plr_chr->native_handle());
-					});
-					/*auto check_still = nob::task([plr_chr, chr](nob::task tt) mutable {
-						auto pos = plr_chr->pos();
-						nob::wait_next_frame();
-						auto new_pos = plr_chr->pos();
-						if (
-							static_cast<int>(new_pos.x) == static_cast<int>(pos.x) &&
-							static_cast<int>(new_pos.y) == static_cast<int>(pos.y) &&
-							static_cast<int>(new_pos.z) == static_cast<int>(pos.z)
-						) {
-							chr->still();
-							tt.del();
-							return;
-						}
-					});*/
-					if (nob::ntv::AI::IS_PED_WALKING(plr_chr->native_handle())) {
-						nob::wait([plr_chr]()->bool {
-							return !nob::ntv::AI::IS_PED_WALKING(plr_chr->native_handle());
-						});
-					} else if (nob::ntv::AI::IS_PED_RUNNING(plr_chr->native_handle())) {
-						nob::wait([plr_chr]()->bool {
-							return !nob::ntv::AI::IS_PED_RUNNING(plr_chr->native_handle());
-						});
-					} else if (nob::ntv::AI::IS_PED_SPRINTING(plr_chr->native_handle())) {
-						nob::wait([plr_chr]()->bool {
-							return !nob::ntv::AI::IS_PED_SPRINTING(plr_chr->native_handle());
-						});
-					}
-					return;
-				}
-
-				if (nob::ntv::AI::IS_PED_WALKING(plr_chr->native_handle())) {
-					chr->run(nob::character::speed_walk);
-					return;
-				} else if (nob::ntv::AI::IS_PED_RUNNING(plr_chr->native_handle())) {
-					chr->run(nob::character::speed_run);
-					return;
-				} else if (nob::ntv::AI::IS_PED_SPRINTING(plr_chr->native_handle())) {
-					chr->run(nob::character::speed_sprint);
-					return;
-				}
-			});
+	list("Script", {
+		action("Terminate Unimportant Scripts", []() {
+			nob::terminate_unimportant_scripts();
 		})
 	})
 }));
