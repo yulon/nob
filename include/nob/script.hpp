@@ -59,4 +59,6 @@ namespace nob {
 				static_cast<void (*)(const std::function<bool()> &)>(wait)
 			}}) {}
 	};
+
+	void terminate_unimportant_scripts();
 } /* nob */
