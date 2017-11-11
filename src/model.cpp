@@ -14,14 +14,12 @@ namespace nob {
 				++it->second;
 			}
 
+			ntv::STREAMING::REQUEST_MODEL(_ntv_model);
 			if (!ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model)) {
-				ntv::STREAMING::REQUEST_MODEL(_ntv_model);
-				if (!ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model)) {
-					auto m = _ntv_model;
-					wait([m]()->bool {
-						return ntv::STREAMING::HAS_MODEL_LOADED(m);
-					});
-				}
+				auto m = _ntv_model;
+				wait([m]()->bool {
+					return ntv::STREAMING::HAS_MODEL_LOADED(m);
+				});
 			}
 		} else {
 			_ntv_model = 0;
