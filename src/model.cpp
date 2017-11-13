@@ -9,7 +9,7 @@ namespace nob {
 		if (ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_ntv_model) && ntv::STREAMING::IS_MODEL_VALID(_ntv_model)) {
 			auto it = _model_count.find(_ntv_model);
 			if (it == _model_count.end()) {
-				it->second = 1;
+				_model_count[_ntv_model] = 1;
 			} else {
 				++it->second;
 			}
