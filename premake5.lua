@@ -1,6 +1,6 @@
 workspace "nob"
 	language "C++"
-	--flags { "C++17" }
+	cppdialect "C++17"
 	location ( "build" )
 	configurations { "Debug", "Release" }
 	platforms {"x64"}
@@ -33,7 +33,6 @@ workspace "nob"
 		configuration { "gmake" }
 			targetprefix "lib"
 			targetextension ".a"
-			buildoptions { "-std=c++17" }
 
 		configuration "Debug"
 			defines { "DEBUG" }
@@ -53,7 +52,6 @@ workspace "nob"
 		links { "user32", "nob", "psapi", "MinHook" }
 
 		configuration { "gmake" }
-			buildoptions { "-std=c++17" }
 			linkoptions { "-Wl,--exclude-all-symbols" }
 
 		configuration "Debug"
