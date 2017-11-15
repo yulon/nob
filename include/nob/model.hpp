@@ -6,34 +6,73 @@
 #include <array>
 #include <string>
 #include <vector>
+#include <cassert>
 
 namespace nob {
 	class model {
 		public:
-			model(const char *name);
+			model() : _ntv_model(0) {}
+
+			model(uint32_t hash) : _ntv_model(hash) {
+				if (!ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_ntv_model) || !ntv::STREAMING::IS_MODEL_VALID(_ntv_model)) {
+					_ntv_model = 0;
+					return;
+				}
+
+				ntv::STREAMING::REQUEST_MODEL(_ntv_model);
+				if (!ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model)) {
+					auto m = _ntv_model;
+					wait([m]()->bool {
+						return ntv::STREAMING::HAS_MODEL_LOADED(m);
+					});
+				}
+			}
+
+			model(const char *name) : model(ntv::GAMEPLAY::GET_HASH_KEY(name)) {}
 
 			model(const std::string &name) : model(name.c_str()) {}
 
-			model(const model &);
+			model(model &&src) : _ntv_model(src._ntv_model) {
+				if (_ntv_model) {
+					src._ntv_model = 0;
+				}
+			}
 
-			model &operator=(const model &);
+			model &operator=(model &&src) {
+				free();
+				if (src._ntv_model) {
+					_ntv_model = src._ntv_model;
+					src._ntv_model = 0;
+				}
+				return *this;
+			}
 
-			model(model &&);
+			model(const model &src) : model(src._ntv_model) {}
 
-			model &operator=(model &&);
+			model &operator=(const model &src) {
+				if (src._ntv_model) {
+					*this = src._ntv_model;
+				}
+				return *this;
+			}
 
-			void free();
+			void free()	{
+				if (_ntv_model) {
+					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(_ntv_model);
+					_ntv_model = 0;
+				}
+			}
 
 			~model() {
 				free();
 			}
 
-			int native_handle() const {
+			uint32_t native_handle() const {
 				return _ntv_model;
 			}
 
 		private:
-			int _ntv_model;
+			uint32_t _ntv_model;
 
 			////////////////////////////////////////////////////////////////////
 
