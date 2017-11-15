@@ -58,9 +58,8 @@ namespace nob {
 				texture_dict(const char *name) : _name(name) {
 					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name, false);
 					if (!ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(_name)) {
-						auto n = _name;
-						wait([n]()->bool {
-							return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(n);
+						wait([name]()->bool {
+							return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(name);
 						});
 					}
 				}

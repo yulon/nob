@@ -21,9 +21,8 @@ namespace nob {
 
 				ntv::STREAMING::REQUEST_MODEL(_hash);
 				if (!ntv::STREAMING::HAS_MODEL_LOADED(_hash)) {
-					auto m = _hash;
-					wait([m]()->bool {
-						return ntv::STREAMING::HAS_MODEL_LOADED(m);
+					wait([hash]()->bool {
+						return ntv::STREAMING::HAS_MODEL_LOADED(hash);
 					});
 				}
 			}
