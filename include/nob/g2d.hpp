@@ -51,17 +51,49 @@ namespace nob {
 			ntv::GRAPHICS::DRAW_RECT((x + (width / 2)), (y + (height / 2)), width, height, r, g, b, a);
 		}
 
-		inline void wait_texture_dict_valid(const char *texture_dict) {
-			if (!ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(texture_dict)) {
-				ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(texture_dict, false);
-				wait([texture_dict]()->bool {
-					return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(texture_dict);
-				});
-			}
-		}
+		class texture_dict {
+			public:
+				texture_dict(const char *name) : _name(name) {
+					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name, false);
+					if (!ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(_name)) {
+						auto n = _name;
+						wait([n]()->bool {
+							return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(n);
+						});
+					}
+				}
 
-		inline void sprite(const char *texture_dict, const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
-			ntv::GRAPHICS::DRAW_SPRITE(texture_dict, texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
-		}
+				texture_dict(const std::string &name) : texture_dict(name.c_str()) {}
+
+				texture_dict(const texture_dict &) = delete;
+
+				texture_dict &operator=(const texture_dict &) = delete;
+
+				texture_dict(texture_dict &&) = delete;
+
+				texture_dict &operator=(texture_dict &&) = delete;
+
+				void free() {
+					if (_name) {
+						ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(_name);
+						_name = nullptr;
+					}
+				}
+
+				~texture_dict() {
+					free();
+				}
+
+				const char *native_handle() const {
+					return _name;
+				}
+
+				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
+					ntv::GRAPHICS::DRAW_SPRITE(_name, texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
+				}
+
+			private:
+				const char *_name;
+		};
 	} /* g2d */
 } /* nob */
