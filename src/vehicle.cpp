@@ -1,16 +1,16 @@
 #include <nob/object.hpp>
 #include <nob/hack.hpp>
-#include <nob/ntv.hpp>
+#include <nob/hash.hpp>
 #include <nob/script.hpp>
 
 #include <thread>
 #include <queue>
 
 namespace nob {
-	std::vector<std::string> model::banned_vehicles;
+	std::vector<hasher> model::banned_vehicles;
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
-	void _find_banned_vehicles(ntv::script_t *shop_ctrllr, size_t func_call_off, chan<uint32_t> bvhs_ch) {
+	void _find_banned_vehicles(ntv::script_t *shop_ctrllr, size_t func_call_off) {
 		for (size_t i = 14; i < 400; i++) {
 			if (*(uint8_t *)shop_ctrllr->pos_addr(func_call_off + i) == 0x62) {
 				size_t switch_off = func_call_off + i;
@@ -23,7 +23,8 @@ namespace nob {
 					size_t jump_off = *(uint16_t *)(cur_addr - 2);
 					int64_t case_off = (int64_t)shop_ctrllr->pos_addr(start_off + jump_off);
 					uint8_t code = *(uint8_t *)case_off;
-					uint32_t hash;
+
+					hash_t hash;
 
 					if (code == 0x28) { //push int
 						hash = *(uint32_t *)(case_off + 1);
@@ -32,9 +33,9 @@ namespace nob {
 					} else {
 						continue;
 					}
-					bvhs_ch << hash;
+
+					model::banned_vehicles.emplace_back(hash);
 				}
-				bvhs_ch << 0;
 				return;
 			}
 		}
@@ -50,9 +51,9 @@ namespace nob {
 			return;
 		}
 
-		chan<uint32_t> id_ch, bvhs_ch;
+		chan<uint32_t> id_ch;
 
-		std::thread([shop_ctrllr, id_ch, bvhs_ch]() mutable {
+		std::thread([shop_ctrllr, id_ch]() mutable {
 			for (int i = 0; i < shop_ctrllr->page_count(); i++) {
 				auto addr = hack::mem_match(
 					(const uint8_t *)shop_ctrllr->page_addr(i), shop_ctrllr->page_size(i),
@@ -69,7 +70,7 @@ namespace nob {
 							if ((*(uint32_t *)shop_ctrllr->pos_addr(func_off + k) & 0xFFFFFF) == 0x01002E) {
 								for (k = k + 1; k < 30; k++) {
 									if (*(uint8_t *)shop_ctrllr->pos_addr(func_off + k) == 0x5F) {
-										_find_banned_vehicles(shop_ctrllr, real_code_off - j, bvhs_ch);
+										_find_banned_vehicles(shop_ctrllr, real_code_off - j);
 										id_ch << (*(uint32_t *)shop_ctrllr->pos_addr(func_off + k + 1) & 0xFFFFFF);
 										return;
 									}
@@ -91,14 +92,6 @@ namespace nob {
 
 		if (id) {
 			ntv::global_table[id] = 1;
-
-			for (uint32_t bvh;;) {
-				bvhs_ch >> bvh;
-				if (!bvh) {
-					return;
-				}
-				model::banned_vehicles.push_back(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(bvh));
-			}
 		}
 	}
 } /* nob */

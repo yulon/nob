@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ntv.hpp"
+#include "hash.hpp"
 #include "script.hpp"
 
 #include <array>
@@ -13,7 +14,11 @@ namespace nob {
 		public:
 			model() : _hash(0) {}
 
-			model(uint32_t hash) : _hash(hash) {
+			model(hash_t hash) : _hash(hash) {
+				if (_hash) {
+					return;
+				}
+
 				if (!ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_hash) || !ntv::STREAMING::IS_MODEL_VALID(_hash)) {
 					_hash = 0;
 					return;
@@ -27,7 +32,9 @@ namespace nob {
 				}
 			}
 
-			model(const char *name) : model(ntv::GAMEPLAY::GET_HASH_KEY(name)) {}
+			model(const hasher &hr) : _hash(hr.hash) {}
+
+			model(const char *name) : model(hash(name)) {}
 
 			model(const std::string &name) : model(name.c_str()) {}
 
@@ -70,12 +77,12 @@ namespace nob {
 				return _hash;
 			}
 
-			uint32_t native_handle() const {
+			hash_t native_handle() const {
 				return _hash;
 			}
 
 		private:
-			uint32_t _hash;
+			hash_t _hash;
 
 			////////////////////////////////////////////////////////////////////
 
@@ -83,7 +90,7 @@ namespace nob {
 
 			// These data from ScriptHookV/NativeTrainer
 
-			static constexpr std::array<const char *, 696> characters {{
+			static constexpr std::array<hasher, 696> characters {{
 				"player_zero", "player_one", "player_two", "a_c_boar", "a_c_chimp", "a_c_cow", "a_c_coyote", "a_c_deer", "a_c_fish", "a_c_hen",
 				"a_c_cat_01", "a_c_chickenhawk", "a_c_cormorant", "a_c_crow", "a_c_dolphin", "a_c_humpback", "a_c_killerwhale", "a_c_pigeon", "a_c_seagull", "a_c_sharkhammer",
 				"a_c_pig", "a_c_rat", "a_c_rhesus", "a_c_chop", "a_c_husky", "a_c_mtlion", "a_c_retriever", "a_c_sharktiger", "a_c_shepherd", "s_m_m_movalien_01",
@@ -229,7 +236,7 @@ namespace nob {
 				"BENNY", "G", "VAGSPEAK", "VAGFUN", "BOATSTAFF", "FEMBOATSTAFF"
 			}};
 
-			static constexpr std::array<const char *, 400> vehicles {{
+			static constexpr std::array<hasher, 400> vehicles {{
 				"NINEF", "NINEF2", "BLISTA", "ASEA", "ASEA2", "BOATTRAILER", "BUS", "ARMYTANKER", "ARMYTRAILER", "ARMYTRAILER2",
 				"SUNTRAP", "COACH", "AIRBUS", "ASTEROPE", "AIRTUG", "AMBULANCE", "BARRACKS", "BARRACKS2", "BALLER", "BALLER2",
 				"BJXL", "BANSHEE", "BENSON", "BFINJECTION", "BIFF", "BLAZER", "BLAZER2", "BLAZER3", "BISON", "BISON2",
@@ -272,6 +279,6 @@ namespace nob {
 				"SUPERVOLITO", "SUPERVOLITO2", "TORO2", "TROPIC2", "VALKYRIE2", "VERLIERER2", "TAMPA", "BANSHEE2", "SULTANRS", "BTYPE3"
 			}};
 
-			static std::vector<std::string> banned_vehicles;
+			static std::vector<hasher> banned_vehicles;
 	};
 } /* nob */
