@@ -268,6 +268,7 @@ namespace nob {
 				std::stack<list> _list_stack;
 				task _tsk;
 				keyboard::listener _kl;
+				g2d::texture_dict _cm_td;
 		};
 
 		void disable_interaction_menu(bool toggle = true);

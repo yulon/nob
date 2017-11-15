@@ -11,17 +11,17 @@
 namespace nob {
 	class model {
 		public:
-			model() : _ntv_model(0) {}
+			model() : _hash(0) {}
 
-			model(uint32_t hash) : _ntv_model(hash) {
-				if (!ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_ntv_model) || !ntv::STREAMING::IS_MODEL_VALID(_ntv_model)) {
-					_ntv_model = 0;
+			model(uint32_t hash) : _hash(hash) {
+				if (!ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_hash) || !ntv::STREAMING::IS_MODEL_VALID(_hash)) {
+					_hash = 0;
 					return;
 				}
 
-				ntv::STREAMING::REQUEST_MODEL(_ntv_model);
-				if (!ntv::STREAMING::HAS_MODEL_LOADED(_ntv_model)) {
-					auto m = _ntv_model;
+				ntv::STREAMING::REQUEST_MODEL(_hash);
+				if (!ntv::STREAMING::HAS_MODEL_LOADED(_hash)) {
+					auto m = _hash;
 					wait([m]()->bool {
 						return ntv::STREAMING::HAS_MODEL_LOADED(m);
 					});
@@ -32,34 +32,34 @@ namespace nob {
 
 			model(const std::string &name) : model(name.c_str()) {}
 
-			model(model &&src) : _ntv_model(src._ntv_model) {
-				if (_ntv_model) {
-					src._ntv_model = 0;
+			model(model &&src) : _hash(src._hash) {
+				if (_hash) {
+					src._hash = 0;
 				}
 			}
 
 			model &operator=(model &&src) {
 				free();
-				if (src._ntv_model) {
-					_ntv_model = src._ntv_model;
-					src._ntv_model = 0;
+				if (src._hash) {
+					_hash = src._hash;
+					src._hash = 0;
 				}
 				return *this;
 			}
 
-			model(const model &src) : model(src._ntv_model) {}
+			model(const model &src) : model(src._hash) {}
 
 			model &operator=(const model &src) {
-				if (src._ntv_model) {
-					*this = src._ntv_model;
+				if (src._hash) {
+					*this = src._hash;
 				}
 				return *this;
 			}
 
 			void free()	{
-				if (_ntv_model) {
-					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(_ntv_model);
-					_ntv_model = 0;
+				if (_hash) {
+					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(_hash);
+					_hash = 0;
 				}
 			}
 
@@ -67,12 +67,16 @@ namespace nob {
 				free();
 			}
 
+			operator bool() const {
+				return _hash;
+			}
+
 			uint32_t native_handle() const {
-				return _ntv_model;
+				return _hash;
 			}
 
 		private:
-			uint32_t _ntv_model;
+			uint32_t _hash;
 
 			////////////////////////////////////////////////////////////////////
 

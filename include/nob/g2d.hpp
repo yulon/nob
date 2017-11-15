@@ -53,6 +53,8 @@ namespace nob {
 
 		class texture_dict {
 			public:
+				texture_dict() : _name(nullptr) {}
+
 				texture_dict(const char *name) : _name(name) {
 					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name, false);
 					if (!ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(_name)) {
@@ -69,9 +71,20 @@ namespace nob {
 
 				texture_dict &operator=(const texture_dict &) = delete;
 
-				texture_dict(texture_dict &&) = delete;
+				texture_dict(texture_dict &&src) : _name(src._name) {
+					if (src._name) {
+						src._name = nullptr;
+					}
+				}
 
-				texture_dict &operator=(texture_dict &&) = delete;
+				texture_dict &operator=(texture_dict &&src) {
+					free();
+					if (src._name) {
+						_name = src._name;
+						src._name = nullptr;
+					}
+					return *this;
+				}
 
 				void free() {
 					if (_name) {
@@ -82,6 +95,10 @@ namespace nob {
 
 				~texture_dict() {
 					free();
+				}
+
+				operator bool() const {
+					return _name;
 				}
 
 				const char *native_handle() const {
