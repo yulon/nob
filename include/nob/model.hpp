@@ -7,15 +7,14 @@
 #include <array>
 #include <string>
 #include <vector>
-#include <cassert>
 
 namespace nob {
 	class model {
 		public:
 			model() : _hash(0) {}
 
-			model(hash_t hash) : _hash(hash) {
-				if (_hash) {
+			model(hash_t h) : _hash(h) {
+				if (!_hash) {
 					return;
 				}
 
@@ -26,13 +25,13 @@ namespace nob {
 
 				ntv::STREAMING::REQUEST_MODEL(_hash);
 				if (!ntv::STREAMING::HAS_MODEL_LOADED(_hash)) {
-					wait([hash]()->bool {
-						return ntv::STREAMING::HAS_MODEL_LOADED(hash);
+					wait([h]()->bool {
+						return ntv::STREAMING::HAS_MODEL_LOADED(h);
 					});
 				}
 			}
 
-			model(const hasher &hr) : _hash(hr.hash) {}
+			model(const hasher &hr) : model(hr.hash) {}
 
 			model(const char *name) : model(hash(name)) {}
 
