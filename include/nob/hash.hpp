@@ -23,6 +23,10 @@ namespace nob {
 		return h;
 	}
 
+	static inline hash_t hash(const std::string &str) {
+		return hash(str.c_str());
+	}
+
 	class hasher {
 		public:
 			const hash_t hash;
@@ -33,7 +37,7 @@ namespace nob {
 
 			const char *src_str() const {
 				if (!_str && hash && ntv::STREAMING::IS_MODEL_A_VEHICLE(hash)) {
-					const_cast<char *&>(_str) = const_cast<char *>(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(hash));
+					return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(hash);
 				}
 				return _str;
 			}
