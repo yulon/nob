@@ -3,6 +3,8 @@
 #include "ntv.hpp"
 #include "model.hpp"
 #include "vector.hpp"
+#include "hash.hpp"
+#include "weapon.hpp"
 #include "script.hpp"
 
 namespace nob {
@@ -30,6 +32,10 @@ namespace nob {
 
 			bool is_exist() const {
 				return ntv::ENTITY::DOES_ENTITY_EXIST(_ntv_hdl);
+			}
+
+			operator bool() const {
+				return _ntv_hdl && is_exist();
 			}
 
 			vector3 pos(const vector3 &rcs_offset = {0, 0, 0}) const {
@@ -103,7 +109,7 @@ namespace nob {
 
 			character() {}
 
-			character(model m, const vector3 &coords, bool player_shadow = false) :
+			character(const model &m, const vector3 &coords, bool player_shadow = false) :
 				entity(ntv::PED::CREATE_PED(4, m.native_handle(), coords.x, coords.y, coords.z, 0.0f, false, true))
 			{
 				if (player_shadow) {
@@ -177,7 +183,14 @@ namespace nob {
 				}
 			}
 
+			void equip_parachute() {
+				if (!ntv::WEAPON::GET_IS_PED_GADGET_EQUIPPED(_ntv_hdl, 0xFBAB5776)) {
+					ntv::WEAPON::SET_PED_GADGET(_ntv_hdl, 0xFBAB5776, true);
+				}
+			}
+
 			void open_parachute() {
+				equip_parachute();
 				ntv::PED::FORCE_PED_TO_OPEN_PARACHUTE(_ntv_hdl);
 			}
 
@@ -241,6 +254,69 @@ namespace nob {
 
 				return character::motion_state::null;
 			}
+
+			void add_weapon(hash_t wpn) {
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), 0, false, true);
+			}
+
+			void add_weapon_in_pack(hash_t wpn) {
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), 0, false, false);
+			}
+
+			void rm_weapon(hash_t wpn) {
+				ntv::WEAPON::REMOVE_WEAPON_FROM_PED(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn));
+			}
+
+			void rm_all_weapons() {
+				ntv::WEAPON::REMOVE_ALL_PED_WEAPONS(_ntv_hdl, true);
+			}
+
+			void switch_weapon(hash_t wpn) {
+				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), true);
+			}
+
+			bool is_current_weapon(hash_t wpn) {
+				return ntv::WEAPON::GET_CURRENT_PED_WEAPON(_ntv_hdl, reinterpret_cast<nob::ntv::Hash *>(&wpn), true);
+			}
+
+			hash_t current_weapon() {
+				return static_cast<hash_t>(ntv::WEAPON::GET_SELECTED_PED_WEAPON(_ntv_hdl));
+			}
+
+			bool has_weapon_in_pack(hash_t wpn) {
+				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), false);
+			}
+
+			bool has_weapon(hash_t wpn) {
+				return is_current_weapon(wpn) ? true : has_weapon_in_pack(wpn);
+			}
+
+			void using_weapon(hash_t wpn) {
+				if (is_current_weapon(wpn)) {
+					return;
+				}
+				if (has_weapon_in_pack(wpn)) {
+					switch_weapon(wpn);
+					return;
+				}
+				add_weapon(wpn);
+			}
+
+			static constexpr int infinite_ammo = -1;
+
+			void ammo(hash_t ammo_type, int n) {
+				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, static_cast<nob::ntv::Hash>(ammo_type), n);
+			}
+
+			int max_ammo(hash_t wpn) {
+				int n;
+				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), &n);
+				return n;
+			}
+
+			int ammo(hash_t ammo_type) {
+				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_ntv_hdl, static_cast<nob::ntv::Hash>(ammo_type));
+			}
 	};
 
 	namespace player {
@@ -271,6 +347,10 @@ namespace nob {
 				old_chr.free();
 			}
 		}
+
+		void auto_get_parachute_in_plane(bool toggle = true) {
+			nob::ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
+		}
 	}
 
 	class vehicle : public entity {
@@ -281,7 +361,7 @@ namespace nob {
 
 			vehicle() {}
 
-			vehicle(model m, const vector3 &coords, float heading = 0.0f) :
+			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
 				entity(ntv::VEHICLE::CREATE_VEHICLE(m.native_handle(), coords.x, coords.y, coords.z, heading, false, true))
 			{
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_ntv_hdl, 0);

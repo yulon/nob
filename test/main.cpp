@@ -3,6 +3,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <iostream>
+
 size_t fps = 0;
 size_t fps_count = 0;
 
@@ -19,62 +21,80 @@ nob::task fps_output([]() {
 	nob::g2d::text(0, 0.9, 1, str_buf, 0.85, 255, 255, 255, 255, 1, true);
 });
 
-using namespace nob::ui;
-
 nob::initer disable_ntv_ia_menu([]() {
-	disable_interaction_menu();
+	nob::ui::disable_interaction_menu();
 });
 
-menu ia_menu("Nob Tester", list("Interaction Menu", {
+using namespace nob::ui;
+
+template<typename HRC>
+void add_vehs(list &li, const HRC &hrc) {
+	for (auto &hr : hrc) {
+		li->items.emplace_back(action(nob::i18n::get(hr.src_str()), hr.src_str(), [&hr]() {
+			auto veh = nob::vehicle(hr, nob::player::body().pos({0, 5, 0}));
+			veh.place_on_ground();
+			veh.set_best_mods();
+			veh.invincible();
+		}));
+	}
+}
+
+nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	list("Vehicle", {
 		list("Spawn", [](list li) {
-			for (auto mn : nob::model::vehicles) {
-				li->items.emplace_back(action(nob::i18n::get(mn), mn, [mn]() {
-					auto veh = nob::vehicle(mn, nob::player::body().pos({0, 5, 0}));
-					veh.place_on_ground();
-					veh.set_best_mods();
-					veh.invincible();
-				}));
-			}
+			add_vehs(li, nob::model::vehicles);
 
 			nob::vehicle::unlock_banned_vehicles();
-			for (auto mn : nob::model::banned_vehicles) {
-				li->items.emplace_back(action(nob::i18n::get(mn), mn, [mn]() {
-					auto veh = nob::vehicle(mn, nob::player::body().pos({0, 5, 0}));
-					veh.place_on_ground();
-					veh.set_best_mods();
-					veh.invincible();
-				}));
-			}
+			add_vehs(li, nob::model::banned_vehicles);
 
 			li->on_show = nullptr;
 		})
 	}),
 	list("Player", {
 		flag("Invincible", [](bool val) {
-			nob::player::body().invincible(val);
+			auto pb = nob::player::body();
+			pb.invincible(val);
+			/*auto addr = nob::shv::getScriptHandleBaseAddress(pb.native_handle());
+			if (addr) {
+				std::cout << addr << std::endl;
+				*(DWORD *)(addr + 0x188) |= (1 << 9);
+			}*/
 		}),
 		flag("Auto Get Parachute in Plane", [](bool val) {
-			nob::ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, val);
+			nob::player::auto_get_parachute_in_plane(val);
 		}),
-		action("State Capturer", []() {
-			/*auto plr_chr = nob::player::body();
-			auto pos = plr_chr.pos();
-			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos({pos.x + 5, pos.y, pos.z + 10}), true);
-			auto old_h = std::make_shared<float>(nob::ntv::ENTITY::GET_ENTITY_HEADING(plr_chr.native_handle()));
+		action("Other", []() {
+			auto pb = nob::player::body();
+			//auto pb_nh = pb.native_handle();
 
-			nob::task([chr, plr_chr, old_h]() mutable {
-				//if (!nob::ntv::AI::IS_PED_STILL(plr_chr.native_handle())) {
-					float h = nob::ntv::ENTITY::GET_ENTITY_HEADING(plr_chr.native_handle());
+			//nob::ntv::PED::SET_PED_CAN_RAGDOLL(pb_nh, true);
+			//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, 2);
+			//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, 4);
+
+			//for (size_t i = 1; i <= 26; ++i) {
+				//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, i);
+			//}
+
+			pb.using_weapon(nob::weapon::rpg);
+
+			//nob::ntv::PLAYER::SET_PLAYER_WEAPON_DEFENSE_MODIFIER(nob::player::native_handle(), 0);
+			/*
+			auto pos = pb.pos();
+			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos({pos.x + 5, pos.y, pos.z + 10}), true);
+			auto old_h = std::make_shared<float>(nob::ntv::ENTITY::GET_ENTITY_HEADING(pb.native_handle()));
+
+			nob::task([chr, pb, old_h]() mutable {
+				//if (!nob::ntv::AI::IS_PED_STILL(pb.native_handle())) {
+					float h = nob::ntv::ENTITY::GET_ENTITY_HEADING(pb.native_handle());
 					if (h != *old_h) {
-						auto pos = plr_chr.pos({0, 10, 0});
+						auto pos = pb.pos({0, 10, 0});
 						chr.face({pos.x + 5, pos.y, pos.x}, h);
 						*old_h = h;
 					}
 				//}
 			});
 
-			plr_chr.on_motion([](nob::character::motion_state ms) {
+			pb.on_motion([](nob::character::motion_state ms) {
 				switch (ms) {
 					case nob::character::motion_state::still:
 						std::cout << "still" << std::endl << std::endl;
