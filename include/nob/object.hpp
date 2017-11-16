@@ -4,7 +4,6 @@
 #include "model.hpp"
 #include "vector.hpp"
 #include "hash.hpp"
-#include "weapon.hpp"
 #include "script.hpp"
 
 namespace nob {
@@ -348,7 +347,7 @@ namespace nob {
 			}
 		}
 
-		void auto_get_parachute_in_plane(bool toggle = true) {
+		inline void auto_get_parachute_in_plane(bool toggle = true) {
 			nob::ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
 		}
 	}
