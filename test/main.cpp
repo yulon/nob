@@ -50,6 +50,17 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			li->on_show = nullptr;
 		})
 	}),
+	list("Weapon", {
+		action("Print Current Weapon Info", []() {
+			nob::player::body().print_weapon_info();
+		}),
+		action("Get All Weapons", []() {
+			auto pb = nob::player::body();
+			for (auto &hr : nob::weapons) {
+				pb.add_weapon_in_pack(hr.hash);
+			}
+		})
+	}),
 	list("Player", {
 		flag("Invincible", [](bool val) {
 			auto pb = nob::player::body();
@@ -75,7 +86,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, i);
 			//}
 
-			pb.using_weapon(nob::weapon::rpg);
+			pb.using_weapon("WEAPON_RPG");
 
 			//nob::ntv::PLAYER::SET_PLAYER_WEAPON_DEFENSE_MODIFIER(nob::player::native_handle(), 0);
 			/*
