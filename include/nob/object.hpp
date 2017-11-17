@@ -4,7 +4,10 @@
 #include "model.hpp"
 #include "vector.hpp"
 #include "hash.hpp"
+#include "weapon.hpp"
 #include "script.hpp"
+
+#include <iostream>
 
 namespace nob {
 	class entity {
@@ -254,67 +257,93 @@ namespace nob {
 				return character::motion_state::null;
 			}
 
-			void add_weapon(hash_t wpn) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), 0, false, true);
+			void add_weapon(const hasher &weapon) {
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, weapon.hash, 0, false, true);
 			}
 
-			void add_weapon_in_pack(hash_t wpn) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), 0, false, false);
+			void add_weapon_in_pack(const hasher &weapon) {
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, weapon.hash, 0, false, false);
 			}
 
-			void rm_weapon(hash_t wpn) {
-				ntv::WEAPON::REMOVE_WEAPON_FROM_PED(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn));
+			void rm_weapon(const hasher &weapon) {
+				ntv::WEAPON::REMOVE_WEAPON_FROM_PED(_ntv_hdl, weapon.hash);
 			}
 
 			void rm_all_weapons() {
 				ntv::WEAPON::REMOVE_ALL_PED_WEAPONS(_ntv_hdl, true);
 			}
 
-			void switch_weapon(hash_t wpn) {
-				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), true);
+			void switch_weapon(const hasher &weapon) {
+				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, weapon.hash, true);
 			}
 
-			bool is_current_weapon(hash_t wpn) {
-				return ntv::WEAPON::GET_CURRENT_PED_WEAPON(_ntv_hdl, reinterpret_cast<nob::ntv::Hash *>(&wpn), true);
+			bool is_current_weapon(const hasher &weapon) {
+				hash_t h;
+				ntv::WEAPON::GET_CURRENT_PED_WEAPON(_ntv_hdl, &h, true);
+				return h == weapon.hash;
 			}
 
-			hash_t current_weapon() {
-				return static_cast<hash_t>(ntv::WEAPON::GET_SELECTED_PED_WEAPON(_ntv_hdl));
+			hasher current_weapon() {
+				return ntv::WEAPON::GET_SELECTED_PED_WEAPON(_ntv_hdl);
 			}
 
-			bool has_weapon_in_pack(hash_t wpn) {
-				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), false);
+			bool has_weapon_in_pack(const hasher &weapon) {
+				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, weapon.hash, false);
 			}
 
-			bool has_weapon(hash_t wpn) {
-				return is_current_weapon(wpn) ? true : has_weapon_in_pack(wpn);
+			bool has_weapon(const hasher &weapon) {
+				return is_current_weapon(weapon.hash) ? true : has_weapon_in_pack(weapon);
 			}
 
-			void using_weapon(hash_t wpn) {
-				if (is_current_weapon(wpn)) {
+			void using_weapon(const hasher &weapon) {
+				if (is_current_weapon(weapon.hash)) {
 					return;
 				}
-				if (has_weapon_in_pack(wpn)) {
-					switch_weapon(wpn);
+				if (has_weapon_in_pack(weapon.hash)) {
+					switch_weapon(weapon.hash);
 					return;
 				}
-				add_weapon(wpn);
+				add_weapon(weapon.hash);
 			}
 
 			static constexpr int infinite_ammo = -1;
 
-			void ammo(hash_t ammo_type, int n) {
-				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, static_cast<nob::ntv::Hash>(ammo_type), n);
+			void ammo(const hasher &ammo_type, int n) {
+				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, ammo_type.hash, n);
 			}
 
-			int max_ammo(hash_t wpn) {
+			int ammo(const hasher &ammo_type) {
+				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_ntv_hdl, ammo_type.hash);
+			}
+
+			hasher ammo_type(const hasher &weapon) {
+				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, weapon.hash);
+			}
+
+			int max_ammo(const hasher &weapon) {
 				int n;
-				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, static_cast<nob::ntv::Hash>(wpn), &n);
+				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, weapon.hash, &n);
 				return n;
 			}
 
-			int ammo(hash_t ammo_type) {
-				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_ntv_hdl, static_cast<nob::ntv::Hash>(ammo_type));
+			void print_weapon_info() {
+				auto cur_wpn = current_weapon();
+				if (cur_wpn == "WEAPON_UNARMED") {
+					std::cout << "unarmed!" << std::endl;
+					return;
+				}
+
+				std::cout << "weapon " << std::hex << cur_wpn.hash << std::endl
+					<< "  ammo type: " << ammo_type(cur_wpn).hash << std::endl;
+					/*auto info = weapon_info(cur_wpn);
+					if (info.valid) {
+						std::cout
+						<< "  damage: " << info.damage / 255.0f << std::endl
+						<< "  speed: " << info.speed / 255.0f << std::endl
+						<< "  capacity: " << info.capacity / 255.0f << std::endl
+						<< "  accuracy: " << info.accuracy / 255.0f << std::endl
+						<< "  range: " << info.range / 255.0f << std::endl;
+					}*/
 			}
 	};
 

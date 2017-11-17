@@ -13,7 +13,7 @@ namespace nob {
 		public:
 			model() : _hash(0) {}
 
-			model(hash_t h) : _hash(h) {
+			model(const hasher &hr) : _hash(hr.hash) {
 				if (!_hash) {
 					return;
 				}
@@ -25,17 +25,12 @@ namespace nob {
 
 				ntv::STREAMING::REQUEST_MODEL(_hash);
 				if (!ntv::STREAMING::HAS_MODEL_LOADED(_hash)) {
+					auto h = _hash;
 					wait([h]()->bool {
 						return ntv::STREAMING::HAS_MODEL_LOADED(h);
 					});
 				}
 			}
-
-			model(const hasher &hr) : model(hr.hash) {}
-
-			model(const char *name) : model(hash(name)) {}
-
-			model(const std::string &name) : model(name.c_str()) {}
 
 			model(model &&src) : _hash(src._hash) {
 				if (_hash) {
@@ -56,7 +51,7 @@ namespace nob {
 
 			model &operator=(const model &src) {
 				if (src._hash) {
-					*this = src._hash;
+					*this = model(src._hash);
 				}
 				return *this;
 			}
@@ -89,7 +84,7 @@ namespace nob {
 
 			// These data from ScriptHookV/NativeTrainer
 
-			static constexpr std::array<hasher, 696> characters {{
+			static constexpr std::array<hasher, 696> characters {
 				"player_zero", "player_one", "player_two", "a_c_boar", "a_c_chimp", "a_c_cow", "a_c_coyote", "a_c_deer", "a_c_fish", "a_c_hen",
 				"a_c_cat_01", "a_c_chickenhawk", "a_c_cormorant", "a_c_crow", "a_c_dolphin", "a_c_humpback", "a_c_killerwhale", "a_c_pigeon", "a_c_seagull", "a_c_sharkhammer",
 				"a_c_pig", "a_c_rat", "a_c_rhesus", "a_c_chop", "a_c_husky", "a_c_mtlion", "a_c_retriever", "a_c_sharktiger", "a_c_shepherd", "s_m_m_movalien_01",
@@ -160,9 +155,9 @@ namespace nob {
 				"u_m_o_tramp_01", "u_m_y_abner", "u_m_y_antonb", "u_m_y_babyd", "u_m_y_baygor", "u_m_y_burgerdrug_01", "u_m_y_chip", "u_m_y_cyclist_01", "u_m_y_fibmugger_01", "u_m_y_guido_01",
 				"u_m_y_gunvend_01", "u_m_y_hippie_01", "u_m_y_imporage", "u_m_y_justin", "u_m_y_mani", "u_m_y_militarybum", "u_m_y_paparazzi", "u_m_y_party_01", "u_m_y_pogo_01", "u_m_y_prisoner_01",
 				"ig_benny", "ig_g", "ig_vagspeak", "mp_m_g_vagfun_01", "mp_m_boatstaff_01", "mp_f_boatstaff_01"
-			}};
+			};
 
-			static constexpr std::array<const char *, 696> characters_desc {{
+			static constexpr std::array<const char *, 696> characters_desc {
 				"MICHAEL", "FRANKLIN", "TREVOR", "BOAR", "CHIMP", "COW", "COYOTE", "DEER", "FISH", "HEN",
 				"CAT", "HAWK", "CORMORANT", "CROW", "DOLPHIN", "HUMPBACK", "WHALE", "PIGEON", "SEAGULL", "SHARKHAMMER" ,
 				"PIG", "RAT", "RHESUS", "CHOP", "HUSKY", "MTLION", "RETRIEVER", "SHARKTIGER", "SHEPHERD", "ALIEN",
@@ -233,9 +228,9 @@ namespace nob {
 				"TRAMP", "ABNER", "ANTONB", "BABYD", "BAYGOR", "BURGERDRUG", "CHIP", "CYCLIST", "FIBMUGGER", "GUIDO",
 				"GUNVEND", "HIPPIE", "IMPORAGE", "JUSTIN", "MANI", "MILITARYBUM", "PAPARAZZI", "PARTY", "POGO", "PRISONER",
 				"BENNY", "G", "VAGSPEAK", "VAGFUN", "BOATSTAFF", "FEMBOATSTAFF"
-			}};
+			};
 
-			static constexpr std::array<hasher, 400> vehicles {{
+			static constexpr std::array<hasher, 400> vehicles {
 				"NINEF", "NINEF2", "BLISTA", "ASEA", "ASEA2", "BOATTRAILER", "BUS", "ARMYTANKER", "ARMYTRAILER", "ARMYTRAILER2",
 				"SUNTRAP", "COACH", "AIRBUS", "ASTEROPE", "AIRTUG", "AMBULANCE", "BARRACKS", "BARRACKS2", "BALLER", "BALLER2",
 				"BJXL", "BANSHEE", "BENSON", "BFINJECTION", "BIFF", "BLAZER", "BLAZER2", "BLAZER3", "BISON", "BISON2",
@@ -276,7 +271,7 @@ namespace nob {
 				"BTYPE2", "BALLER3", "BALLER4", "BALLER5", "BALLER6", "CARGOBOB4", "COG55", "COG552", "COGNOSCENTI", "COGNOSCENTI2",
 				"DINGHY4", "LIMO2", "MAMBA", "NIGHTSHADE", "SCHAFTER3", "SCHAFTER4", "SCHAFTER5", "SCHAFTER6", "SEASHARK3", "SPEEDER2",
 				"SUPERVOLITO", "SUPERVOLITO2", "TORO2", "TROPIC2", "VALKYRIE2", "VERLIERER2", "TAMPA", "BANSHEE2", "SULTANRS", "BTYPE3"
-			}};
+			};
 
 			static std::vector<hasher> banned_vehicles;
 	};
