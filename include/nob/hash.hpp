@@ -27,8 +27,6 @@ namespace nob {
 		return hash(str.c_str());
 	}
 
-	#define _NOB_STATIC_HASH(_name, _str) static constexpr hash_t _name = hash(#_str)
-
 	class hasher {
 		public:
 			const hash_t hash;
@@ -44,7 +42,7 @@ namespace nob {
 				return _str;
 			}
 
-			bool operator==(const hasher &hr) {
+			bool operator==(const hasher &hr) const {
 				return hash == hr.hash;
 			}
 
