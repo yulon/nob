@@ -46,6 +46,14 @@ namespace nob {
 				return hash == hr.hash;
 			}
 
+			bool operator!=(const hasher &hr) const {
+				return hash != hr.hash;
+			}
+
+			operator bool() const {
+				return hash;
+			}
+
 		private:
 			const char *_str;
 	};
