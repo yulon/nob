@@ -4,7 +4,7 @@
 #include "model.hpp"
 #include "vector.hpp"
 #include "hash.hpp"
-#include "weapon.hpp"
+#include "arm.hpp"
 #include "script.hpp"
 
 #include <iostream>
@@ -111,10 +111,10 @@ namespace nob {
 
 			character() {}
 
-			character(const model &m, const vector3 &coords, bool player_shadow = false) :
+			character(const model &m, const vector3 &coords, bool player_body = false) :
 				entity(ntv::PED::CREATE_PED(4, m.native_handle(), coords.x, coords.y, coords.z, 0.0f, false, true))
 			{
-				if (player_shadow) {
+				if (player_body) {
 					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(_ntv_hdl, true);
 					ntv::PED::SET_PED_FLEE_ATTRIBUTES(_ntv_hdl, 0, 0);
 					ntv::PED::SET_PED_COMBAT_ATTRIBUTES(_ntv_hdl, 292, true);
@@ -167,7 +167,7 @@ namespace nob {
 			}
 
 			void go_to(const vector3 &target, float speed) {
-				if (get_motion_state() == character::motion_state::parachuting) {
+				if (get_motion_state() == motion_state::parachuting) {
 					ntv::AI::TASK_PARACHUTE_TO_TARGET(_ntv_hdl, target.x, target.y, target.z);
 					return;
 				}
@@ -178,7 +178,7 @@ namespace nob {
 					speed,
 					-1, 0, 0
 				);
-				if (speed == character::speed_run) {
+				if (speed == speed_run) {
 					ntv::AI::SET_PED_DESIRED_MOVE_BLEND_RATIO(_ntv_hdl, 2.0f);
 				} else {
 					ntv::AI::SET_PED_DESIRED_MOVE_BLEND_RATIO(_ntv_hdl, speed);
@@ -209,18 +209,18 @@ namespace nob {
 				}
 			}
 
-			character::motion_state get_motion_state() const {
+			motion_state get_motion_state() const {
 				auto ps = ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl);
 				if (ps == 1 || ps == 2) {
-					return character::motion_state::parachuting;
+					return motion_state::parachuting;
 				}
 
 				if (nob::ntv::PED::IS_PED_IN_PARACHUTE_FREE_FALL(_ntv_hdl)) {
-					return character::motion_state::skydiving;
+					return motion_state::skydiving;
 				}
 
 				if (nob::ntv::PED::IS_PED_FALLING(_ntv_hdl)) {
-					return character::motion_state::falling;
+					return motion_state::falling;
 				}
 
 				if (nob::ntv::PED::IS_PED_JUMPING(_ntv_hdl)) {
@@ -231,99 +231,148 @@ namespace nob {
 					} else if (nob::ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
 
 					}*/
-					return character::motion_state::jumping;
+					return motion_state::jumping;
 				}
 
 				if (nob::ntv::PED::IS_PED_CLIMBING(_ntv_hdl)) {
-					return character::motion_state::climbing;
+					return motion_state::climbing;
 				}
 
 				if (nob::ntv::AI::IS_PED_STILL(_ntv_hdl)) {
-					return character::motion_state::still;
+					return motion_state::still;
 				}
 
 				if (nob::ntv::AI::IS_PED_WALKING(_ntv_hdl)) {
-					return character::motion_state::walking;
+					return motion_state::walking;
 				}
 
 				if (nob::ntv::AI::IS_PED_RUNNING(_ntv_hdl)) {
-					return character::motion_state::runing;
+					return motion_state::runing;
 				}
 
 				if (nob::ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
-					return character::motion_state::sprinting;
+					return motion_state::sprinting;
 				}
 
-				return character::motion_state::null;
+				return motion_state::null;
 			}
 
-			void add_weapon(const hasher &weapon) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, weapon.hash, 0, false, true);
+			void add_weapon(const hasher &wpn) {
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, 0, false, false);
 			}
 
-			void add_weapon_in_pack(const hasher &weapon) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, weapon.hash, 0, false, false);
+			void rm_weapon(const hasher &wpn) {
+				ntv::WEAPON::REMOVE_WEAPON_FROM_PED(_ntv_hdl, wpn.hash);
 			}
 
-			void rm_weapon(const hasher &weapon) {
-				ntv::WEAPON::REMOVE_WEAPON_FROM_PED(_ntv_hdl, weapon.hash);
+			void add_all_weapons() {
+				for (auto &wpn : nob::arm::weapons) {
+					if (wpn == "WEAPON_UNARMED") {
+						continue;
+					}
+
+					auto wpn_grp = nob::arm::weapon_group(wpn);
+
+					if (wpn_grp == "GROUP_THROWN") {
+						thrown_weapon(wpn, max_ammo(wpn));
+						continue;
+					}
+
+					add_weapon(wpn);
+
+					if (wpn_grp == "GROUP_MELEE") {
+						continue;
+					}
+
+					ammo(ammo_type(wpn), max_ammo(wpn));
+				}
 			}
 
 			void rm_all_weapons() {
 				ntv::WEAPON::REMOVE_ALL_PED_WEAPONS(_ntv_hdl, true);
 			}
 
-			void switch_weapon(const hasher &weapon) {
-				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, weapon.hash, true);
+			void switch_weapon(const hasher &wpn) {
+				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, wpn.hash, true);
 			}
 
-			bool is_current_weapon(const hasher &weapon) {
+			bool is_current_weapon(const hasher &wpn) {
 				hash_t h;
 				ntv::WEAPON::GET_CURRENT_PED_WEAPON(_ntv_hdl, &h, true);
-				return h == weapon.hash;
+				return h == wpn.hash;
 			}
 
 			hasher current_weapon() {
 				return ntv::WEAPON::GET_SELECTED_PED_WEAPON(_ntv_hdl);
 			}
 
-			bool has_weapon_in_pack(const hasher &weapon) {
-				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, weapon.hash, false);
+			void unarmed() {
+				switch_weapon("WEAPON_UNARMED");
 			}
 
-			bool has_weapon(const hasher &weapon) {
-				return is_current_weapon(weapon.hash) ? true : has_weapon_in_pack(weapon);
+			bool is_unarmed() {
+				return is_current_weapon("WEAPON_UNARMED");
 			}
 
-			void using_weapon(const hasher &weapon) {
-				if (is_current_weapon(weapon.hash)) {
+			bool has_weapon_in_pack(const hasher &wpn) {
+				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, wpn.hash, false);
+			}
+
+			bool has_weapon(const hasher &wpn) {
+				return is_current_weapon(wpn.hash) ? true : has_weapon_in_pack(wpn);
+			}
+
+			void using_weapon(const hasher &wpn) {
+				if (is_current_weapon(wpn.hash)) {
 					return;
 				}
-				if (has_weapon_in_pack(weapon.hash)) {
-					switch_weapon(weapon.hash);
+				if (!has_weapon_in_pack(wpn.hash)) {
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, -1, false, true);
 					return;
 				}
-				add_weapon(weapon.hash);
+				switch_weapon(wpn.hash);
 			}
 
-			static constexpr int infinite_ammo = -1;
-
-			void ammo(const hasher &ammo_type, int n) {
-				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, ammo_type.hash, n);
+			void ammo(const hasher &type, int total) {
+				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash, total);
 			}
 
-			int ammo(const hasher &ammo_type) {
-				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_ntv_hdl, ammo_type.hash);
+			int ammo(const hasher &type) {
+				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash);
 			}
 
-			hasher ammo_type(const hasher &weapon) {
-				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, weapon.hash);
+			void add_ammo(const hasher &type, int count) {
+				ammo(type, ammo(type) + count);
 			}
 
-			int max_ammo(const hasher &weapon) {
-				int n;
-				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, weapon.hash, &n);
-				return n;
+			void ammo_no_consumption(bool toggle = true) {
+				nob::ntv::WEAPON::SET_PED_INFINITE_AMMO_CLIP(_ntv_hdl, toggle);
+			}
+
+			hasher ammo_type(const hasher &wpn) {
+				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, wpn.hash);
+			}
+
+			int max_ammo(const hasher &wpn) {
+				int total;
+				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, wpn.hash, &total);
+				return total;
+			}
+
+			void thrown_weapon(const hasher &thr_wpn, int total) {
+				if (!has_weapon(thr_wpn)) {
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash, total, false, false);
+					return;
+				}
+				ammo(ammo_type(thr_wpn), total);
+			}
+
+			int thrown_weapon(const hasher &thr_wpn) {
+				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, thr_wpn.hash);
+			}
+
+			void add_thrown_weapon(const hasher &thr_wpn, int count) {
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash, count, false, false);
 			}
 
 			void print_weapon_info() {
@@ -335,7 +384,7 @@ namespace nob {
 
 				std::cout << "weapon " << std::hex << cur_wpn.hash << std::endl
 					<< "  ammo type: " << ammo_type(cur_wpn).hash << std::endl;
-					/*auto info = weapon_info(cur_wpn);
+					/*auto info = arm::weapon_info(cur_wpn);
 					if (info.valid) {
 						std::cout
 						<< "  damage: " << info.damage / 255.0f << std::endl

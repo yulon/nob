@@ -7,7 +7,7 @@
 #include "nob/hash.hpp"
 #include "nob/model.hpp"
 #include "nob/object.hpp"
-#include "nob/weapon.hpp"
+#include "nob/arm.hpp"
 #include "nob/g2d.hpp"
 #include "nob/ui.hpp"
 #include "nob/vision.hpp"

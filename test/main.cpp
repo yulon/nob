@@ -55,9 +55,33 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::player::body().print_weapon_info();
 		}),
 		action("Get All Weapons", []() {
-			auto pb = nob::player::body();
-			for (auto &hr : nob::weapons) {
-				pb.add_weapon_in_pack(hr.hash);
+			nob::player::body().add_all_weapons();
+		}),
+		action("Remove All Weapons", []() {
+			nob::player::body().rm_all_weapons();
+		}),
+		list("Get a Weapon", [](list li) {
+			for (auto &wpn : nob::arm::weapons) {
+				if (wpn == "WEAPON_UNARMED") {
+					continue;
+				}
+				li->items.emplace_back(action(std::string(wpn.src_str()).substr(7), [&wpn]() {
+					auto pb = nob::player::body();
+					auto wpn_grp = nob::arm::weapon_group(wpn);
+
+					if (wpn_grp == "GROUP_THROWN") {
+						pb.thrown_weapon(wpn, pb.max_ammo(wpn));
+						return;
+					}
+
+					pb.add_weapon(wpn);
+
+					if (wpn_grp == "GROUP_MELEE") {
+						return;
+					}
+
+					pb.ammo(pb.ammo_type(wpn), pb.max_ammo(wpn));
+				}));
 			}
 		})
 	}),
@@ -75,7 +99,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
 		action("Other", []() {
-			auto pb = nob::player::body();
+			//auto pb = nob::player::body();
 			//auto pb_nh = pb.native_handle();
 
 			//nob::ntv::PED::SET_PED_CAN_RAGDOLL(pb_nh, true);
@@ -86,7 +110,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, i);
 			//}
 
-			pb.using_weapon("WEAPON_RPG");
 
 			//nob::ntv::PLAYER::SET_PLAYER_WEAPON_DEFENSE_MODIFIER(nob::player::native_handle(), 0);
 			/*
