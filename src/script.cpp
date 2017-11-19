@@ -696,7 +696,7 @@ namespace nob {
 		{ "randomchar_controller", false },
 		{ "range_modern", false },
 		{ "range_modern_mp", false },
-		{ "replay_controller", false },
+		{ "replay_controller", true },
 		{ "rerecord_recording", false },
 		{ "respawn_controller", false },
 		{ "restrictedareas", false },
@@ -759,7 +759,7 @@ namespace nob {
 		{ "script_metrics", false },
 		{ "sctv", false },
 		{ "sc_lb_global_block", false },
-		{ "selector", false },
+		{ "selector", true },
 		{ "selector_example", false },
 		{ "selling_short_1", false },
 		{ "selling_short_2", false },
@@ -864,8 +864,8 @@ namespace nob {
 	void terminate_unimportant_scripts() {
 		for (auto &si : _script_infos) {
 			if (!si.essential) {
-				nob::ntv::PLAYER::FORCE_CLEANUP_FOR_ALL_THREADS_WITH_THIS_NAME(si.name, 8); //Cleanup first
-				nob::ntv::GAMEPLAY::TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME(si.name); //Terminate
+				ntv::PLAYER::FORCE_CLEANUP_FOR_ALL_THREADS_WITH_THIS_NAME(si.name, 8); // Cleanup first
+				ntv::GAMEPLAY::TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME(si.name); // Terminate
 			}
 		}
 		nob::ntv::PLAYER::FORCE_CLEANUP(8);
