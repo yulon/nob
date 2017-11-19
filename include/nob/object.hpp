@@ -109,7 +109,7 @@ namespace nob {
 
 			////////////////////////////////////////////////////////////////////
 
-			character() {}
+			character() = default;
 
 			character(const model &m, const vector3 &coords, bool player_body = false) :
 				entity(ntv::PED::CREATE_PED(4, m.native_handle(), coords.x, coords.y, coords.z, 0.0f, false, true))
@@ -428,6 +428,13 @@ namespace nob {
 		inline void auto_get_parachute_in_plane(bool toggle = true) {
 			nob::ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
 		}
+
+		inline void disable_automatic_respawn() {
+			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_DEATH(0);
+			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_ARREST(0);
+			ntv::GAMEPLAY::SET_FADE_IN_AFTER_DEATH_ARREST(0);
+			ntv::GAMEPLAY::_DISABLE_AUTOMATIC_RESPAWN(1);
+		}
 	}
 
 	class vehicle : public entity {
@@ -436,7 +443,7 @@ namespace nob {
 
 			////////////////////////////////////////////////////////////////////
 
-			vehicle() {}
+			vehicle() = default;
 
 			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
 				entity(ntv::VEHICLE::CREATE_VEHICLE(m.native_handle(), coords.x, coords.y, coords.z, heading, false, true))
