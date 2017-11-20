@@ -78,15 +78,13 @@ namespace nob {
 
 					//////////////////////////////////////////////////////////////////////////
 
-					if (!_cm_td) {
-						_cm_td = "CommonMenu";
-					}
+					g2d::texture_dict cm_td("CommonMenu");
 
 					float x = left;
 					float y = top;
 					float w = width();
 					float h = title_bg_height;
-					_cm_td.draw("interaction_bgd", x, y, w, h);
+					cm_td.draw("interaction_bgd", x, y, w, h);
 					g2d::text(x, y + ((h - title_font_height) / 2), w, _tit, title_font_size, 255, 255, 255, 255, 1);
 
 					auto &cur_li = _list_stack.top();
@@ -112,7 +110,7 @@ namespace nob {
 						size_t end = cur_li->page_top + len;
 
 						y += h;
-						_cm_td.draw("gradient_bgd", x, y, w, len * h);
+						cm_td.draw("gradient_bgd", x, y, w, len * h);
 
 						for (size_t i = cur_li->page_top; i < sz && i < end; ++i) {
 							uint8_t r, g, b;
@@ -120,14 +118,14 @@ namespace nob {
 							if (i == cur_li->selected) {
 								r = g = b = 0;
 
-								_cm_td.draw("gradient_nav", x, y, w, h);
+								cm_td.draw("gradient_nav", x, y, w, h);
 
 								if (cur_li->items[i].type_is<flag>()) {
 									auto flg_val = cur_li->items[i].cast<flag>()->value;
 									if (flg_val) {
-										_cm_td.draw("shop_box_tickb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_tickb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
-										_cm_td.draw("shop_box_blankb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_blankb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									}
 								}
 							} else {
@@ -136,9 +134,9 @@ namespace nob {
 								if (cur_li->items[i].type_is<flag>()) {
 									auto flg_val = cur_li->items[i].cast<flag>()->value;
 									if (flg_val) {
-										_cm_td.draw("shop_box_tick", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_tick", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
-										_cm_td.draw("shop_box_blank", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_blank", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									}
 								}
 							}
@@ -153,7 +151,7 @@ namespace nob {
 						} else {
 							y += 0.001f;
 							g2d::rect(x, y, w, h, 0, 0, 0, 200);
-							_cm_td.draw("shop_arrows_upanddown", x + ((w - icon_width) / 2.0f), y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+							cm_td.draw("shop_arrows_upanddown", x + ((w - icon_width) / 2.0f), y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 							y += h;
 
 							h = 0.0025f;
@@ -167,7 +165,7 @@ namespace nob {
 							y += h;
 							y = y - 0.0015f;
 							h = item_height * 1.0f;
-							_cm_td.draw("gradient_bgd", x, y, w, h, 200);
+							cm_td.draw("gradient_bgd", x, y, w, h, 200);
 
 							g2d::text(x + margin, y + ((h - font_height) / 2), w, cur_li->items[cur_li->selected]->desc, font_size, 255, 255, 255, 255, 0);
 						}
