@@ -324,7 +324,7 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
-		void disable_story_features(bool toggle = true);
+		void disable_sp_features(bool toggle = true);
 		void disable_wheel_slowmo(bool toggle = true);
 	} /* ui */
 } /* nob */

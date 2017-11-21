@@ -6,7 +6,7 @@
 
 namespace nob {
 	namespace ui {
-		void disable_story_features(bool toggle) {
+		void disable_sp_features(bool toggle) {
 			static task tsk;
 
 			if (toggle) {
