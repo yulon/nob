@@ -54,6 +54,10 @@ namespace nob {
 				return hash;
 			}
 
+			size_t operator()() {
+				return static_cast<size_t>(hash);
+			}
+
 		private:
 			const char *_str;
 	};
