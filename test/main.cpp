@@ -3,22 +3,14 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <sstream>
 #include <iostream>
 
-size_t fps = 0;
-size_t fps_count = 0;
-
-nob::task fps_zeroing([]() {
-	nob::wait(1000);
-	fps = fps_count;
-	fps_count = 0;
-});
-
-nob::task fps_output([]() {
-	++fps_count;
-	char str_buf[5];
-	itoa(fps, str_buf, 10);
-	nob::g2d::text(0, 0.9, 1, str_buf, 0.85, 255, 255, 255, 255, 1, true);
+nob::task print_pos([]() {
+	auto pos = nob::player::body().pos();
+	std::stringstream ss;
+	ss << "X: " << pos.x << ", Y: " << pos.y << ", Z: " << pos.z;
+	nob::g2d::text(0, 0.93, 1, ss.str(), 0.6, 255, 255, 255, 255, 1, true);
 });
 
 nob::initer disable_ntv_ia_menu([]() {
@@ -99,6 +91,12 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
 		action("Other", []() {
+			//auto cods = nob::world::load_ilp(nob::world::ilp::stab_city_on_fire);
+			//nob::ntv::PLAYER::START_PLAYER_TELEPORT(nob::player::native_handle(), cods.x, cods.y, cods.z, 0, true, true, true);
+
+			nob::world::load_all_ilps();
+			nob::world::lock_all_doors(false);
+
 			//auto pb = nob::player::body();
 			//auto pb_nh = pb.native_handle();
 
@@ -177,7 +175,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	}),
 	list("UI", {
 		flag("Disable Story Features", [](bool val) {
-			disable_story_features(val);
+			disable_sp_features(val);
 		}),
 		flag("Disable Wheel Slowmo", [](bool val) {
 			disable_wheel_slowmo(val);

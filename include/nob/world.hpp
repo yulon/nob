@@ -3,6 +3,9 @@
 #include "ntv.hpp"
 #include "vector.hpp"
 #include "script.hpp"
+#include "hash.hpp"
+
+#include <array>
 
 namespace nob {
 	namespace world {
@@ -25,6 +28,8 @@ namespace nob {
 
 		void no_mans_island(bool toggle = true);
 
+		void disable_sp_features(bool toggle = true);
+
 		inline void clear_black_fog() {
 			ntv::UI::_SET_MINIMAP_REVEALED(true);
 		}
@@ -34,8 +39,112 @@ namespace nob {
 		}
 
 		inline void clean_pickups() {
-			nob::ntv::PLAYER::FORCE_CLEANUP_FOR_ALL_THREADS_WITH_THIS_NAME("pickup_controller", 8);
-			nob::ntv::GAMEPLAY::TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("pickup_controller");
+			ntv::PLAYER::FORCE_CLEANUP_FOR_ALL_THREADS_WITH_THIS_NAME("pickup_controller", 8);
+			ntv::GAMEPLAY::TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("pickup_controller");
+		}
+
+		enum class ilp : uint8_t {
+			bahama_mamas = 0, // must teleport in
+			chopshop,
+			cluckin_bell,
+			comedy_club, // must teleport in
+			fame_or_shame_stadium,
+			fib_lobby,
+			foundry,
+			floyds_house,
+			epsilon,
+			hospital_normal,
+			hospital_destroyed,
+			hospital_boarded_up,
+			janitor,
+			jewel_store,
+			lab,
+			life_invader,
+			Lesters_house,
+			lesters_factory,
+			morgue, // must teleport in
+			o_neil_ranch,
+			psycheoffice, // must teleport in
+			ranch, // must teleport in
+			rogers_salvage_and_scrap, // doors will lock if you leave area
+			sheriff_office_paleto,
+			sheriff_office_sandy_shores,
+			simeons_showroom,
+			slaughter_house, // doors will lock if you leave area
+			solomons_office,
+			stab_city,
+			stab_city_on_fire,
+			stab_city_burnt,
+			trevors_trailer,
+			tequl_la_la,
+			torture,
+			mp_lost_safe_house, // need load_mp_map()
+			mp_yacht, // need load_mp_map()
+			mp_heist_carrier // need load_mp_map()
+		};
+
+		vector3 load_ilp(ilp i, bool toggle = true);
+
+		inline void load_mp_map() {
+			ntv::GAMEPLAY::_USE_FREEMODE_MAP_BEHAVIOR(true);
+			ntv::DLC2::_LOAD_MP_DLC_MAPS();
+		}
+
+		inline void load_ilp_with_icon(ilp i) {
+			auto pos = load_ilp(i);
+			if (pos.x == 0 && pos.y == 0 && pos.z == 0) {
+				return;
+			}
+			auto blip = ntv::UI::ADD_BLIP_FOR_COORD(pos.x, pos.y, pos.z);
+			switch (i) {
+				case ilp::mp_yacht:
+					ntv::UI::SET_BLIP_SPRITE(blip, 455);
+					break;
+				case ilp::mp_heist_carrier:
+					ntv::UI::SET_BLIP_SPRITE(blip, 462);
+					break;
+				default:
+					ntv::UI::SET_BLIP_SPRITE(blip, 357);
+			}
+			ntv::UI::SET_BLIP_AS_SHORT_RANGE(blip, true);
+		}
+
+		inline void load_all_ilps() {
+			load_mp_map();
+
+			for (size_t i = 0; i < static_cast<size_t>(ilp::hospital_destroyed); ++i) {
+				load_ilp_with_icon(static_cast<ilp>(i));
+			}
+
+			for (size_t i = static_cast<size_t>(ilp::janitor); i < static_cast<size_t>(ilp::stab_city); ++i) {
+				load_ilp_with_icon(static_cast<ilp>(i));
+			}
+
+			load_ilp(ilp::stab_city_on_fire);
+
+			for (size_t i = static_cast<size_t>(ilp::trevors_trailer); i < static_cast<size_t>(ilp::mp_lost_safe_house); ++i) {
+				load_ilp_with_icon(static_cast<ilp>(i));
+			}
+
+			load_ilp_with_icon(ilp::mp_yacht);
+			load_ilp_with_icon(ilp::mp_heist_carrier);
+		}
+
+		struct door {
+			hasher type;
+			vector3 coords;
+		};
+
+		extern const std::array<door, 487> doors;
+
+		inline void lock_door(const door &dr, bool toggle = true) {
+			ntv::OBJECT::_DOOR_CONTROL(dr.type.hash, dr.coords.x, dr.coords.y, dr.coords.z, toggle, 0.0f, 0.0f, -1.0f);
+		}
+
+		inline void lock_all_doors(bool toggle = true) {
+			for (auto &dr : doors) {
+				lock_door(dr, toggle);
+			}
 		}
 	}
 } /* nob */
