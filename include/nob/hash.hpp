@@ -54,11 +54,14 @@ namespace nob {
 				return hash;
 			}
 
-			size_t operator()() {
-				return static_cast<size_t>(hash);
-			}
-
 		private:
 			const char *_str;
+	};
+
+	class cpp_hash {
+		public:
+			constexpr size_t operator()(const hasher &hr) {
+				return static_cast<size_t>(hr.hash);
+			}
 	};
 }
