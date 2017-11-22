@@ -62,7 +62,7 @@ namespace nob {
 				}
 
 				R operator()(A ...a) {
-					if (_stdcall) {
+					if (_is_stdcall) {
 						return (*reinterpret_cast<R (__stdcall *)(A...)>(_o))(a...);
 					}
 					return (*reinterpret_cast<R (*)(A...)>(_o))(a...);
@@ -85,9 +85,9 @@ namespace nob {
 
 			private:
 				LPVOID _t, _o;
-				bool _stdcall;
+				bool _is_stdcall;
 
-				hooking_func_t(LPVOID target, LPVOID detour_func, bool stdcall) : _t(target), _stdcall(stdcall) {
+				hooking_func_t(LPVOID target, LPVOID detour_func, bool stdcall) : _t(target), _is_stdcall(stdcall) {
 					if (++_hooking_count == 1) {
 						MH_Initialize();
 					}
@@ -105,13 +105,13 @@ namespace nob {
 					_d([](A...)->R {
 						return (R)0;
 					}),
-					_stdcall(false)
+					_is_stdcall(false)
 				{}
 
-				detour_func_t(R(*func)(A...), bool stdcall = false) : _d(func), _stdcall(stdcall) {}
+				detour_func_t(R(*func)(A...), bool stdcall = false) : _d(func), _is_stdcall(stdcall) {}
 
 				hooking_func_t<R(A...)> hook(R(*target)(A...)) {
-					return hooking_func_t<R(A...)>(reinterpret_cast<LPVOID>(target), reinterpret_cast<LPVOID>(_d), _stdcall);
+					return hooking_func_t<R(A...)>(reinterpret_cast<LPVOID>(target), reinterpret_cast<LPVOID>(_d), _is_stdcall);
 				}
 
 				hooking_func_t<R(A...)> hook(uintptr_t target) {
@@ -120,7 +120,7 @@ namespace nob {
 
 			private:
 				R(*_d)(A...);
-				bool _stdcall;
+				bool _is_stdcall;
 		};
 	} /* hack */
 } /* nob */

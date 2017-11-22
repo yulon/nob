@@ -28,7 +28,7 @@ namespace nob {
 			return ntv::WEAPON::GET_WEAPONTYPE_GROUP(wpn.hash);
 		}
 
-		static constexpr std::array<hasher, 71> weapons {
+		static constexpr std::array<hasher, 71> weapons {{
 			"WEAPON_PISTOL", "WEAPON_COMBATPISTOL", "WEAPON_APPISTOL", "WEAPON_PISTOL50", "WEAPON_HEAVYPISTOL",
 			"WEAPON_VINTAGEPISTOL", "WEAPON_SNSPISTOL", "WEAPON_MARKSMANPISTOL", "WEAPON_MACHINEPISTOL",
 			"WEAPON_REVOLVER", "WEAPON_FLAREGUN",
@@ -55,10 +55,10 @@ namespace nob {
 			"WEAPON_GRENADE", "WEAPON_PIPEBOMB", "WEAPON_STICKYBOMB", "WEAPON_PROXMINE", "WEAPON_SMOKEGRENADE", "WEAPON_BZGAS",
 			"WEAPON_MOLOTOV", "WEAPON_FLARE", "WEAPON_SNOWBALL",
 			"WEAPON_FIREEXTINGUISHER", "WEAPON_PETROLCAN"
-		};
+		}};
 		// May not exist: "WEAPON_GRENADELAUNCHER_SMOKE", "WEAPON_SWEEPER"
 
-		static constexpr std::array<hasher, 13> weapon_groups {
+		static constexpr std::array<hasher, 13> weapon_groups {{
 			"GROUP_PISTOL", "GROUP_STUNGUN",
 			"GROUP_SMG", "GROUP_MG",
 			"GROUP_RIFLE",
@@ -67,9 +67,9 @@ namespace nob {
 			"GROUP_SHOTGUN",
 			"GROUP_HEAVY",
 			"GROUP_THROWN", "GROUP_PETROLCAN", "GROUP_FIREEXTINGUISHER"
-		};
+		}};
 
-		static constexpr std::array<hasher, 25> ammos {
+		static constexpr std::array<hasher, 25> ammos {{
 			"AMMO_PISTOL", "AMMO_STUNGUN", "AMMO_FLAREGUN",
 			"AMMO_SMG", "AMMO_MG",
 			"AMMO_RIFLE",
@@ -77,7 +77,7 @@ namespace nob {
 			"AMMO_SHOTGUN",
 			"AMMO_RPG", "AMMO_HOMINGLAUNCHER", "AMMO_FIREWORK", "AMMO_MINIGUN", "AMMO_GRENADELAUNCHER", "AMMO_RAILGUN",
 			"AMMO_GRENADE", "AMMO_PIPEBOMB", "AMMO_STICKYBOMB", "AMMO_PROXMINE", "AMMO_SMOKEGRENADE", "AMMO_BZGAS", "AMMO_MOLOTOV", "AMMO_FLARE", "AMMO_SNOWBALL", "AMMO_PETROLCAN", "AMMO_FIREEXTINGUISHER"
-		};
+		}};
 		// May not exist: "AMMO_GRENADELAUNCHER_SMOKE"
 	}
 }
