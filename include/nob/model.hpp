@@ -11,26 +11,31 @@
 namespace nob {
 	class model {
 		public:
-			model() : _hash(0) {}
+			constexpr model() : _hash(0) {}
 
-			model(const hasher &hr) : _hash(hr.hash) {
-				if (!_hash) {
+			model(hash_t hash) : _hash(hash) {
+				if (!hash) {
 					return;
 				}
 
-				if (!ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_hash) || !ntv::STREAMING::IS_MODEL_VALID(_hash)) {
+				if (!ntv::STREAMING::IS_MODEL_IN_CDIMAGE(hash) || !ntv::STREAMING::IS_MODEL_VALID(hash)) {
 					_hash = 0;
 					return;
 				}
 
-				ntv::STREAMING::REQUEST_MODEL(_hash);
-				if (!ntv::STREAMING::HAS_MODEL_LOADED(_hash)) {
-					auto h = _hash;
-					wait([h]()->bool {
-						return ntv::STREAMING::HAS_MODEL_LOADED(h);
+				ntv::STREAMING::REQUEST_MODEL(hash);
+				if (!ntv::STREAMING::HAS_MODEL_LOADED(hash)) {
+					wait([hash]()->bool {
+						return ntv::STREAMING::HAS_MODEL_LOADED(hash);
 					});
 				}
 			}
+
+			model(const hasher &hr) : model(hr.hash) {}
+
+			model(const char *name) : model(hash(name)) {}
+
+			model(const std::string &name) : model(hash(name)) {}
 
 			model(model &&src) : _hash(src._hash) {
 				if (_hash) {
