@@ -394,6 +394,35 @@ namespace nob {
 						<< "  range: " << info.range / 255.0f << std::endl;
 					}*/
 			}
+
+			////////////////////////////////////////////////////////////////////
+
+			class group {
+				public:
+					group(const std::string &name) : _n(name), _h(0) {}
+
+					~group() {
+						if (_h) {
+							ntv::PED::REMOVE_RELATIONSHIP_GROUP(_h);
+							_h = 0;
+						}
+					}
+
+					void add(character chr) {
+						if (!_h) {
+							ntv::PED::ADD_RELATIONSHIP_GROUP(_n.c_str(), &_h);
+						}
+						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr.native_handle(), _h);
+					}
+
+					void remove(character chr) {
+						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr.native_handle(), ntv::PED::GET_PED_RELATIONSHIP_GROUP_DEFAULT_HASH(chr.native_handle()));
+					}
+
+				private:
+					std::string _n;
+					hash_t _h;
+			};
 	};
 
 	namespace player {
@@ -430,10 +459,14 @@ namespace nob {
 		}
 
 		inline void disable_automatic_respawn() {
-			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_DEATH(0);
-			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_ARREST(0);
-			ntv::GAMEPLAY::SET_FADE_IN_AFTER_DEATH_ARREST(0);
-			ntv::GAMEPLAY::_DISABLE_AUTOMATIC_RESPAWN(1);
+			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_DEATH(false);
+			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_ARREST(false);
+			ntv::GAMEPLAY::SET_FADE_IN_AFTER_DEATH_ARREST(false);
+			ntv::GAMEPLAY::_DISABLE_AUTOMATIC_RESPAWN(true);
+		}
+
+		inline void clear_state() {
+			nob::ntv::GAMEPLAY::_RESET_LOCALPLAYER_STATE();
 		}
 	}
 
