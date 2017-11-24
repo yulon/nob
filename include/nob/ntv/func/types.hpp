@@ -63,14 +63,14 @@ namespace nob {
 		typedef int ScrHandle;
 
 		#pragma pack(push, 1)
-		struct Vector3 {
-			float x;
-			unsigned int _paddingx;
-			float y;
-			unsigned int _paddingy;
-			float z;
-			unsigned int _paddingz;
-		};
+			struct Vector3 {
+				float x;
+				unsigned int _paddingx;
+				float y;
+				unsigned int _paddingy;
+				float z;
+				unsigned int _paddingz;
+			};
 		#pragma pack(pop)
 
 		////////////////////////////////////////////////////////////////////////////
