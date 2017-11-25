@@ -75,7 +75,7 @@ namespace nob {
 			"GROUP_THROWN", "GROUP_PETROLCAN", "GROUP_FIREEXTINGUISHER"
 		}};
 
-		static constexpr std::array<hasher, 25> ammos {{
+		static constexpr std::array<hasher, 25> ammo_types {{
 			"AMMO_PISTOL", "AMMO_STUNGUN", "AMMO_FLAREGUN",
 			"AMMO_SMG", "AMMO_MG",
 			"AMMO_RIFLE",
