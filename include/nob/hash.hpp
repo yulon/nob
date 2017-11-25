@@ -32,7 +32,7 @@ namespace nob {
 			const hash_t hash;
 
 			constexpr hasher(hash_t h = 0) : hash(h), _str(nullptr) {}
-			constexpr hasher(const char *str) : hash(nob::hash(str)), _str(str) {}
+			constexpr hasher(const char *c_str) : hash(nob::hash(c_str)), _str(c_str) {}
 			hasher(const std::string &str) : hasher(str.c_str()) {}
 
 			const char *src_c_str() const {
