@@ -35,11 +35,15 @@ namespace nob {
 			constexpr hasher(const char *str) : hash(nob::hash(str)), _str(str) {}
 			hasher(const std::string &str) : hasher(str.c_str()) {}
 
-			const char *src_str() const {
+			const char *src_c_str() const {
 				if (!_str && hash && ntv::STREAMING::IS_MODEL_A_VEHICLE(hash)) {
 					return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(hash);
 				}
 				return _str;
+			}
+
+			std::string src_str() const {
+				return src_c_str();
 			}
 
 			bool operator==(const hasher &hr) const {
