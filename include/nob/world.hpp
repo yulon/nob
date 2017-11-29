@@ -4,6 +4,7 @@
 #include "vector.hpp"
 #include "script.hpp"
 #include "hash.hpp"
+#include "map.hpp"
 
 #include <array>
 
@@ -86,44 +87,44 @@ namespace nob {
 			ntv::DLC2::_LOAD_MP_DLC_MAPS();
 		}
 
-		inline void load_ilp_with_icon(ilp i) {
+		inline void load_ilp_with_marker(ilp i) {
 			auto pos = load_ilp(i);
 			if (pos.x == 0 && pos.y == 0 && pos.z == 0) {
 				return;
 			}
-			auto blip = ntv::UI::ADD_BLIP_FOR_COORD(pos.x, pos.y, pos.z);
+			auto mkr = map::marker(pos);
 			switch (i) {
 				case ilp::mp_yacht:
-					ntv::UI::SET_BLIP_SPRITE(blip, 455);
+					mkr.graphic(455);
 					break;
 				case ilp::mp_heist_carrier:
-					ntv::UI::SET_BLIP_SPRITE(blip, 462);
+					mkr.graphic(462);
 					break;
 				default:
-					ntv::UI::SET_BLIP_SPRITE(blip, 357);
+					mkr.graphic(357);
 			}
-			ntv::UI::SET_BLIP_AS_SHORT_RANGE(blip, true);
+			mkr.keep_track(false);
 		}
 
 		inline void load_all_ilps() {
 			load_mp_map();
 
 			for (size_t i = 0; i < static_cast<size_t>(ilp::hospital_destroyed); ++i) {
-				load_ilp_with_icon(static_cast<ilp>(i));
+				load_ilp_with_marker(static_cast<ilp>(i));
 			}
 
 			for (size_t i = static_cast<size_t>(ilp::janitor); i < static_cast<size_t>(ilp::stab_city); ++i) {
-				load_ilp_with_icon(static_cast<ilp>(i));
+				load_ilp_with_marker(static_cast<ilp>(i));
 			}
 
 			load_ilp(ilp::stab_city_on_fire);
 
 			for (size_t i = static_cast<size_t>(ilp::trevors_trailer); i < static_cast<size_t>(ilp::mp_lost_safe_house); ++i) {
-				load_ilp_with_icon(static_cast<ilp>(i));
+				load_ilp_with_marker(static_cast<ilp>(i));
 			}
 
-			load_ilp_with_icon(ilp::mp_yacht);
-			load_ilp_with_icon(ilp::mp_heist_carrier);
+			load_ilp_with_marker(ilp::mp_yacht);
+			load_ilp_with_marker(ilp::mp_heist_carrier);
 		}
 
 		struct door {

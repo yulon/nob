@@ -12,15 +12,15 @@ namespace nob {
 			ntv::UI::_SET_MINIMAP_REVEALED(true);
 		}
 
-		class icon {
+		class marker {
 			public:
-				icon(const vector3 &pos) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_COORD(pos.x, pos.y, pos.z)) {}
+				marker(const vector3 &pos) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_COORD(pos.x, pos.y, pos.z)) {}
 
-				icon(const vector3 &pos, float radius) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_RADIUS(pos.x, pos.y, pos.z, radius)) {}
+				marker(const vector3 &pos, float radius) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_RADIUS(pos.x, pos.y, pos.z, radius)) {}
 
-				icon(entity e) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_ENTITY(e)) {}
+				marker(entity e) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_ENTITY(e)) {}
 
-				icon(int ntv_hdl = 0) : _ntv_hdl(ntv_hdl) {}
+				marker(int ntv_hdl = 0) : _ntv_hdl(ntv_hdl) {}
 
 				int native_handle() {
 					return _ntv_hdl;
@@ -32,6 +32,14 @@ namespace nob {
 
 				operator bool() {
 					return _ntv_hdl && ntv::UI::DOES_BLIP_EXIST(_ntv_hdl);
+				}
+
+				void graphic(int g) {
+					ntv::UI::SET_BLIP_SPRITE(_ntv_hdl, g);
+				}
+
+				int graphic() {
+					return ntv::UI::GET_BLIP_SPRITE(_ntv_hdl);
 				}
 
 				void pos(const vector3 &coords) {
@@ -67,11 +75,11 @@ namespace nob {
 				}
 
 				void keep_track(bool toggle = true) {
-					ntv::UI::SET_BLIP_AS_SHORT_RANGE(_ntv_hdl, toggle);
+					ntv::UI::SET_BLIP_AS_SHORT_RANGE(_ntv_hdl, !toggle);
 				}
 
 				bool is_keep_track() {
-					return ntv::UI::IS_BLIP_SHORT_RANGE(_ntv_hdl);
+					return !ntv::UI::IS_BLIP_SHORT_RANGE(_ntv_hdl);
 				}
 
 				bool is_on_minimap() {
