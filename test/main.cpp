@@ -62,7 +62,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					auto wpn_grp = nob::arm::weapon_group(wpn);
 
 					if (wpn_grp == "GROUP_THROWN") {
-						pb.thrown_weapon(wpn, pb.max_ammo(wpn));
+						pb.thrown_weapon(wpn, pb.weapon_max_ammo(wpn));
 						return;
 					}
 
@@ -72,7 +72,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 						return;
 					}
 
-					pb.ammo(pb.ammo_type(wpn), pb.max_ammo(wpn));
+					pb.ammo(pb.weapon_ammo_type(wpn), pb.weapon_max_ammo(wpn));
 				}));
 			}
 		})
@@ -81,7 +81,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("Invincible", [](bool val) {
 			auto pb = nob::player::body();
 			pb.invincible(val);
-			/*auto addr = nob::shv::getScriptHandleBaseAddress(pb.native_handle());
+			/*auto addr = nob::shv::getScriptHandleBaseAddress(pb);
 			if (addr) {
 				std::cout << addr << std::endl;
 				*(DWORD *)(addr + 0x188) |= (1 << 9);
@@ -91,14 +91,43 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
 		action("Other", []() {
+			auto pb = nob::player::body();
+			auto pos = pb.pos({0, 20, 0});
+			nob::ntv::GRAPHICS::DRAW_LIGHT_WITH_RANGE(pos.x, pos.y, pos.z, 255, 0, 0, 10, 10);
+			//nob::player::disable_automatic_respawn();
+			//nob::wait(10000);
+			//pb.resurrect();
+			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
+			/*static auto t = nob::task([]() {
+				auto pb_nh = nob::player::body();
+				nob::ntv::Vector3 v3;
+				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb_nh, &v3)) {
+					//nob::wait_next_frame();
+					std::cout << v3.x << ", " << v3.y << ", " << v3.z << std::endl;
+					nob::player::body().move({v3.x, v3.y, v3.z});
+				}
+			});
+
+			auto veh = nob::vehicle("INSURGENT", nob::player::body().pos({0, 10, 0}));
+
+			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
+
+			chr.into_vehicle(veh, 7);
+
+			nob::wait(1000);
+
+			//chr.switch_weapon("WEAPON_MICROSMG");
+			//chr.ammo_no_consumption();
+			chr.shoot(pos);*/
+
+			//nob::ntv::AI::TASK_AIM_GUN_AT_COORD(chr, pos.x, pos.y, pos.z, -1, true, true);
+			//nob::ntv::AI::TASK_VEHICLE_AIM_AT_COORD(chr, pos.x, pos.y, pos.z);
+
 			//auto cods = nob::world::load_ilp(nob::world::ilp::stab_city_on_fire);
 			//nob::ntv::PLAYER::START_PLAYER_TELEPORT(nob::player::native_handle(), cods.x, cods.y, cods.z, 0, true, true, true);
 
-			nob::world::load_all_ilps();
-			nob::world::lock_all_doors(false);
-
-			//auto pb = nob::player::body();
-			//auto pb_nh = pb.native_handle();
+			//nob::world::load_all_ilps();
+			//nob::world::lock_all_doors(false);
 
 			//nob::ntv::PED::SET_PED_CAN_RAGDOLL(pb_nh, true);
 			//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, 2);
@@ -111,13 +140,11 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			//nob::ntv::PLAYER::SET_PLAYER_WEAPON_DEFENSE_MODIFIER(nob::player::native_handle(), 0);
 			/*
-			auto pos = pb.pos();
-			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos({pos.x + 5, pos.y, pos.z + 10}), true);
-			auto old_h = std::make_shared<float>(nob::ntv::ENTITY::GET_ENTITY_HEADING(pb.native_handle()));
+			auto old_h = std::make_shared<float>(nob::ntv::ENTITY::GET_ENTITY_HEADING(pb));
 
 			nob::task([chr, pb, old_h]() mutable {
-				//if (!nob::ntv::AI::IS_PED_STILL(pb.native_handle())) {
-					float h = nob::ntv::ENTITY::GET_ENTITY_HEADING(pb.native_handle());
+				//if (!nob::ntv::AI::IS_PED_STILL(pb)) {
+					float h = nob::ntv::ENTITY::GET_ENTITY_HEADING(pb);
 					if (h != *old_h) {
 						auto pos = pb.pos({0, 10, 0});
 						chr.face({pos.x + 5, pos.y, pos.x}, h);
@@ -175,10 +202,10 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	}),
 	list("UI", {
 		flag("Disable Story Features", [](bool val) {
-			disable_sp_features(val);
+			nob::ui::disable_sp_features(val);
 		}),
 		flag("Disable Wheel Slowmo", [](bool val) {
-			disable_wheel_slowmo(val);
+			nob::ui::disable_wheel_slowmo(val);
 		}),
 		action("Pops", []() {
 			nob::ui::info("you know!");
@@ -192,6 +219,21 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			);
 
 			ia_menu.toggle();
+		})
+	}),
+	list("Screen", {
+		flag("Heat Vision", [](bool val) {
+			nob::screen::heat_vision(val);
+		}),
+		flag("Night Vision", [](bool val) {
+			nob::screen::night_vision(val);
+		}),
+		list("Filters", [](list li) {
+			for (auto name : nob::screen::filters) {
+				li->items.emplace_back(flag(name, [name](bool val) {
+					nob::screen::filter(name, val);
+				}));
+			}
 		})
 	}),
 	list("Script", {

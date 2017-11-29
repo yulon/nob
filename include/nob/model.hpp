@@ -72,12 +72,16 @@ namespace nob {
 				free();
 			}
 
-			operator bool() const {
+			hash_t native_handle() const {
 				return _hash;
 			}
 
-			hash_t native_handle() const {
-				return _hash;
+			operator hash_t() const {
+				return native_handle();
+			}
+
+			operator bool() const {
+				return native_handle();
 			}
 
 		private:

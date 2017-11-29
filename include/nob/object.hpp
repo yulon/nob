@@ -12,12 +12,14 @@
 namespace nob {
 	class entity {
 		public:
-			entity() = default;
-
-			entity(int e) : _ntv_hdl(e) {}
+			entity(int ntv_hdl = 0) : _ntv_hdl(ntv_hdl) {}
 
 			int native_handle() const {
 				return _ntv_hdl;
+			}
+
+			operator int() const {
+				return native_handle();
 			}
 
 			void del() {
@@ -88,6 +90,8 @@ namespace nob {
 			int _ntv_hdl;
 	};
 
+	class vehicle;
+
 	class character : public entity {
 		public:
 			enum class motion_state : uint8_t {
@@ -109,10 +113,10 @@ namespace nob {
 
 			////////////////////////////////////////////////////////////////////
 
-			character() = default;
+			using entity::entity;
 
 			character(const model &m, const vector3 &coords, bool player_body = false) :
-				entity(ntv::PED::CREATE_PED(4, m.native_handle(), coords.x, coords.y, coords.z, 0.0f, false, true))
+				entity(ntv::PED::CREATE_PED(4, m, coords.x, coords.y, coords.z, 0.0f, false, true))
 			{
 				if (player_body) {
 					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(_ntv_hdl, true);
@@ -196,6 +200,8 @@ namespace nob {
 				ntv::PED::FORCE_PED_TO_OPEN_PARACHUTE(_ntv_hdl);
 			}
 
+			inline void into_vehicle(vehicle veh, int seat);
+
 			void leave_vehicle(bool jump = false) {
 				auto veh = ntv::PED::GET_VEHICLE_PED_IS_IN(_ntv_hdl, false);
 				if (veh) {
@@ -208,6 +214,22 @@ namespace nob {
 					ntv::AI::TASK_LEAVE_VEHICLE(_ntv_hdl, veh, flag);
 				}
 			}
+
+			bool is_in_vehicle() {
+				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_ntv_hdl, false);
+			}
+
+			bool is_get_in_vehicle() {
+				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_ntv_hdl, true);
+			}
+
+			inline vehicle current_vehicle();
+
+			inline vehicle last_vehicle();
+
+			inline vehicle trying_to_enter_vehicle();
+
+			inline int trying_to_enter_vehicle_seat();
 
 			motion_state get_motion_state() const {
 				auto ps = ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl);
@@ -274,7 +296,7 @@ namespace nob {
 					auto wpn_grp = nob::arm::weapon_group(wpn);
 
 					if (wpn_grp == "GROUP_THROWN") {
-						thrown_weapon(wpn, max_ammo(wpn));
+						thrown_weapon(wpn, weapon_max_ammo(wpn));
 						continue;
 					}
 
@@ -284,7 +306,7 @@ namespace nob {
 						continue;
 					}
 
-					ammo(ammo_type(wpn), max_ammo(wpn));
+					ammo(weapon_ammo_type(wpn), weapon_max_ammo(wpn));
 				}
 			}
 
@@ -293,17 +315,35 @@ namespace nob {
 			}
 
 			void switch_weapon(const hasher &wpn) {
+				if (is_current_weapon(wpn)) {
+					return;
+				}
+				if (is_in_vehicle()) {
+					ntv::WEAPON::SET_CURRENT_PED_VEHICLE_WEAPON(_ntv_hdl, wpn.hash);
+					if (!is_current_weapon(wpn) && arm::weapon_group(wpn).hash != 0) {
+						ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, 0, false, true);
+					}
+					return;
+				}
+				if (!has_weapon_in_pack(wpn)) {
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, 0, false, true);
+					return;
+				}
 				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, wpn.hash, true);
 			}
 
-			bool is_current_weapon(const hasher &wpn) {
+			hasher current_weapon() {
 				hash_t h;
-				ntv::WEAPON::GET_CURRENT_PED_WEAPON(_ntv_hdl, &h, true);
-				return h == wpn.hash;
+				if (is_in_vehicle()) {
+					ntv::WEAPON::GET_CURRENT_PED_VEHICLE_WEAPON(_ntv_hdl, &h);
+				} else {
+					ntv::WEAPON::GET_CURRENT_PED_WEAPON(_ntv_hdl, &h, true);
+				}
+				return h;
 			}
 
-			hasher current_weapon() {
-				return ntv::WEAPON::GET_SELECTED_PED_WEAPON(_ntv_hdl);
+			bool is_current_weapon(const hasher &wpn) {
+				return current_weapon() == wpn;
 			}
 
 			void unarmed() {
@@ -322,17 +362,6 @@ namespace nob {
 				return is_current_weapon(wpn.hash) ? true : has_weapon_in_pack(wpn);
 			}
 
-			void using_weapon(const hasher &wpn) {
-				if (is_current_weapon(wpn.hash)) {
-					return;
-				}
-				if (!has_weapon_in_pack(wpn.hash)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, -1, false, true);
-					return;
-				}
-				switch_weapon(wpn.hash);
-			}
-
 			void ammo(const hasher &type, int total) {
 				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash, total);
 			}
@@ -349,11 +378,11 @@ namespace nob {
 				nob::ntv::WEAPON::SET_PED_INFINITE_AMMO_CLIP(_ntv_hdl, toggle);
 			}
 
-			hasher ammo_type(const hasher &wpn) {
+			hasher weapon_ammo_type(const hasher &wpn) {
 				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, wpn.hash);
 			}
 
-			int max_ammo(const hasher &wpn) {
+			int weapon_max_ammo(const hasher &wpn) {
 				int total;
 				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, wpn.hash, &total);
 				return total;
@@ -364,7 +393,7 @@ namespace nob {
 					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash, total, false, false);
 					return;
 				}
-				ammo(ammo_type(thr_wpn), total);
+				ammo(weapon_ammo_type(thr_wpn), total);
 			}
 
 			int thrown_weapon(const hasher &thr_wpn) {
@@ -382,17 +411,62 @@ namespace nob {
 					return;
 				}
 
-				std::cout << "weapon " << std::hex << cur_wpn.hash << std::endl
-					<< "  ammo type: " << ammo_type(cur_wpn).hash << std::endl;
-					/*auto info = arm::weapon_info(cur_wpn);
-					if (info.valid) {
-						std::cout
-						<< "  damage: " << info.damage / 255.0f << std::endl
-						<< "  speed: " << info.speed / 255.0f << std::endl
-						<< "  capacity: " << info.capacity / 255.0f << std::endl
-						<< "  accuracy: " << info.accuracy / 255.0f << std::endl
-						<< "  range: " << info.range / 255.0f << std::endl;
+				std::cout << "weapon " << std::hex << cur_wpn.hash << std::endl;
+
+				auto grp = arm::weapon_group(cur_wpn);
+				std::cout << "  group: ";
+				for (auto &hr : arm::weapon_groups) {
+					if (hr == grp) {
+						std::cout << hr.src_c_str();
+						break;
+					}
+				}
+				std::cout << " " << grp.hash;
+				std::cout << std::endl;
+
+				auto amm_ty = weapon_ammo_type(cur_wpn);
+				std::cout << "  ammo type: ";
+				for (auto &hr : arm::ammo_types) {
+					if (hr == amm_ty) {
+						std::cout << hr.src_c_str();
+						break;
+					}
+				}
+				std::cout << " " << amm_ty.hash;
+				std::cout << std::endl;
+
+				auto info = arm::weapon_info(cur_wpn);
+				if (info.valid) {
+					std::cout
+					<< "  damage: " << info.damage / 255.0f << std::endl
+					<< "  speed: " << info.speed / 255.0f << std::endl
+					<< "  capacity: " << info.capacity / 255.0f << std::endl
+					<< "  accuracy: " << info.accuracy / 255.0f << std::endl
+					<< "  range: " << info.range / 255.0f << std::endl;
+				}
+			}
+
+			void aim(const vector3 &coords) {
+				if (is_in_vehicle()) {
+					auto wpn_grp = arm::weapon_group(current_weapon());
+					if (!wpn_grp || wpn_grp == "GROUP_UNARMED") {
+						ntv::AI::TASK_VEHICLE_AIM_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z);
+					}
+					return;
+				}
+				ntv::AI::TASK_AIM_GUN_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, -1, false, false);
+			}
+
+			void shoot(const vector3 &coords) {
+				if (is_in_vehicle()) {
+					/*if (!arm::weapon_group(current_weapon())) {
+						ntv::VEHICLE::SET_VEHICLE_SHOOT_AT_TARGET(_ntv_hdl, ntv::PED::GET_VEHICLE_PED_IS_IN(_ntv_hdl, false), coords.x, coords.y, coords.z);
+						return;
 					}*/
+					ntv::AI::TASK_VEHICLE_SHOOT_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, 1.0f);
+					return;
+				}
+				ntv::AI::TASK_SHOOT_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, -1, nob::hash("FIRING_PATTERN_FULL_AUTO"));
 			}
 
 			////////////////////////////////////////////////////////////////////
@@ -412,11 +486,11 @@ namespace nob {
 						if (!_h) {
 							ntv::PED::ADD_RELATIONSHIP_GROUP(_n.c_str(), &_h);
 						}
-						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr.native_handle(), _h);
+						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr, _h);
 					}
 
-					void remove(character chr) {
-						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr.native_handle(), ntv::PED::GET_PED_RELATIONSHIP_GROUP_DEFAULT_HASH(chr.native_handle()));
+					void rm(character chr) {
+						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr, ntv::PED::GET_PED_RELATIONSHIP_GROUP_DEFAULT_HASH(chr));
 					}
 
 				private:
@@ -435,7 +509,7 @@ namespace nob {
 		}
 
 		inline void change_body(character chr) {
-			ntv::PLAYER::CHANGE_PLAYER_PED(native_handle(), chr.native_handle(), true, true);
+			ntv::PLAYER::CHANGE_PLAYER_PED(native_handle(), chr, true, true);
 		}
 
 		inline void switch_body(character chr) {
@@ -444,11 +518,11 @@ namespace nob {
 			auto chr_coords = chr.pos({ 0, 0, 0 });
 
 			int st = ntv::STREAMING::GET_IDEAL_PLAYER_SWITCH_TYPE(old_chr_coords.x, old_chr_coords.y, old_chr_coords.z, chr_coords.x, chr_coords.y, chr_coords.z);
-			ntv::STREAMING::START_PLAYER_SWITCH(old_chr.native_handle(), chr.native_handle(), 0, st);
+			ntv::STREAMING::START_PLAYER_SWITCH(old_chr, chr, 0, st);
 
 			wait(1000);
 
-			if (ntv::ENTITY::DOES_ENTITY_EXIST(chr.native_handle()) && !ntv::ENTITY::IS_ENTITY_DEAD(chr.native_handle())) {
+			if (ntv::ENTITY::DOES_ENTITY_EXIST(chr) && !ntv::ENTITY::IS_ENTITY_DEAD(chr)) {
 				change_body(chr);
 				old_chr.free();
 			}
@@ -476,10 +550,10 @@ namespace nob {
 
 			////////////////////////////////////////////////////////////////////
 
-			vehicle() = default;
+			using entity::entity;
 
 			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
-				entity(ntv::VEHICLE::CREATE_VEHICLE(m.native_handle(), coords.x, coords.y, coords.z, heading, false, true))
+				entity(ntv::VEHICLE::CREATE_VEHICLE(m, coords.x, coords.y, coords.z, heading, false, true))
 			{
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_ntv_hdl, 0);
 			}
@@ -591,7 +665,7 @@ namespace nob {
 			}
 
 			bool has(character chr) {
-				return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(chr.native_handle(), _ntv_hdl);
+				return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(chr, _ntv_hdl);
 			}
 
 			character passenger(int seat) {
@@ -609,5 +683,29 @@ namespace nob {
 			void disable_crash_damage(bool toggle = true) {
 				ntv::VEHICLE::SET_VEHICLE_STRONG(_ntv_hdl, toggle);
 			}
+
+			void action(int ac) {
+				ntv::AI::TASK_VEHICLE_TEMP_ACTION(passenger(-1), _ntv_hdl, ac, -1);
+			}
 	};
+
+	inline void character::into_vehicle(vehicle veh, int seat) {
+		ntv::PED::SET_PED_INTO_VEHICLE(_ntv_hdl, veh, seat);
+	}
+
+	inline vehicle character::current_vehicle() {
+		return ntv::PED::GET_VEHICLE_PED_IS_IN(_ntv_hdl, false);
+	}
+
+	inline vehicle character::last_vehicle() {
+		return ntv::PED::GET_VEHICLE_PED_IS_IN(_ntv_hdl, true);
+	}
+
+	inline vehicle character::trying_to_enter_vehicle() {
+		return ntv::PED::GET_VEHICLE_PED_IS_TRYING_TO_ENTER(_ntv_hdl);
+	}
+
+	inline int character::trying_to_enter_vehicle_seat() {
+		return ntv::PED::GET_SEAT_PED_IS_TRYING_TO_ENTER(_ntv_hdl);
+	}
 } /* nob */
