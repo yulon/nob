@@ -9,5 +9,5 @@
 #include "nob/arm.hpp"
 #include "nob/g2d.hpp"
 #include "nob/ui.hpp"
-#include "nob/vision.hpp"
+#include "nob/screen.hpp"
 #include "nob/i18n.hpp"
