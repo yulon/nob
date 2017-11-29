@@ -91,9 +91,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
 		action("Other", []() {
-			auto pb = nob::player::body();
-			auto pos = pb.pos({0, 20, 0});
-			nob::ntv::GRAPHICS::DRAW_LIGHT_WITH_RANGE(pos.x, pos.y, pos.z, 255, 0, 0, 10, 10);
+			//auto pb = nob::player::body();
+			//auto pos = pb.pos({0, 20, 0});
+			//nob::ntv::GRAPHICS::DRAW_LIGHT_WITH_RANGE(pos.x, pos.y, pos.z, 255, 0, 0, 10, 10);
 			//nob::player::disable_automatic_respawn();
 			//nob::wait(10000);
 			//pb.resurrect();
@@ -193,9 +193,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("No Man's Island", [](bool val) {
 			nob::world::no_mans_island(val);
 		}),
-		action("Clear Black Fog", []() {
-			nob::world::clear_black_fog();
-		}),
 		action("Clean Pickups", []() {
 			nob::world::clean_pickups();
 		})
@@ -219,6 +216,11 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			);
 
 			ia_menu.toggle();
+		})
+	}),
+	list("Map", {
+		action("Clear Black Fog", []() {
+			nob::map::clear_black_fog();
 		})
 	}),
 	list("Screen", {

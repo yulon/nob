@@ -30,10 +30,6 @@ namespace nob {
 
 		void disable_sp_features(bool toggle = true);
 
-		inline void clear_black_fog() {
-			ntv::UI::_SET_MINIMAP_REVEALED(true);
-		}
-
 		inline void emp(bool toggle) {
 			ntv::GRAPHICS::_SET_BLACKOUT(toggle);
 		}
