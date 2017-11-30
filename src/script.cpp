@@ -67,6 +67,10 @@ namespace nob {
 
 	std::queue<std::function<void()>> _input_events;
 
+	namespace ui {
+		extern int _bnr_sf;
+	}
+
 	namespace this_script {
 		void _main() {
 			thread_id = std::this_thread::get_id();
@@ -82,6 +86,8 @@ namespace nob {
 			while (_input_events.size()) {
 				_input_events.pop();
 			}
+
+			ui::_bnr_sf = 0;
 
 			void (*yield)();
 			if (asi_mode) {

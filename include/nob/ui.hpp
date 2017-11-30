@@ -16,15 +16,13 @@
 
 namespace nob {
 	namespace ui {
-		inline vector2_i screen_resolution() {
+		inline vector2_i resolution() {
 			vector2_i v2;
 			ntv::GRAPHICS::_GET_ACTIVE_SCREEN_RESOLUTION(&v2.x, &v2.y);
 			return v2;
 		}
 
 		static constexpr float aspect_ratio = 9.0f / 16.0f;
-
-		////////////////////////////////////////////////////////////////////////
 
 		class item;
 
@@ -247,19 +245,19 @@ namespace nob {
 				////////////////////////////////////////////////////////////////
 
 				static float width() {
-					auto sr = screen_resolution();
+					auto sr = resolution();
 					return 432.0f / 1080.0f * sr.y / sr.x;
 				}
 
-				static constexpr float left = 0.0155f;
-				static constexpr float top = 0.015f;
+				static constexpr float left = 29.0f / 1920.0f;
+				static constexpr float top = 17.0f / 1080.0f;
 				static constexpr float title_bg_height = 0.1f;
 				static constexpr float title_font_size = 0.9f;
 				static constexpr float title_font_height = g2d::calc_text_height(title_font_size);
 				static constexpr float font_size = 0.355f;
 				static constexpr float font_height = g2d::calc_text_height(font_size);
 				static constexpr float margin = 11.0f / 1920.0f;
-				static constexpr float item_height = 0.0345f;
+				static constexpr float item_height = 37.0f / 1080.0f;
 				static constexpr float icon_height = item_height / 0.77f;
 				static constexpr float icon_width = icon_height * aspect_ratio;
 
@@ -271,8 +269,6 @@ namespace nob {
 		};
 
 		void disable_interaction_menu(bool toggle = true);
-
-		////////////////////////////////////////////////////////////////////////
 
 		inline void tip(const std::string &content) {
 			ntv::UI::_SET_NOTIFICATION_TEXT_ENTRY("STRING");
@@ -308,8 +304,6 @@ namespace nob {
 			ntv::UI::_DRAW_NOTIFICATION(false, false);
 		}
 
-		////////////////////////////////////////////////////////////////////////
-
 		inline void info_this_frame(const std::string &content) {
 			ntv::UI::BEGIN_TEXT_COMMAND_DISPLAY_HELP("STRING");
 			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(content.c_str());
@@ -322,9 +316,53 @@ namespace nob {
 			}, duration * 15000);
 		};
 
-		////////////////////////////////////////////////////////////////////////
+		void banner(const std::string &text);
+		void clear_banner();
 
 		void disable_sp_features(bool toggle = true);
 		void disable_wheel_slowmo(bool toggle = true);
+
+		namespace hud {
+			inline void display(bool toggle = true) {
+				ntv::UI::DISPLAY_HUD(toggle);
+			}
+
+			inline bool is_display() {
+				return !ntv::UI::IS_HUD_HIDDEN();
+			}
+		}
+
+		namespace minimap {
+			inline void display(bool toggle = true) {
+				ntv::UI::DISPLAY_RADAR(toggle);
+			}
+
+			inline bool is_display() {
+				return !ntv::UI::IS_RADAR_HIDDEN();
+			}
+
+			enum class range_t : uint8_t {
+				normal,
+				mp_big,
+				full
+			};
+
+			inline void range(range_t r) {
+				switch (r) {
+					case range_t::normal:
+						ntv::UI::_SET_RADAR_BIGMAP_ENABLED(false, false);
+						break;
+					case range_t::mp_big:
+						ntv::UI::_SET_RADAR_BIGMAP_ENABLED(true, false);
+						break;
+					case range_t::full:
+						ntv::UI::_SET_RADAR_BIGMAP_ENABLED(true, true);
+				}
+			}
+
+			inline void full_screen(bool toggle = true) {
+				ntv::UI::_SET_MAP_FULL_SCREEN(toggle);
+			}
+		}
 	} /* ui */
 } /* nob */
