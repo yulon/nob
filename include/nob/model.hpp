@@ -11,81 +11,106 @@
 namespace nob {
 	class model {
 		public:
-			constexpr model() : _hash(0) {}
+			constexpr model(hash_t hash = 0) : _h(hash) {}
 
-			model(hash_t hash) : _hash(hash) {
-				if (!hash) {
-					return;
-				}
+			constexpr model(const hasher &hr) : _h(hr.hash()) {}
 
-				if (!ntv::STREAMING::IS_MODEL_IN_CDIMAGE(hash) || !ntv::STREAMING::IS_MODEL_VALID(hash)) {
-					_hash = 0;
-					return;
-				}
+			constexpr model(const char *name) : _h(hash(name)) {}
 
-				ntv::STREAMING::REQUEST_MODEL(hash);
-				if (!ntv::STREAMING::HAS_MODEL_LOADED(hash)) {
-					wait([hash]()->bool {
-						return ntv::STREAMING::HAS_MODEL_LOADED(hash);
-					});
-				}
-			}
-
-			model(const hasher &hr) : model(hr.hash) {}
-
-			model(const char *name) : model(hash(name)) {}
-
-			model(const std::string &name) : model(hash(name)) {}
-
-			model(model &&src) : _hash(src._hash) {
-				if (_hash) {
-					src._hash = 0;
-				}
-			}
-
-			model &operator=(model &&src) {
-				free();
-				if (src._hash) {
-					_hash = src._hash;
-					src._hash = 0;
-				}
-				return *this;
-			}
-
-			model(const model &src) : model(src._hash) {}
-
-			model &operator=(const model &src) {
-				if (src._hash) {
-					*this = model(src._hash);
-				}
-				return *this;
-			}
-
-			void free()	{
-				if (_hash) {
-					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(_hash);
-					_hash = 0;
-				}
-			}
+			model(const std::string &name) : _h(hash(name)) {}
 
 			~model() {
 				free();
 			}
 
-			hash_t native_handle() const {
-				return _hash;
+			operator bool() const {
+				return _h && ntv::STREAMING::IS_MODEL_IN_CDIMAGE(_h) && ntv::STREAMING::IS_MODEL_VALID(_h);
+			}
+
+			bool is_loaded() const {
+				return ntv::STREAMING::HAS_MODEL_LOADED(_h);
+			}
+
+			hash_t load() const {
+				if (!*this) {
+					return 0;
+				}
+
+				if (is_loaded()) {
+					return _h;
+				}
+
+				ntv::STREAMING::REQUEST_MODEL(_h);
+				if (!is_loaded()) {
+					hash_t h = _h;
+					wait([h]()->bool {
+						return ntv::STREAMING::HAS_MODEL_LOADED(h);
+					});
+				}
+
+				return _h;
 			}
 
 			operator hash_t() const {
-				return native_handle();
+				return load();
 			}
 
-			operator bool() const {
-				return native_handle();
+			void free() const {
+				if (is_loaded()) {
+					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(_h);
+				}
+			}
+
+			bool is_vehicle() const {
+				return ntv::STREAMING::IS_MODEL_A_VEHICLE(_h);
+			}
+
+			bool is_boat() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_BOAT(_h);
+			}
+
+			bool is_jetski() const {
+				return ntv::VEHICLE::_IS_THIS_MODEL_A_JETSKI(_h);
+			}
+
+			bool is_plane() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_PLANE(_h);
+			}
+
+			bool is_heli() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_HELI(_h);
+			}
+
+			bool is_car() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_CAR(_h);
+			}
+
+			/*bool is_amphibious_car() const {
+				return ntv::VEHICLE::_IS_THIS_MODEL_AN_AMPHIBIOUS_CAR(_h);
+			}*/
+
+			bool is_train() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_TRAIN(_h);
+			}
+
+			bool is_bike() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_BIKE(_h);
+			}
+
+			bool is_bicycle() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_BICYCLE(_h);
+			}
+
+			bool is_motorcycle() const {
+				return is_bike() && !is_bicycle();
+			}
+
+			bool is_quadbike() const {
+				return ntv::VEHICLE::IS_THIS_MODEL_A_QUADBIKE(_h);
 			}
 
 		private:
-			hash_t _hash;
+			hash_t _h;
 
 			////////////////////////////////////////////////////////////////////
 

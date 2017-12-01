@@ -86,6 +86,10 @@ namespace nob {
 				ntv::ENTITY::SET_ENTITY_INVINCIBLE(_ntv_hdl, toggle);
 			}
 
+			nob::model model() {
+				return static_cast<hash_t>(ntv::ENTITY::GET_ENTITY_MODEL(_ntv_hdl));
+			}
+
 		protected:
 			int _ntv_hdl;
 	};
@@ -115,7 +119,7 @@ namespace nob {
 
 			using entity::entity;
 
-			character(const model &m, const vector3 &coords, bool player_body = false) :
+			character(nob::model m, const vector3 &coords, bool player_body = false) :
 				entity(ntv::PED::CREATE_PED(4, m, coords.x, coords.y, coords.z, 0.0f, false, true))
 			{
 				if (player_body) {
@@ -280,11 +284,11 @@ namespace nob {
 			}
 
 			void add_weapon(const hasher &wpn) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, 0, false, false);
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash(), 0, false, false);
 			}
 
 			void rm_weapon(const hasher &wpn) {
-				ntv::WEAPON::REMOVE_WEAPON_FROM_PED(_ntv_hdl, wpn.hash);
+				ntv::WEAPON::REMOVE_WEAPON_FROM_PED(_ntv_hdl, wpn.hash());
 			}
 
 			void add_all_weapons() {
@@ -319,17 +323,17 @@ namespace nob {
 					return;
 				}
 				if (is_in_vehicle()) {
-					ntv::WEAPON::SET_CURRENT_PED_VEHICLE_WEAPON(_ntv_hdl, wpn.hash);
-					if (!is_current_weapon(wpn) && arm::weapon_group(wpn).hash != 0) {
-						ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, 0, false, true);
+					ntv::WEAPON::SET_CURRENT_PED_VEHICLE_WEAPON(_ntv_hdl, wpn.hash());
+					if (!is_current_weapon(wpn) && arm::weapon_group(wpn).hash() != 0) {
+						ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash(), 0, false, true);
 					}
 					return;
 				}
 				if (!has_weapon_in_pack(wpn)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash, 0, false, true);
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash(), 0, false, true);
 					return;
 				}
-				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, wpn.hash, true);
+				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, wpn.hash(), true);
 			}
 
 			hasher current_weapon() {
@@ -355,19 +359,19 @@ namespace nob {
 			}
 
 			bool has_weapon_in_pack(const hasher &wpn) {
-				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, wpn.hash, false);
+				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, wpn.hash(), false);
 			}
 
 			bool has_weapon(const hasher &wpn) {
-				return is_current_weapon(wpn.hash) ? true : has_weapon_in_pack(wpn);
+				return is_current_weapon(wpn.hash()) ? true : has_weapon_in_pack(wpn);
 			}
 
 			void ammo(const hasher &type, int total) {
-				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash, total);
+				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash(), total);
 			}
 
 			int ammo(const hasher &type) {
-				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash);
+				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash());
 			}
 
 			void add_ammo(const hasher &type, int count) {
@@ -379,29 +383,29 @@ namespace nob {
 			}
 
 			hasher weapon_ammo_type(const hasher &wpn) {
-				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, wpn.hash);
+				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, wpn.hash());
 			}
 
 			int weapon_max_ammo(const hasher &wpn) {
 				int total;
-				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, wpn.hash, &total);
+				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, wpn.hash(), &total);
 				return total;
 			}
 
 			void thrown_weapon(const hasher &thr_wpn, int total) {
 				if (!has_weapon(thr_wpn)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash, total, false, false);
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash(), total, false, false);
 					return;
 				}
 				ammo(weapon_ammo_type(thr_wpn), total);
 			}
 
 			int thrown_weapon(const hasher &thr_wpn) {
-				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, thr_wpn.hash);
+				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_ntv_hdl, thr_wpn.hash());
 			}
 
 			void add_thrown_weapon(const hasher &thr_wpn, int count) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash, count, false, false);
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash(), count, false, false);
 			}
 
 			void print_weapon_info() {
@@ -411,7 +415,7 @@ namespace nob {
 					return;
 				}
 
-				std::cout << "weapon " << std::hex << cur_wpn.hash << std::endl;
+				std::cout << "weapon " << std::hex << cur_wpn.hash() << std::endl;
 
 				auto grp = arm::weapon_group(cur_wpn);
 				std::cout << "  group: ";
@@ -421,7 +425,7 @@ namespace nob {
 						break;
 					}
 				}
-				std::cout << " " << grp.hash;
+				std::cout << " " << grp.hash();
 				std::cout << std::endl;
 
 				auto amm_ty = weapon_ammo_type(cur_wpn);
@@ -432,7 +436,7 @@ namespace nob {
 						break;
 					}
 				}
-				std::cout << " " << amm_ty.hash;
+				std::cout << " " << amm_ty.hash();
 				std::cout << std::endl;
 
 				auto info = arm::weapon_info(cur_wpn);
@@ -552,7 +556,7 @@ namespace nob {
 
 			using entity::entity;
 
-			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
+			vehicle(nob::model m, const vector3 &coords, float heading = 0.0f) :
 				entity(ntv::VEHICLE::CREATE_VEHICLE(m, coords.x, coords.y, coords.z, heading, false, true))
 			{
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_ntv_hdl, 0);
@@ -562,7 +566,7 @@ namespace nob {
 				ntv::VEHICLE::DELETE_VEHICLE(&_ntv_hdl);
 			}
 
-			void remove() {
+			void rm() {
 				ntv::ENTITY::SET_VEHICLE_AS_NO_LONGER_NEEDED(&_ntv_hdl);
 			}
 

@@ -26,12 +26,12 @@ namespace nob {
 
 		inline weapon_info_t weapon_info(const hasher &wpn) {
 			weapon_info_t info;
-			info.valid = ntv::WEAPON::GET_WEAPON_HUD_STATS(wpn.hash, reinterpret_cast<int *>(&info));
+			info.valid = ntv::WEAPON::GET_WEAPON_HUD_STATS(wpn.hash(), reinterpret_cast<int *>(&info));
 			return info;
 		}
 
 		inline hasher weapon_group(const hasher &wpn) {
-			return ntv::WEAPON::GET_WEAPONTYPE_GROUP(wpn.hash);
+			return ntv::WEAPON::GET_WEAPONTYPE_GROUP(wpn.hash());
 		}
 
 		static constexpr std::array<hasher, 71> weapons {{

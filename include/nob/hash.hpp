@@ -29,15 +29,17 @@ namespace nob {
 
 	class hasher {
 		public:
-			const hash_t hash;
-
-			constexpr hasher(hash_t h = 0) : hash(h), _str(nullptr) {}
-			constexpr hasher(const char *c_str) : hash(nob::hash(c_str)), _str(c_str) {}
+			constexpr hasher(hash_t h = 0) : _h(h), _str(nullptr) {}
+			constexpr hasher(const char *c_str) : _h(nob::hash(c_str)), _str(c_str) {}
 			hasher(const std::string &str) : hasher(str.c_str()) {}
 
+			constexpr hash_t hash() const {
+				return _h;
+			}
+
 			const char *src_c_str() const {
-				if (!_str && hash && ntv::STREAMING::IS_MODEL_A_VEHICLE(hash)) {
-					return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(hash);
+				if (!_str && _h && ntv::STREAMING::IS_MODEL_A_VEHICLE(_h)) {
+					return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(_h);
 				}
 				return _str;
 			}
@@ -47,25 +49,26 @@ namespace nob {
 			}
 
 			bool operator==(const hasher &hr) const {
-				return hash == hr.hash;
+				return _h == hr._h;
 			}
 
 			bool operator!=(const hasher &hr) const {
-				return hash != hr.hash;
+				return _h != hr._h;
 			}
 
 			operator bool() const {
-				return hash;
+				return _h;
 			}
 
 		private:
+			hash_t _h;
 			const char *_str;
 	};
 
 	class cpp_hash {
 		public:
 			constexpr size_t operator()(const hasher &hr) {
-				return static_cast<size_t>(hr.hash);
+				return static_cast<size_t>(hr.hash());
 			}
 	};
 }
