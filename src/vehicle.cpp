@@ -7,7 +7,7 @@
 #include <queue>
 
 namespace nob {
-	std::vector<hasher> model::banned_vehicles;
+	std::vector<model_info> banned_vehicles;
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 	void _find_banned_vehicles(ntv::script_t *shop_ctrllr, size_t func_call_off) {
@@ -34,7 +34,7 @@ namespace nob {
 						continue;
 					}
 
-					model::banned_vehicles.emplace_back(hash);
+					banned_vehicles.emplace_back(hash);
 				}
 				return;
 			}
@@ -43,7 +43,7 @@ namespace nob {
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 	void vehicle::unlock_banned_vehicles() {
-		if (model::banned_vehicles.size() || !ntv::script_list || !ntv::global_table) {
+		if (banned_vehicles.size() || !ntv::script_list || !ntv::global_table) {
 			return;
 		}
 		auto shop_ctrllr = ntv::script_list->find("shop_controller")->script;

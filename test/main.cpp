@@ -19,11 +19,11 @@ nob::initer disable_ntv_ia_menu([]() {
 
 using namespace nob::ui;
 
-template<typename HRC>
-void add_vehs(list &li, const HRC &hrc) {
-	for (auto &hr : hrc) {
-		li->items.emplace_back(action(nob::i18n::get(hr.src_str()), hr.src_str(), [&hr]() {
-			auto veh = nob::vehicle(hr, nob::player::body().pos({0, 5, 0}));
+template<typename C>
+void add_vehs(list &li, const C &c) {
+	for (auto &mi : c) {
+		li->items.emplace_back(action(nob::i18n::get(mi.name()), mi.name(), [&mi]() {
+			auto veh = nob::vehicle(mi, nob::player::body().pos({0, 5, 0}));
 			veh.place_on_ground();
 			veh.set_best_mods();
 			veh.invincible();
@@ -34,10 +34,10 @@ void add_vehs(list &li, const HRC &hrc) {
 nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	list("Vehicle", {
 		list("Spawn", [](list li) {
-			add_vehs(li, nob::model::vehicles);
+			add_vehs(li, nob::vehicles);
 
 			nob::vehicle::unlock_banned_vehicles();
-			add_vehs(li, nob::model::banned_vehicles);
+			add_vehs(li, nob::banned_vehicles);
 
 			li->on_show = nullptr;
 		})

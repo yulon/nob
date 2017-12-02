@@ -1,6 +1,7 @@
 #include <nob/script.hpp>
 #include <nob/ntv.hpp>
 #include <nob/model.hpp>
+#include <nob/object.hpp>
 
 #include <nob/shv/main.hpp>
 
@@ -81,7 +82,7 @@ namespace nob {
 				go(handler);
 			}
 
-			model::banned_vehicles.resize(0);
+			banned_vehicles.resize(0);
 
 			while (_input_events.size()) {
 				_input_events.pop();
