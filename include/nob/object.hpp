@@ -48,7 +48,7 @@ namespace nob {
 			}
 
 			void move(const vector3 &coords) {
-				ntv::ENTITY::SET_ENTITY_COORDS(_ntv_hdl, coords.x, coords.y, coords.z, true, true, true, true);
+				ntv::ENTITY::SET_ENTITY_COORDS(_ntv_hdl, coords.x, coords.y, coords.z, true, true, true, false);
 			}
 
 			vector3 rotation() const {
@@ -70,6 +70,31 @@ namespace nob {
 				ntv::ENTITY::SET_ENTITY_QUATERNION(_ntv_hdl, quat.x, quat.y, quat.z, quat.w);
 			}
 
+			vector3 velocity() const {
+				auto ve = ntv::ENTITY::GET_ENTITY_VELOCITY(_ntv_hdl);
+				return {ve.x, ve.y, ve.z};
+			}
+
+			void velocity(const vector3 &ve) {
+				ntv::ENTITY::SET_ENTITY_VELOCITY(_ntv_hdl, ve.x, ve.y, ve.z);
+			}
+
+			struct data_t {
+				vector3 pos;
+				vector4 quaternion;
+				vector3 velocity;
+			};
+
+			data_t snapshot() const {
+				return {pos(), quaternion(), velocity()};
+			}
+
+			void recover(const data_t &data) {
+				move(data.pos);
+				quaternion(data.quaternion);
+				velocity(data.velocity);
+			}
+
 			int alpha() const {
 				return ntv::ENTITY::GET_ENTITY_ALPHA(_ntv_hdl);
 			}
@@ -86,7 +111,7 @@ namespace nob {
 				ntv::ENTITY::SET_ENTITY_INVINCIBLE(_ntv_hdl, toggle);
 			}
 
-			nob::model_info model_info() const {
+			model_info model_info() const {
 				return static_cast<hash_t>(ntv::ENTITY::GET_ENTITY_MODEL(_ntv_hdl));
 			}
 
@@ -106,6 +131,18 @@ namespace nob {
 				return ntv::ENTITY::IS_ENTITY_ON_SCREEN(_ntv_hdl);
 			}
 
+			float health() {
+				return ntv::ENTITY::GET_ENTITY_HEALTH(_ntv_hdl);
+			}
+
+			float max_health() {
+				return ntv::ENTITY::GET_ENTITY_MAX_HEALTH(_ntv_hdl);
+			}
+
+			void health(int v) {
+				ntv::ENTITY::SET_ENTITY_HEALTH(_ntv_hdl, v);
+			}
+
 		protected:
 			int _ntv_hdl;
 	};
@@ -114,7 +151,7 @@ namespace nob {
 
 	class character : public entity {
 		public:
-			enum class motion_state : uint8_t {
+			enum class motion_state_t : uint8_t {
 				null = 0,
 				still,
 				walking,
@@ -124,7 +161,8 @@ namespace nob {
 				falling,
 				skydiving,
 				parachuting,
-				climbing
+				climbing,
+				climbing_ladder
 			};
 
 			static constexpr float speed_walk = 1.0f;
@@ -137,7 +175,7 @@ namespace nob {
 
 			character(entity e) : entity(e) {}
 
-			character(const nob::model &m, const vector3 &coords, bool player_body = false) :
+			character(const model &m, const vector3 &coords, bool player_body = false) :
 				entity(ntv::PED::CREATE_PED(4, m, coords.x, coords.y, coords.z, 0.0f, false, true))
 			{
 				if (player_body) {
@@ -190,8 +228,16 @@ namespace nob {
 				ntv::AI::TASK_JUMP(_ntv_hdl, false, false, false);
 			}
 
+			void climb() {
+				ntv::AI::TASK_CLIMB(_ntv_hdl, false);
+			}
+
+			void climb_ladder() {
+				ntv::AI::TASK_CLIMB_LADDER(_ntv_hdl, 0);
+			}
+
 			void go_to(const vector3 &target, float speed) {
-				if (get_motion_state() == motion_state::parachuting) {
+				if (motion_state() == motion_state_t::parachuting) {
 					ntv::AI::TASK_PARACHUTE_TO_TARGET(_ntv_hdl, target.x, target.y, target.z);
 					return;
 				}
@@ -251,52 +297,56 @@ namespace nob {
 
 			inline int trying_to_enter_vehicle_seat();
 
-			motion_state get_motion_state() const {
+			motion_state_t motion_state() const {
 				auto ps = ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl);
 				if (ps == 1 || ps == 2) {
-					return motion_state::parachuting;
+					return motion_state_t::parachuting;
 				}
 
-				if (nob::ntv::PED::IS_PED_IN_PARACHUTE_FREE_FALL(_ntv_hdl)) {
-					return motion_state::skydiving;
+				if (ntv::PED::IS_PED_IN_PARACHUTE_FREE_FALL(_ntv_hdl)) {
+					return motion_state_t::skydiving;
 				}
 
-				if (nob::ntv::PED::IS_PED_FALLING(_ntv_hdl)) {
-					return motion_state::falling;
+				if (ntv::PED::IS_PED_FALLING(_ntv_hdl)) {
+					return motion_state_t::falling;
 				}
 
-				if (nob::ntv::PED::IS_PED_JUMPING(_ntv_hdl)) {
-					/*if (nob::ntv::AI::IS_PED_WALKING(_ntv_hdl)) {
+				if (ntv::PED::IS_PED_JUMPING(_ntv_hdl)) {
+					/*if (ntv::AI::IS_PED_WALKING(_ntv_hdl)) {
 
-					} else if (nob::ntv::AI::IS_PED_RUNNING(_ntv_hdl)) {
+					} else if (ntv::AI::IS_PED_RUNNING(_ntv_hdl)) {
 
-					} else if (nob::ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
+					} else if (ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
 
 					}*/
-					return motion_state::jumping;
+					return motion_state_t::jumping;
 				}
 
-				if (nob::ntv::PED::IS_PED_CLIMBING(_ntv_hdl)) {
-					return motion_state::climbing;
+				if (ntv::AI::GET_IS_TASK_ACTIVE(_ntv_hdl, 1)) {
+					return motion_state_t::climbing_ladder;
 				}
 
-				if (nob::ntv::AI::IS_PED_STILL(_ntv_hdl)) {
-					return motion_state::still;
+				if (ntv::PED::IS_PED_CLIMBING(_ntv_hdl)) {
+					return motion_state_t::climbing;
 				}
 
-				if (nob::ntv::AI::IS_PED_WALKING(_ntv_hdl)) {
-					return motion_state::walking;
+				if (ntv::AI::IS_PED_STILL(_ntv_hdl)) {
+					return motion_state_t::still;
 				}
 
-				if (nob::ntv::AI::IS_PED_RUNNING(_ntv_hdl)) {
-					return motion_state::runing;
+				if (ntv::AI::IS_PED_WALKING(_ntv_hdl)) {
+					return motion_state_t::walking;
 				}
 
-				if (nob::ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
-					return motion_state::sprinting;
+				if (ntv::AI::IS_PED_RUNNING(_ntv_hdl)) {
+					return motion_state_t::runing;
 				}
 
-				return motion_state::null;
+				if (ntv::AI::IS_PED_SPRINTING(_ntv_hdl)) {
+					return motion_state_t::sprinting;
+				}
+
+				return motion_state_t::null;
 			}
 
 			void add_weapon(const hasher &wpn) {
@@ -308,12 +358,12 @@ namespace nob {
 			}
 
 			void add_all_weapons() {
-				for (auto &wpn : nob::arm::weapons) {
+				for (auto &wpn : arm::weapons) {
 					if (wpn == "WEAPON_UNARMED") {
 						continue;
 					}
 
-					auto wpn_grp = nob::arm::weapon_group(wpn);
+					auto wpn_grp = arm::weapon_group(wpn);
 
 					if (wpn_grp == "GROUP_THROWN") {
 						thrown_weapon(wpn, weapon_max_ammo(wpn));
@@ -395,7 +445,7 @@ namespace nob {
 			}
 
 			void ammo_no_consumption(bool toggle = true) {
-				nob::ntv::WEAPON::SET_PED_INFINITE_AMMO_CLIP(_ntv_hdl, toggle);
+				ntv::WEAPON::SET_PED_INFINITE_AMMO_CLIP(_ntv_hdl, toggle);
 			}
 
 			hasher weapon_ammo_type(const hasher &wpn) {
@@ -431,7 +481,22 @@ namespace nob {
 					return;
 				}
 
-				std::cout << "weapon " << std::hex << cur_wpn.hash() << std::endl;
+				std::cout << "weapon ";
+				for (auto &hr : arm::weapons) {
+					if (hr == cur_wpn) {
+						std::cout << hr.src_c_str() << " ";
+						break;
+					}
+				}
+				if (is_in_vehicle()) {
+					for (auto &hr : arm::vehicle_weapons) {
+						if (hr == cur_wpn) {
+							std::cout << hr.src_c_str() << " ";
+							break;
+						}
+					}
+				}
+				std::cout << std::hex << cur_wpn.hash() << std::endl;
 
 				auto grp = arm::weapon_group(cur_wpn);
 				std::cout << "  group: ";
@@ -486,7 +551,7 @@ namespace nob {
 					ntv::AI::TASK_VEHICLE_SHOOT_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, 1.0f);
 					return;
 				}
-				ntv::AI::TASK_SHOOT_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, -1, nob::hash("FIRING_PATTERN_FULL_AUTO"));
+				ntv::AI::TASK_SHOOT_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, -1, hash("FIRING_PATTERN_FULL_AUTO"));
 			}
 
 			////////////////////////////////////////////////////////////////////
@@ -549,7 +614,7 @@ namespace nob {
 		}
 
 		inline void auto_get_parachute_in_plane(bool toggle = true) {
-			nob::ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
+			ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
 		}
 
 		inline void disable_automatic_respawn() {
@@ -560,7 +625,7 @@ namespace nob {
 		}
 
 		inline void clear_state() {
-			nob::ntv::GAMEPLAY::_RESET_LOCALPLAYER_STATE();
+			ntv::GAMEPLAY::_RESET_LOCALPLAYER_STATE();
 		}
 	}
 
@@ -574,7 +639,7 @@ namespace nob {
 
 			vehicle(entity e) : entity(e) {}
 
-			vehicle(const nob::model &m, const vector3 &coords, float heading = 0.0f) :
+			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
 				entity(ntv::VEHICLE::CREATE_VEHICLE(m, coords.x, coords.y, coords.z, heading, false, true))
 			{
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_ntv_hdl, 0);
@@ -623,15 +688,15 @@ namespace nob {
 				return ntv::AUDIO::_IS_VEHICLE_RADIO_LOUD(_ntv_hdl);
 			}
 
-			std::string get_radio_station() {
+			std::string radio_station() {
 				if (ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(ntv::PLAYER::PLAYER_PED_ID(), _ntv_hdl) && is_playing_radio()) {
 					return ntv::AUDIO::GET_PLAYER_RADIO_STATION_NAME();
 				}
-				return nullptr;
+				return "";
 			}
 
-			void set_radio_station(const std::string &radio_station = nullptr) {
-				if (radio_station.empty()) {
+			void radio_station(const std::string &rs = nullptr) {
+				if (rs.empty()) {
 					if (is_playing_radio()) {
 						ntv::AUDIO::SET_VEHICLE_RADIO_LOUD(_ntv_hdl, false);
 					}
@@ -640,7 +705,7 @@ namespace nob {
 				if (!is_playing_radio()) {
 					ntv::AUDIO::SET_VEHICLE_RADIO_LOUD(_ntv_hdl, true);
 				}
-				ntv::AUDIO::SET_VEH_RADIO_STATION(_ntv_hdl, radio_station.c_str());
+				ntv::AUDIO::SET_VEH_RADIO_STATION(_ntv_hdl, rs.c_str());
 			}
 
 			static constexpr float min_engine_health = -4000.0f;
@@ -710,7 +775,7 @@ namespace nob {
 				ntv::AI::TASK_VEHICLE_TEMP_ACTION(passenger(-1), _ntv_hdl, ac, -1);
 			}
 
-			enum class kind_t : int {
+			enum class klass_t : int {
 				none = -1,
 				compact,
 				sedan,
@@ -736,15 +801,19 @@ namespace nob {
 				train
 			};
 
-			static kind_t kind(const nob::model_info &mi) {
+			static klass_t klass(const nob::model_info &mi) {
 				if (!mi.is_vehicle()) {
-					return kind_t::none;
+					return klass_t::none;
 				}
-				return static_cast<kind_t>(ntv::VEHICLE::GET_VEHICLE_CLASS_FROM_NAME(mi));
+				return static_cast<klass_t>(ntv::VEHICLE::GET_VEHICLE_CLASS_FROM_NAME(mi));
 			}
 
-			kind_t kind() const {
-				return static_cast<kind_t>(ntv::VEHICLE::GET_VEHICLE_CLASS(_ntv_hdl));
+			klass_t klass() const {
+				return static_cast<klass_t>(ntv::VEHICLE::GET_VEHICLE_CLASS(_ntv_hdl));
+			}
+
+			bool is_armed() {
+				return ntv::VEHICLE::DOES_VEHICLE_HAVE_WEAPONS(_ntv_hdl);
 			}
 	};
 

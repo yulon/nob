@@ -91,7 +91,30 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
 		action("Other", []() {
-			//auto pb = nob::player::body();
+			auto pb = nob::player::body();
+			auto veh = pb.current_vehicle();
+			static std::queue<nob::entity::data_t> rec;
+
+			if (rec.empty()) {
+				auto tsk = nob::task([veh]() {
+					rec.emplace(veh.snapshot());
+				});
+				nob::wait(30000);
+				std::cout << "done!" << std::endl;
+				tsk.del();
+			} else {
+				auto rec_cp = rec;
+				nob::task([rec_cp, veh]() mutable {
+					if (rec_cp.size()) {
+						veh.recover(rec_cp.front());
+						rec_cp.pop();
+					} else {
+						std::cout << "done!" << std::endl;
+						nob::this_task::del();
+					}
+				});
+			}
+
 			//auto pos = pb.pos({0, 20, 0});
 			//nob::ntv::GRAPHICS::DRAW_LIGHT_WITH_RANGE(pos.x, pos.y, pos.z, 255, 0, 0, 10, 10);
 			//nob::player::disable_automatic_respawn();
