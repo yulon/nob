@@ -1,7 +1,6 @@
 #include <nob/script.hpp>
 #include <nob/ntv.hpp>
 #include <nob/model.hpp>
-#include <nob/object.hpp>
 
 #include <nob/shv/main.hpp>
 
@@ -65,6 +64,8 @@ namespace nob {
 	namespace window {
 		void _hook_proc();
 	} /* window */
+
+	extern std::vector<model_info> banned_vehicles;
 
 	std::queue<std::function<void()>> _input_events;
 

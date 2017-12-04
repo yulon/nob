@@ -42,13 +42,18 @@ namespace nob {
 				return _ntv_hdl && is_exist();
 			}
 
-			vector3 pos(const vector3 &rcs_offset = {0, 0, 0}) const {
+			vector3 pos(const vector3 &rcs_offset) const {
 				auto co = ntv::ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(_ntv_hdl, rcs_offset.x, rcs_offset.y, rcs_offset.z);
 				return {co.x, co.y, co.z};
 			}
 
+			vector3 pos() const {
+				auto co = ntv::ENTITY::GET_ENTITY_COORDS(_ntv_hdl, true);
+				return {co.x, co.y, co.z};
+			}
+
 			void move(const vector3 &coords) {
-				ntv::ENTITY::SET_ENTITY_COORDS(_ntv_hdl, coords.x, coords.y, coords.z, true, true, true, false);
+				ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_ntv_hdl, coords.x, coords.y, coords.z, true, true, true);
 			}
 
 			vector3 rotation() const {
@@ -79,20 +84,20 @@ namespace nob {
 				ntv::ENTITY::SET_ENTITY_VELOCITY(_ntv_hdl, ve.x, ve.y, ve.z);
 			}
 
-			struct data_t {
+			struct movement_t {
 				vector3 pos;
 				vector4 quaternion;
 				vector3 velocity;
 			};
 
-			data_t snapshot() const {
+			movement_t movement() const {
 				return {pos(), quaternion(), velocity()};
 			}
 
-			void recover(const data_t &data) {
-				move(data.pos);
-				quaternion(data.quaternion);
-				velocity(data.velocity);
+			void movement(const movement_t &mm) {
+				move(mm.pos);
+				quaternion(mm.quaternion);
+				velocity(mm.velocity);
 			}
 
 			int alpha() const {
@@ -151,26 +156,6 @@ namespace nob {
 
 	class character : public entity {
 		public:
-			enum class motion_state_t : uint8_t {
-				null = 0,
-				still,
-				walking,
-				runing,
-				sprinting,
-				jumping,
-				falling,
-				skydiving,
-				parachuting,
-				climbing,
-				climbing_ladder
-			};
-
-			static constexpr float speed_walk = 1.0f;
-			static constexpr float speed_run = 1.2f;
-			static constexpr float speed_sprint = 3.0f;
-
-			////////////////////////////////////////////////////////////////////
-
 			using entity::entity;
 
 			character(entity e) : entity(e) {}
@@ -236,8 +221,12 @@ namespace nob {
 				ntv::AI::TASK_CLIMB_LADDER(_ntv_hdl, 0);
 			}
 
-			void go_to(const vector3 &target, float speed) {
-				if (motion_state() == motion_state_t::parachuting) {
+			static constexpr float speed_walk = 1.0f;
+			static constexpr float speed_run = 1.2f;
+			static constexpr float speed_sprint = 3.0f;
+
+			void go_to(const vector3 &target, float speed = speed_sprint) {
+				if (ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl) == 2) {
 					ntv::AI::TASK_PARACHUTE_TO_TARGET(_ntv_hdl, target.x, target.y, target.z);
 					return;
 				}
@@ -255,9 +244,17 @@ namespace nob {
 				}
 			}
 
+			void go(float speed = speed_sprint) {
+				go_to(pos({0, 10, 0}), speed);
+			}
+
+			void skydive() {
+				ntv::AI::TASK_SKY_DIVE(_ntv_hdl);
+			}
+
 			void equip_parachute() {
-				if (!ntv::WEAPON::GET_IS_PED_GADGET_EQUIPPED(_ntv_hdl, 0xFBAB5776)) {
-					ntv::WEAPON::SET_PED_GADGET(_ntv_hdl, 0xFBAB5776, true);
+				if (!has_weapon_in_pack(nob::hash("GADGET_PARACHUTE"))) {
+					add_weapon(nob::hash("GADGET_PARACHUTE"));
 				}
 			}
 
@@ -296,6 +293,20 @@ namespace nob {
 			inline vehicle trying_to_enter_vehicle();
 
 			inline int trying_to_enter_vehicle_seat();
+
+			enum class motion_state_t : uint8_t {
+				null = 0,
+				still,
+				walking,
+				runing,
+				sprinting,
+				jumping,
+				falling,
+				skydiving,
+				parachuting,
+				climbing,
+				climbing_ladder
+			};
 
 			motion_state_t motion_state() const {
 				auto ps = ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl);
@@ -347,6 +358,64 @@ namespace nob {
 				}
 
 				return motion_state_t::null;
+			}
+
+			struct movement_t : public entity::movement_t {
+				motion_state_t motion_state;
+			};
+
+			movement_t movement() const {
+				/*movement_t mm;
+				static_cast<entity::movement_t &>(mm) = entity::movement();
+				mm.motion_state = motion_state();
+				return mm;*/
+				return {entity::movement(), motion_state()};
+			}
+
+			void movement(const movement_t &mm) {
+				entity::movement(mm);
+				switch (mm.motion_state) {
+					case motion_state_t::null:
+						break;
+					case motion_state_t::still:
+						if (motion_state() != motion_state_t::still) {
+							still();
+						}
+						break;
+					case motion_state_t::jumping:
+						jump();
+						break;
+					case motion_state_t::walking:
+						go(speed_walk);
+						break;
+					case motion_state_t::runing:
+						go(speed_run);
+						break;
+					case motion_state_t::sprinting:
+						go(speed_sprint);
+						break;
+					case motion_state_t::falling:
+						//ntv::PED::SET_PED_TO_RAGDOLL(_ntv_hdl, 1000, 1000, 0, false, false, false);
+						break;
+					case motion_state_t::skydiving:
+						if (motion_state() != motion_state_t::skydiving) {
+							skydive();
+						}
+						break;
+					case motion_state_t::parachuting:
+						if (ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl) < 1) {
+							open_parachute();
+						}
+						if (ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl) == 2) {
+							ntv::AI::TASK_PARACHUTE(_ntv_hdl, false);
+						}
+						break;
+					case motion_state_t::climbing:
+						climb();
+						break;
+					case motion_state_t::climbing_ladder:
+						climb_ladder();
+				}
 			}
 
 			void add_weapon(const hasher &wpn) {

@@ -90,26 +90,40 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("Auto Get Parachute in Plane", [](bool val) {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
+		action("Other 0", []() {
+			auto pb = nob::player::body();
+			pb.equip_parachute();
+			pb.move(pb.pos({0, 0, 1000}));
+		}),
 		action("Other", []() {
 			auto pb = nob::player::body();
-			auto veh = pb.current_vehicle();
-			static std::queue<nob::entity::data_t> rec;
-
+			//auto veh = pb.current_vehicle();
+			static std::queue<nob::character::movement_t> rec;
+			static nob::task tsk;
 			if (rec.empty()) {
-				auto tsk = nob::task([veh]() {
-					rec.emplace(veh.snapshot());
+				tsk = nob::task([pb]() {
+					rec.emplace(pb.movement());
 				});
-				nob::wait(30000);
-				std::cout << "done!" << std::endl;
-				tsk.del();
 			} else {
-				auto rec_cp = rec;
-				nob::task([rec_cp, veh]() mutable {
-					if (rec_cp.size()) {
-						veh.recover(rec_cp.front());
-						rec_cp.pop();
+				if (tsk) {
+					tsk.del();
+					nob::ui::tip("record done!");
+					return;
+				}
+				nob::task([pb]() mutable {
+					static auto last = nob::character::motion_state_t::null;
+					if (rec.size()) {
+						if (
+							rec.front().motion_state != nob::character::motion_state_t::jumping ||
+							last != nob::character::motion_state_t::jumping
+						) {
+							last = rec.front().motion_state;
+							pb.movement(rec.front());
+						}
+						rec.pop();
 					} else {
-						std::cout << "done!" << std::endl;
+						nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
+						nob::ui::tip("end!");
 						nob::this_task::del();
 					}
 				});
