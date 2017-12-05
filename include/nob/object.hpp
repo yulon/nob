@@ -27,7 +27,7 @@ namespace nob {
 			}
 
 			void free() {
-				ntv::ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&_ntv_hdl);
+				ntv::ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&_ntv_hdl);
 			}
 
 			bool is_dead() const {
@@ -174,9 +174,9 @@ namespace nob {
 				ntv::PED::SET_PED_CONFIG_FLAG(_ntv_hdl, 281, true); // PED_FLAG_NO_WRITHE
 			}
 
-			void del() {
-				ntv::PED::DELETE_PED(&_ntv_hdl);
-			}
+			void del();
+
+			void free();
 
 			void resurrect() {
 				ntv::ENTITY::SET_ENTITY_HEALTH(_ntv_hdl, ntv::ENTITY::GET_ENTITY_MAX_HEALTH(_ntv_hdl));
@@ -252,16 +252,18 @@ namespace nob {
 				ntv::AI::TASK_SKY_DIVE(_ntv_hdl);
 			}
 
-			void equip_parachute() {
+			void add_parachute_pack() {
 				if (!has_weapon_in_pack(nob::hash("GADGET_PARACHUTE"))) {
 					add_weapon(nob::hash("GADGET_PARACHUTE"));
 				}
 			}
 
 			void open_parachute() {
-				equip_parachute();
+				add_parachute_pack();
 				ntv::PED::FORCE_PED_TO_OPEN_PARACHUTE(_ntv_hdl);
 			}
+
+			void show_fake_parachute(bool toggle = true);
 
 			inline void into_vehicle(vehicle veh, int seat);
 
@@ -372,51 +374,7 @@ namespace nob {
 				return {entity::movement(), motion_state()};
 			}
 
-			void movement(const movement_t &mm) {
-				entity::movement(mm);
-				switch (mm.motion_state) {
-					case motion_state_t::null:
-						break;
-					case motion_state_t::still:
-						if (motion_state() != motion_state_t::still) {
-							still();
-						}
-						break;
-					case motion_state_t::jumping:
-						jump();
-						break;
-					case motion_state_t::walking:
-						go(speed_walk);
-						break;
-					case motion_state_t::runing:
-						go(speed_run);
-						break;
-					case motion_state_t::sprinting:
-						go(speed_sprint);
-						break;
-					case motion_state_t::falling:
-						//ntv::PED::SET_PED_TO_RAGDOLL(_ntv_hdl, 1000, 1000, 0, false, false, false);
-						break;
-					case motion_state_t::skydiving:
-						if (motion_state() != motion_state_t::skydiving) {
-							skydive();
-						}
-						break;
-					case motion_state_t::parachuting:
-						if (ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl) < 1) {
-							open_parachute();
-						}
-						if (ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl) == 2) {
-							ntv::AI::TASK_PARACHUTE(_ntv_hdl, false);
-						}
-						break;
-					case motion_state_t::climbing:
-						climb();
-						break;
-					case motion_state_t::climbing_ladder:
-						climb_ladder();
-				}
-			}
+			void movement(const movement_t &);
 
 			void add_weapon(const hasher &wpn) {
 				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash(), 0, false, false);

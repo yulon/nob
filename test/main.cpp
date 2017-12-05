@@ -90,9 +90,18 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("Auto Get Parachute in Plane", [](bool val) {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
+		action("Other -1", []() {
+			auto pb = nob::player::body();
+			auto pos = pb.pos({0, 0, 0});
+			auto p = nob::ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(nob::model(0x73268708), pos.x, pos.y, pos.z, false, true, true);
+			nob::ntv::ENTITY::SET_ENTITY_COLLISION(p, false, false);
+			nob::ntv::ENTITY::ATTACH_ENTITY_TO_ENTITY(p, pb, nob::ntv::PED::GET_PED_BONE_INDEX(pb, 0xE0FD), 3.7, 0, 0, 0, 90.0f, 0, false, false, false, true, 0, true);
+			nob::wait(10000);
+			nob::ntv::ENTITY::DELETE_ENTITY(&p);
+		}),
 		action("Other 0", []() {
 			auto pb = nob::player::body();
-			pb.equip_parachute();
+			pb.add_parachute_pack();
 			pb.move(pb.pos({0, 0, 1000}));
 		}),
 		action("Other", []() {
@@ -111,15 +120,8 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					return;
 				}
 				nob::task([pb]() mutable {
-					static auto last = nob::character::motion_state_t::null;
 					if (rec.size()) {
-						if (
-							rec.front().motion_state != nob::character::motion_state_t::jumping ||
-							last != nob::character::motion_state_t::jumping
-						) {
-							last = rec.front().motion_state;
-							pb.movement(rec.front());
-						}
+						pb.movement(rec.front());
 						rec.pop();
 					} else {
 						nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
