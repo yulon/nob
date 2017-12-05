@@ -5,66 +5,66 @@
 
 namespace nob {
 	struct _chr_data {
-		entity parachute;
-		character::motion_state_t last_mo = character::motion_state_t::null;
+		entity fk_chute;
+		character::motion_state_t lst_mo = character::motion_state_t::null;
 	};
 
 	std::unordered_map<int, _chr_data> _chr_data_map;
 
 	void character::del() {
-		auto it = _chr_data_map.find(_ntv_hdl);
-		if (it != _chr_data_map.end()) {
-			_chr_data_map.erase(it);
-		}
+		_chr_data_map.erase(_ntv_hdl);
 		ntv::PED::DELETE_PED(&_ntv_hdl);
 	}
 
 	void character::free() {
-		auto it = _chr_data_map.find(_ntv_hdl);
-		if (it != _chr_data_map.end()) {
-			_chr_data_map.erase(it);
-		}
+		_chr_data_map.erase(_ntv_hdl);
 		ntv::ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&_ntv_hdl);
 	}
 
 	void character::show_fake_parachute(bool toggle) {
+		auto &data = _chr_data_map[_ntv_hdl];
+
 		if (toggle) {
-			if (_chr_data_map[_ntv_hdl].parachute) {
+			if (data.fk_chute) {
 				return;
 			}
 			auto cods = pos({0, 0, 2});
-			_chr_data_map[_ntv_hdl].parachute = ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(model(0x73268708), cods.x, cods.y, cods.z, false, true, true);
-			ntv::ENTITY::SET_ENTITY_COLLISION(_chr_data_map[_ntv_hdl].parachute, false, false);
+			data.fk_chute = ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(model(0x73268708), cods.x, cods.y, cods.z, false, true, true);
+			ntv::ENTITY::SET_ENTITY_COLLISION(data.fk_chute, false, false);
 			ntv::ENTITY::ATTACH_ENTITY_TO_ENTITY(
-				_chr_data_map[_ntv_hdl].parachute, _ntv_hdl,
+				data.fk_chute, _ntv_hdl,
 				nob::ntv::PED::GET_PED_BONE_INDEX(_ntv_hdl, 0xE0FD),
 				3.6, 0, 0, 0, 90.0f, 0, false, false, false, true, 0, true
 			);
 		} else {
-			_chr_data_map[_ntv_hdl].parachute.del();
+			data.fk_chute.del();
 		}
 	}
 
 	void character::movement(const movement_t &mm) {
 		entity::movement(mm);
+
+		auto &data = _chr_data_map[_ntv_hdl];
+
 		if (mm.motion_state == motion_state_t::parachuting) {
-			if (_chr_data_map[_ntv_hdl].last_mo != motion_state_t::parachuting) {
+			if (data.lst_mo != motion_state_t::parachuting) {
 				show_fake_parachute();
 				still();
-				_chr_data_map[_ntv_hdl].last_mo = motion_state_t::parachuting;
+				data.lst_mo = motion_state_t::parachuting;
 			}
 			return;
-		} else if (_chr_data_map[_ntv_hdl].last_mo == motion_state_t::parachuting) {
+		} else if (data.lst_mo == motion_state_t::parachuting) {
 			show_fake_parachute(false);
 		}
+
 		switch (mm.motion_state) {
 			case motion_state_t::still:
-				if (_chr_data_map[_ntv_hdl].last_mo != motion_state_t::still) {
+				if (data.lst_mo != motion_state_t::still) {
 					still();
 				}
 				break;
 			case motion_state_t::jumping:
-				if (_chr_data_map[_ntv_hdl].last_mo != motion_state_t::jumping) {
+				if (data.lst_mo != motion_state_t::jumping) {
 					jump();
 				}
 				break;
@@ -78,7 +78,7 @@ namespace nob {
 				go(speed_sprint);
 				break;
 			case motion_state_t::skydiving:
-				if (_chr_data_map[_ntv_hdl].last_mo != motion_state_t::skydiving) {
+				if (data.lst_mo != motion_state_t::skydiving) {
 					skydive();
 				}
 				break;
@@ -91,6 +91,7 @@ namespace nob {
 			default:
 				break;
 		}
-		_chr_data_map[_ntv_hdl].last_mo = mm.motion_state;
+
+		data.lst_mo = mm.motion_state;
 	}
 } /* nob */
