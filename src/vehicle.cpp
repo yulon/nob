@@ -1,7 +1,8 @@
 #include <nob/object.hpp>
-#include <nob/hack.hpp>
 #include <nob/hash.hpp>
 #include <nob/script.hpp>
+
+#include <tmd/bin.hpp>
 
 #include <thread>
 #include <queue>
@@ -54,11 +55,12 @@ namespace nob {
 		chan<uint32_t> id_ch;
 
 		std::thread([shop_ctrllr, id_ch]() mutable {
-			for (int i = 0; i < shop_ctrllr->page_count(); i++) {
-				auto addr = hack::mem_match(
-					(const uint8_t *)shop_ctrllr->page_addr(i), shop_ctrllr->page_size(i),
-					{0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}
-				);
+			auto shop_ctrllr_page_c = shop_ctrllr->page_count();
+			for (size_t i = 0; i < shop_ctrllr_page_c; i++) {
+				auto addr = reinterpret_cast<uintptr_t>(tmd::bin{
+					shop_ctrllr->page_addr(i),
+					shop_ctrllr->page_size(i)
+				}.match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}));
 				if (!addr) {
 					continue;
 				}

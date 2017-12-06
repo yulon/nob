@@ -1,10 +1,14 @@
 #include <nob/ui.hpp>
-#include <nob/hack.hpp>
+
+#include <tmd/bin.hpp>
+#include <tmd/hook.hpp>
 
 #include <thread>
 #include <sstream>
 
 namespace nob {
+	extern tmd::bin _main_mdu_mem;
+
 	namespace ui {
 		void disable_sp_features(bool toggle) {
 			static task tsk;
@@ -32,22 +36,21 @@ namespace nob {
 		}
 
 		void disable_wheel_slowmo(bool toggle) {
-			static uintptr_t sf = 0;
-			static hack::detour_func_t<void()> df;
-			static hack::hooking_func_t<void()> hf;
+			static void (*sf)() = nullptr;
+			static tmd::hook<void (*)()> hk;
 
 			if (toggle) {
 				if (!sf) {
-					chan<uintptr_t> ch;
+					chan<void (*)()> ch;
 
 					std::thread([ch]() mutable {
-						ch << hack::mem_match({
+						ch << reinterpret_cast<void (*)()>(_main_mdu_mem.match({
 							// Reference from https://www.unknowncheats.me/forum/grand-theft-auto-v/181752-weapon-wheel-slowmotion.html
 							0x48, 0x89, 0x5C, 0x24, 0x08, 0x57, 0x48, 0x83, 0xEC, 0x20,
 							0x33, 0xC0, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x83, 0xFA, 0x01,
 							0x75, 1111, 0x38, 0x05, 1111, 1111, 1111, 1111, 0x0F, 0x45,
 							0xF8
-						});
+						}));
 					}).detach();
 
 					ch >> sf;
@@ -56,11 +59,11 @@ namespace nob {
 						return;
 					}
 				}
-				if (!hf) {
-					hf = df.hook(sf);
+				if (!hk) {
+					hk.assign(sf, []() {});
 				}
 			} else {
-				hf.unhook();
+				hk.unhook();
 			}
 		}
 

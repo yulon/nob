@@ -36,44 +36,44 @@ namespace nob {
 			char padding1[16];					//0x0
 			uint8_t **blocks_offset;			//0x10
 			char padding2[4];					//0x18
-			int length;							//0x1C
+			uint32_t length;					//0x1C
 			char padding3[4];					//0x20
-			int local_count;					//0x24
+			uint32_t local_count;				//0x24
 			char padding4[4];					//0x28
-			int native_count;					//0x2C
+			uint32_t native_count;				//0x2C
 			int64_t *local_offset;				//0x30
 			char padding5[8];					//0x38
 			int64_t *native_offset;				//0x40
 			char padding6[16];					//0x48
-			int nameHash;						//0x58
+			uint32_t name_hash;					//0x58
 			char padding7[4];					//0x5C
 			char *name;							//0x60
 			char **strings_offset;				//0x68
-			int string_size;					//0x70
+			uint32_t string_size;				//0x70
 			char padding8[12];					//0x74
 
 			bool is_valid() const {
 				return length;
 			}
 
-			int page_count() const {
+			size_t page_count() const {
 				return (length + 0x3FFF) >> 14;
 			}
 
-			int page_size(int page) const {
-				return (page < 0 || page >= page_count() ? 0 : (page == page_count() - 1) ? length & 0x3FFF : 0x4000);
+			size_t page_size(size_t page) const {
+				return page >= page_count() ? 0 : (page == page_count() - 1) ? length & 0x3FFF : 0x4000;
 			}
 
-			uint8_t *page_addr(int page) const {
+			uint8_t *page_addr(size_t page) const {
 				return blocks_offset[page];
 			}
 
-			uint8_t *pos_addr(int pos) const {
-				return pos < 0 || pos >= length ? NULL : &blocks_offset[pos >> 14][pos & 0x3FFF];
+			uint8_t *pos_addr(size_t pos) const {
+				return pos >= length ? NULL : &blocks_offset[pos >> 14][pos & 0x3FFF];
 			}
 
-			char* get_string(int str_pos) const {
-				return str_pos < 0 || str_pos >= string_size ? NULL : &strings_offset[str_pos >> 14][str_pos & 0x3FFF];
+			char *get_string(size_t str_pos) const {
+				return str_pos >= string_size ? NULL : &strings_offset[str_pos >> 14][str_pos & 0x3FFF];
 			}
 		};
 
