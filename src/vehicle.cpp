@@ -57,10 +57,10 @@ namespace nob {
 		std::thread([shop_ctrllr, id_ch]() mutable {
 			auto shop_ctrllr_page_c = shop_ctrllr->page_count();
 			for (size_t i = 0; i < shop_ctrllr_page_c; i++) {
-				auto addr = reinterpret_cast<uintptr_t>(tmd::bin{
+				auto addr = tmd::bin_view(
 					shop_ctrllr->page_addr(i),
 					shop_ctrllr->page_size(i)
-				}.match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}));
+				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).data().value();
 				if (!addr) {
 					continue;
 				}
