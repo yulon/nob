@@ -60,7 +60,7 @@ namespace nob {
 				auto addr = tmd::bin_view(
 					shop_ctrllr->page_addr(i),
 					shop_ctrllr->page_size(i)
-				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).data().value();
+				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).data();
 				if (!addr) {
 					continue;
 				}

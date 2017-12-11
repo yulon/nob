@@ -81,12 +81,12 @@ namespace nob {
 			struct node_t {
 				script_t *script;
 				int _unk;
-				int hash;
+				uint32_t hash;
 			};
 
 			node_t *nodes;
 			uint8_t _unk[16];
-			int size;
+			uint32_t size;
 
 			node_t *find(const char *name) const;
 		};
