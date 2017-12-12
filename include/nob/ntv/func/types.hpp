@@ -98,7 +98,14 @@ namespace nob {
 					if (!target()) {
 						return;
 					}
+
 					_f(ctx);
+
+					#ifdef DEBUG
+						if (ctx._unk) {
+							std::cout << "nob::ntv::lazy_func_t[" << std::hex << _h << "]: could call failed!" << std::endl;
+						}
+					#endif
 				}
 
 				func_t target() {
@@ -134,12 +141,13 @@ namespace nob {
 		class buffered_call_context_t : public call_context_t {
 			public:
 				buffered_call_context_t() {
-					args_ptr = _buffer.data();
-					result_ptr = _buffer.data() + 20;
+					args_ptr = _buffer;
+					result_ptr = _buffer + 32;
+					_unk = 0;
 				}
 
 			private:
-				std::array<uintptr_t, 30> _buffer;
+				uintptr_t _buffer[64];
 		};
 
 		template <typename>

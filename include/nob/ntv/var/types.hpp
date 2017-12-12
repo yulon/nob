@@ -128,16 +128,9 @@ namespace nob {
 			uintptr_t *result_ptr;
 			uint32_t args_length;
 			uintptr_t *args_ptr;
-			uint32_t result_size;
+			uint32_t _unk;
 
 			////////////////////////////////////////////////////////////////////////
-
-			call_context_t() {}
-
-			call_context_t(uintptr_t *stack_ptr) :
-				result_ptr(stack_ptr + 20),
-				args_ptr(stack_ptr)
-			{}
 
 			template <typename T>
 			void set_arg(size_t i, T v) {
@@ -174,7 +167,7 @@ namespace nob {
 				return *reinterpret_cast<T *>(result_ptr);
 			}
 
-			void print(const std::string &mark = nullptr) {
+			void print(const std::string &mark = "") {
 				if (!mark.empty()) {
 					std::cout << mark << std::endl;
 				}
@@ -183,8 +176,7 @@ namespace nob {
 				<< "args_ptr: " << args_ptr << std::endl
 				<< "args_length: " << args_length << std::endl
 				<< "result_ptr: " << result_ptr << std::endl
-				<< "result_size: " << result_size << std::endl
-				<< std::endl;
+				<< "_unk: " << _unk << std::endl;
 			}
 		};
 
