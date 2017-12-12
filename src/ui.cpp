@@ -2,6 +2,7 @@
 
 #include <tmd/bin.hpp>
 #include <tmd/hook.hpp>
+#include <tmd/hook.inc>
 
 #include <thread>
 #include <sstream>
