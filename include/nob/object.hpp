@@ -529,23 +529,21 @@ namespace nob {
 				std::cout << "  group: ";
 				for (auto &hr : arm::weapon_groups) {
 					if (hr == grp) {
-						std::cout << hr.src_c_str();
+						std::cout << hr.src_c_str() << " ";
 						break;
 					}
 				}
-				std::cout << " " << grp.hash();
-				std::cout << std::endl;
+				std::cout << grp.hash() << std::endl;
 
 				auto amm_ty = weapon_ammo_type(cur_wpn);
 				std::cout << "  ammo type: ";
 				for (auto &hr : arm::ammo_types) {
 					if (hr == amm_ty) {
-						std::cout << hr.src_c_str();
+						std::cout << hr.src_c_str() << " ";
 						break;
 					}
 				}
-				std::cout << " " << amm_ty.hash();
-				std::cout << std::endl;
+				std::cout << amm_ty.hash() << std::endl;
 
 				auto info = arm::weapon_info(cur_wpn);
 				if (info.valid) {
