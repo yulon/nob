@@ -8,6 +8,12 @@ namespace nob {
 
 		const std::unordered_map<uint16_t, const std::unordered_map<uint64_t, uint64_t>> fhtt {
 			{
+				1290,
+				{
+					#include "fhtt/1290.inc"
+				}
+			},
+			{
 				1180,
 				{
 					#include "fhtt/1180.inc"
