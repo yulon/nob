@@ -114,8 +114,8 @@ namespace nob {
 							if (!_shv_h) {
 								return nullptr;
 							}
-							auto sub_map_it = shv::func_hash_tr_tab.find(program::version);
-							if (sub_map_it == shv::func_hash_tr_tab.end()) {
+							auto sub_map_it = shv::fhtt.find(program::version);
+							if (sub_map_it == shv::fhtt.end()) {
 								return nullptr;
 							}
 							auto it = sub_map_it->second.find(_shv_h);
