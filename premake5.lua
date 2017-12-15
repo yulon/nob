@@ -27,7 +27,8 @@ workspace "nob"
 			"src/ntv/func/*.cpp", "src/ntv/func/*.hpp", "src/ntv/func/*.h",
 			"src/ntv/var/*.cpp", "src/ntv/var/*.hpp", "src/ntv/var/*.h",
 
-			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h"
+			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h",
+			"src/shv/fhtt/*.cpp", "src/shv/fhtt/*.hpp", "src/shv/fhtt/*.h"
 		}
 
 		configuration { "gmake" }
@@ -49,7 +50,7 @@ workspace "nob"
 		files { "test/*.cpp" }
 		targetextension ".asi"
 		libdirs { "lib" }
-		links { "user32", "nob", "psapi", "MinHook" }
+		links { "user32", "nob", "psapi", "version", "MinHook" }
 
 		configuration { "gmake" }
 			linkoptions { "-Wl,--exclude-all-symbols" }

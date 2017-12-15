@@ -12,3 +12,4 @@
 #include "nob/screen.hpp"
 #include "nob/map.hpp"
 #include "nob/i18n.hpp"
+#include "nob/program.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../vars.hpp"
-
+#include "../../program.hpp"
 #include "../../shv/fhtt.hpp"
 
 #ifdef NOB_USING_SHV_CALL
@@ -111,22 +111,25 @@ namespace nob {
 				func_t target() {
 					if (!_f) {
 						if (!_h) {
-							if (_shv_h) {
-								auto pair = shv::func_hash_tr_tab.find(_shv_h);
-								if (pair == shv::func_hash_tr_tab.end()) {
-									return 0;
-								}
-								_h = pair->second;
-								if (!_h) {
-									return 0;
-								}
-							} else {
-								return 0;
+							if (!_shv_h) {
+								return nullptr;
+							}
+							auto sub_map_it = shv::func_hash_tr_tab.find(program::version);
+							if (sub_map_it == shv::func_hash_tr_tab.end()) {
+								return nullptr;
+							}
+							auto it = sub_map_it->second.find(_shv_h);
+							if (it == sub_map_it->second.end()) {
+								return nullptr;
+							}
+							_h = it->second;
+							if (!_h) {
+								return nullptr;
 							}
 						}
 						_f = func_table[_h];
 						if (!_f) {
-							return 0;
+							return nullptr;
 						}
 					}
 					return _f;

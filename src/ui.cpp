@@ -1,6 +1,6 @@
 #include <nob/ui.hpp>
+#include <nob/program.hpp>
 
-#include <tmd/bin.hpp>
 #include <tmd/hook.hpp>
 #include <tmd/hook.inc>
 
@@ -8,8 +8,6 @@
 #include <sstream>
 
 namespace nob {
-	extern tmd::bin_view _bin_code;
-
 	namespace ui {
 		void disable_sp_features(bool toggle) {
 			static task tsk;
@@ -45,7 +43,7 @@ namespace nob {
 					chan<void (*)()> ch;
 
 					std::thread([ch]() mutable {
-						ch << _bin_code.match({
+						ch << program::code.match({
 							// Reference from https://www.unknowncheats.me/forum/grand-theft-auto-v/181752-weapon-wheel-slowmotion.html
 							0x48, 0x89, 0x5C, 0x24, 0x08, 0x57, 0x48, 0x83, 0xEC, 0x20,
 							0x33, 0xC0, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x83, 0xFA, 0x01,

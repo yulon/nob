@@ -1,5 +1,7 @@
 #include <nob.hpp>
 
+#include <tmd/hook.hpp>
+
 #include <cstring>
 #include <cstdlib>
 
@@ -43,16 +45,16 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		})
 	}),
 	list("Weapon", {
-		action("Print Current Weapon Info", []() {
+		action("Print Current Info", []() {
 			nob::player::body().print_weapon_info();
 		}),
-		action("Get All Weapons", []() {
+		action("Get All", []() {
 			nob::player::body().add_all_weapons();
 		}),
-		action("Remove All Weapons", []() {
+		action("Remove All", []() {
 			nob::player::body().rm_all_weapons();
 		}),
-		list("Get a Weapon", [](list li) {
+		list("Get", [](list li) {
 			for (auto &wpn : nob::arm::weapons) {
 				if (wpn == "WEAPON_UNARMED") {
 					continue;
@@ -90,26 +92,12 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("Auto Get Parachute in Plane", [](bool val) {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
-		action("Other -1", []() {
+		action("Record", []() {
 			auto pb = nob::player::body();
-			auto pos = pb.pos({0, 0, 0});
-			auto p = nob::ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(nob::model(0x73268708), pos.x, pos.y, pos.z, false, true, true);
-			nob::ntv::ENTITY::SET_ENTITY_COLLISION(p, false, false);
-			nob::ntv::ENTITY::ATTACH_ENTITY_TO_ENTITY(p, pb, nob::ntv::PED::GET_PED_BONE_INDEX(pb, 0xE0FD), 3.7, 0, 0, 0, 90.0f, 0, false, false, false, true, 0, true);
-			nob::wait(10000);
-			nob::ntv::ENTITY::DELETE_ENTITY(&p);
-		}),
-		action("Other 0", []() {
-			auto pb = nob::player::body();
-			pb.add_parachute_pack();
-			pb.move(pb.pos({0, 0, 1000}));
-		}),
-		action("Other", []() {
-			auto pb = nob::player::body();
-			//auto veh = pb.current_vehicle();
 			static std::queue<nob::character::movement_t> rec;
 			static nob::task tsk;
 			if (rec.empty()) {
+				nob::ui::tip("record start!");
 				tsk = nob::task([pb]() {
 					rec.emplace(pb.movement());
 				});
@@ -130,6 +118,49 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					}
 				});
 			}
+		}),
+		action("Other -1", []() {
+			auto pb = nob::player::body();
+			auto pos = pb.pos({0, 0, 0});
+			auto p = nob::ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(nob::model(0x73268708), pos.x, pos.y, pos.z, false, true, true);
+			nob::ntv::ENTITY::SET_ENTITY_COLLISION(p, false, false);
+			nob::ntv::ENTITY::ATTACH_ENTITY_TO_ENTITY(p, pb, nob::ntv::PED::GET_PED_BONE_INDEX(pb, 0xE0FD), 3.7, 0, 0, 0, 90.0f, 0, false, false, false, true, 0, true);
+			nob::wait(10000);
+			nob::ntv::ENTITY::DELETE_ENTITY(&p);
+		}),
+		action("Other 0", []() {
+			///*
+			auto pb = nob::player::body();
+			pb.add_parachute_pack();
+			pb.move(pb.pos({0, 0, 1000}));
+			//*/
+		}),
+		action("Other", []() {
+/*			auto pb = nob::player::body();
+			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
+			auto d = "skydive@parachute@chute";
+			nob::ntv::STREAMING::REQUEST_ANIM_DICT(d);
+			if (!nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d)) {
+				nob::wait([d]()->bool {
+					return nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d);
+				});
+			}
+
+
+
+			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
+			chr.add_weapon("WEAPON_PISTOL");
+			chr.switch_weapon("WEAPON_PISTOL");
+			chr.aim(chr.pos({20, 20, 0}));
+			chr.go();
+
+			auto n = "p_parachute_s_idlefast";
+			nob::ntv::AI::TASK_PLAY_ANIM(pb, d, n, 8.0f, 0.0f, -1, 9, 0, 0, 0, 0);
+			nob::wait(5000);
+			nob::ntv::AI::STOP_ANIM_TASK(pb, d, n, 0);//*/
+			//auto veh = pb.current_vehicle();
+			///*
+
 
 			//auto pos = pb.pos({0, 20, 0});
 			//nob::ntv::GRAPHICS::DRAW_LIGHT_WITH_RANGE(pos.x, pos.y, pos.z, 255, 0, 0, 10, 10);
@@ -137,27 +168,64 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//nob::wait(10000);
 			//pb.resurrect();
 			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
-			/*static auto t = nob::task([]() {
-				auto pb_nh = nob::player::body();
-				nob::ntv::Vector3 v3;
-				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb_nh, &v3)) {
-					//nob::wait_next_frame();
-					std::cout << v3.x << ", " << v3.y << ", " << v3.z << std::endl;
-					nob::player::body().move({v3.x, v3.y, v3.z});
-				}
-			});
 
-			auto veh = nob::vehicle("INSURGENT", nob::player::body().pos({0, 10, 0}));
+
+			/*
+			static tmd::hook<nob::ntv::func_t> hkk;
+
+			auto sf = nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD.target();
+			if (sf) {
+				std::cout << "hook" << std::endl;
+				hkk.assign(sf, [](nob::ntv::call_context_t &cc) {
+					auto begin = *cc.result_ptr;
+					hkk.orig_fn(std::ref(cc));
+					if (!cc.result<bool>()) {
+						return;
+					}
+					std::cout << "=======================" << std::endl;
+					std::cout << begin << std::endl;
+					//begin.print();
+					//std::cout << "-----------------------" << std::endl;
+					std::cout << *cc.result_ptr << std::endl;
+					//cc.print();
+					std::cout << "=======================" << std::endl;
+				});
+			}//*/
+
+			/*
+			nob::task([pb]() {
+				nob::ntv::Vector3 v3;
+				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
+					//nob::wait_next_frame();
+					std::cout << &v3 << ": " << v3.x << ", " << v3.y << ", " << v3.z << std::endl;
+					//std::cout << v3._paddingx << ", " << v3._paddingy << ", " << v3._paddingz << "=======================" << std::endl;
+				}
+			});//*/
+
+			/*static nob::character::group g("_xxxxxxxxddd");
+
+			auto veh = nob::vehicle("TAXI", nob::player::body().pos({0, 10, 0}));
 
 			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
+			chr.into_vehicle(veh, -1);
+			//auto chr2 = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
+			//chr2.into_vehicle(veh, 7);
 
-			chr.into_vehicle(veh, 7);
 
-			nob::wait(1000);
+
+			g.add(pb);
+			g.add(chr);
+			//g.add(chr2);
+
+			nob::ntv::VEHICLE::SET_VEHICLE_ALLOW_NO_PASSENGERS_LOCKON(veh, false);*/
+			//nob::ntv::VEHICLE::SET_VEHICLE_IS_STOLEN(veh, true);
+			//nob::ntv::VEHICLE::SET_VEHICLE_DOORS_LOCKED(veh, 1);
+
+			//nob::wait(1000);
 
 			//chr.switch_weapon("WEAPON_MICROSMG");
 			//chr.ammo_no_consumption();
-			chr.shoot(pos);*/
+			//chr.shoot(pos);
 
 			//nob::ntv::AI::TASK_AIM_GUN_AT_COORD(chr, pos.x, pos.y, pos.z, -1, true, true);
 			//nob::ntv::AI::TASK_VEHICLE_AIM_AT_COORD(chr, pos.x, pos.y, pos.z);
@@ -175,57 +243,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//for (size_t i = 1; i <= 26; ++i) {
 				//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, i);
 			//}
-
-
-			//nob::ntv::PLAYER::SET_PLAYER_WEAPON_DEFENSE_MODIFIER(nob::player::native_handle(), 0);
-			/*
-			auto old_h = std::make_shared<float>(nob::ntv::ENTITY::GET_ENTITY_HEADING(pb));
-
-			nob::task([chr, pb, old_h]() mutable {
-				//if (!nob::ntv::AI::IS_PED_STILL(pb)) {
-					float h = nob::ntv::ENTITY::GET_ENTITY_HEADING(pb);
-					if (h != *old_h) {
-						auto pos = pb.pos({0, 10, 0});
-						chr.face({pos.x + 5, pos.y, pos.x}, h);
-						*old_h = h;
-					}
-				//}
-			});
-
-			pb.on_motion([](nob::character::motion_state ms) {
-				switch (ms) {
-					case nob::character::motion_state::still:
-						std::cout << "still" << std::endl << std::endl;
-						break;
-					case nob::character::motion_state::jumping:
-						std::cout << "jumping" << std::endl;
-						break;
-					case nob::character::motion_state::walking:
-						std::cout << "walking" << std::endl;
-						break;
-					case nob::character::motion_state::runing:
-						std::cout << "runing" << std::endl;
-						break;
-					case nob::character::motion_state::sprinting:
-						std::cout << "sprinting" << std::endl;
-						break;
-					case nob::character::motion_state::falling:
-						std::cout << "falling" << std::endl;
-						break;
-					case nob::character::motion_state::skydiving:
-						std::cout << "skydiving" << std::endl;
-						break;
-					case nob::character::motion_state::parachuting:
-						std::cout << "parachuting" << std::endl;
-						break;
-					case nob::character::motion_state::climbing:
-						std::cout << "climbing" << std::endl;
-						break;
-					case nob::character::motion_state::null:
-						std::cout << "null" << std::endl;
-						break;
-				}
-			});*/
 		})
 	}),
 	list("World", {
