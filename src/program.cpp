@@ -14,7 +14,7 @@ namespace nob {
 
 		uint16_t version = ([]()->uint16_t {
 			WCHAR path[MAX_PATH];
-			GetProcessImageFileNameW(GetCurrentProcess(), path, MAX_PATH);
+			GetModuleFileNameExW(GetCurrentProcess(), GetModuleHandleW(nullptr), path, MAX_PATH);
 
 			DWORD sz, h;
 			sz = GetFileVersionInfoSizeW(path, &h);
