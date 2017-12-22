@@ -17,11 +17,10 @@ namespace nob {
 	namespace window {
 		HWND _handle = ([]()->HWND {
 			#ifdef DEBUG
-				if (AllocConsole()) {
-					freopen("conout$", "w+t", stdout);
-					freopen("conout$", "w+t", stderr);
-					freopen("conout$", "w+t", stderr);
-				}
+				AllocConsole();
+				freopen("conout$", "w+t", stdout);
+				freopen("conout$", "w+t", stderr);
+				freopen("conout$", "w+t", stderr);
 			#endif
 
 			auto wnd = FindWindowW(L"grcWindow", L"Grand Theft Auto V");

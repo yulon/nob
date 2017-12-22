@@ -1,7 +1,7 @@
 #pragma once
 
-#include "func/types.hpp"
-#include "func/consts.hpp"
+#include "base.hpp"
+#include "consts.hpp"
 
 namespace nob {
 	namespace ntv {

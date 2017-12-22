@@ -8,21 +8,10 @@
 
 namespace nob {
 	namespace arm {
-		#pragma pack(push, 1)
-			struct weapon_info_t {
-				uint8_t damage;
-				uint8_t _padding1[7];
-				uint8_t speed;
-				uint8_t _padding2[7];
-				uint8_t capacity;
-				uint8_t _padding3[7];
-				uint8_t accuracy;
-				uint8_t _padding4[7];
-				uint8_t range;
-				uint8_t _padding5[7];
-				bool valid;
-			};
-		#pragma pack(pop)
+		struct weapon_info_t {
+			alignas(uintptr_t) uint8_t damage, speed, capacity, accuracy, range;
+			bool valid;
+		};
 
 		inline weapon_info_t weapon_info(const hasher &wpn) {
 			weapon_info_t info;

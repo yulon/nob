@@ -136,8 +136,16 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//*/
 		}),
 		action("Other", []() {
-/*			auto pb = nob::player::body();
-			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
+			auto pb = nob::player::body();
+			nob::task([pb]() {
+				nob::ntv::Vector3 v3;
+				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
+					//nob::wait_next_frame();
+					std::cout << &v3 << ": " << v3.x << ", " << v3.y << ", " << v3.z << std::endl;
+					//std::cout << v3._paddingx << ", " << v3._paddingy << ", " << v3._paddingz << "=======================" << std::endl;
+				}
+			});
+/*			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
 			auto d = "skydive@parachute@chute";
 			nob::ntv::STREAMING::REQUEST_ANIM_DICT(d);
 			if (!nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d)) {
@@ -191,16 +199,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					std::cout << "=======================" << std::endl;
 				});
 			}//*/
-
-			/*
-			nob::task([pb]() {
-				nob::ntv::Vector3 v3;
-				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
-					//nob::wait_next_frame();
-					std::cout << &v3 << ": " << v3.x << ", " << v3.y << ", " << v3.z << std::endl;
-					//std::cout << v3._paddingx << ", " << v3._paddingy << ", " << v3._paddingz << "=======================" << std::endl;
-				}
-			});//*/
 
 			/*static nob::character::group g("_xxxxxxxxddd");
 

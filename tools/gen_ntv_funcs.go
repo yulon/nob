@@ -40,8 +40,8 @@ func main() {
 
 	hpp.WriteString(`#pragma once
 
-#include "func/types.hpp"
-#include "func/consts.hpp"`)
+#include "base.hpp"
+#include "consts.hpp"`)
 	gen(hpp, true)
 
 	cpp, err := os.Create("../src/ntv/funcs.cpp")
