@@ -38,6 +38,42 @@
 
 namespace nob {
 	namespace ntv {
+
+		// Reference from http://www.dev-c.com/gtav/scripthookv/
+
+		typedef unsigned int Void;
+		typedef unsigned int Any;
+		typedef unsigned int uint;
+		typedef unsigned int Hash;
+		typedef int Entity;
+		typedef int Player;
+		typedef int FireId;
+		typedef int Ped;
+		typedef int Vehicle;
+		typedef int Cam;
+		typedef int CarGenerator;
+		typedef int Group;
+		typedef int Train;
+		typedef int Pickup;
+		typedef int Object;
+		typedef int Weapon;
+		typedef int Interior;
+		typedef int Blip;
+		typedef int Texture;
+		typedef int TextureDict;
+		typedef int CoverPoint;
+		typedef int Camera;
+		typedef int TaskSequence;
+		typedef int ColourIndex;
+		typedef int Sphere;
+		typedef int ScrHandle;
+
+		struct Vector3 {
+			alignas(uintptr_t) float x, y, z;
+		};
+
+		////////////////////////////////////////////////////////////////////////
+
 		// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 
 		class global_table_t {
@@ -147,15 +183,14 @@ namespace nob {
 		typedef void (__cdecl *func_t)(call_context_t &);
 
 		struct call_context_t {
+			static constexpr size_t max_arg_count = 32;
+			static const func_t fix_res_fn;
+
 			uintptr_t *result_ptr;
 			uint32_t arg_count;
 			uintptr_t *args_ptr;
 			uint32_t res_count;
-			uintptr_t res_cache[32 * 24];
-
-			static func_t fix_res_fn;
-
-			////////////////////////////////////////////////////////////////////////
+			Vector3 res_cache[max_arg_count];
 
 			template <typename T>
 			void set_arg(size_t i, T v) {
@@ -386,11 +421,11 @@ namespace nob {
 			public:
 				full_call_context_t() {
 					args_ptr = _stack;
-					result_ptr = _stack + 32;
+					result_ptr = _stack + max_arg_count;
 				}
 
 			private:
-				uintptr_t _stack[64];
+				uintptr_t _stack[2 * max_arg_count];
 		};
 
 		extern full_call_context_t _dft_call_ctx;
@@ -418,41 +453,6 @@ namespace nob {
 					lazy_func_t::operator()(_dft_call_ctx);
 					return _dft_call_ctx.result<R>();
 				}
-		};
-
-		////////////////////////////////////////////////////////////////////////
-
-		// Reference from http://www.dev-c.com/gtav/scripthookv/
-
-		typedef unsigned int Void;
-		typedef unsigned int Any;
-		typedef unsigned int uint;
-		typedef unsigned int Hash;
-		typedef int Entity;
-		typedef int Player;
-		typedef int FireId;
-		typedef int Ped;
-		typedef int Vehicle;
-		typedef int Cam;
-		typedef int CarGenerator;
-		typedef int Group;
-		typedef int Train;
-		typedef int Pickup;
-		typedef int Object;
-		typedef int Weapon;
-		typedef int Interior;
-		typedef int Blip;
-		typedef int Texture;
-		typedef int TextureDict;
-		typedef int CoverPoint;
-		typedef int Camera;
-		typedef int TaskSequence;
-		typedef int ColourIndex;
-		typedef int Sphere;
-		typedef int ScrHandle;
-
-		struct Vector3 {
-			alignas(uintptr_t) float x, y, z;
 		};
 	} /* ntv */
 } /* nob */
