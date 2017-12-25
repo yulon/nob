@@ -1134,6 +1134,16 @@ namespace nob {
 			extern typed_lazy_func_t<void(int scheduleId)> CLEAR_POPSCHEDULE_OVERRIDE_VEHICLE_MODEL;
 		} /* ZONE */
 		namespace VEHICLE {
+			extern typed_lazy_func_t<bool(Vehicle vehicle)> _HAS_VEHICLE_ROCKET_BOOST;
+			extern typed_lazy_func_t<bool(Vehicle vehicle)> _IS_VEHICLE_ROCKET_BOOST_ACTIVE;
+			extern typed_lazy_func_t<void(Vehicle vehicle, bool active)> _SET_VEHICLE_ROCKET_BOOST_ACTIVE;
+			extern typed_lazy_func_t<void(Vehicle vehicle, float seconds)> _SET_VEHICLE_ROCKET_BOOST_REFILL_TIME;
+			extern typed_lazy_func_t<bool(Vehicle vehicle)> _HAS_VEHICLE_JUMPING_ABILITY;
+			extern typed_lazy_func_t<bool(Vehicle vehicle)> _HAS_VEHICLE_PARACHUTE;
+			extern typed_lazy_func_t<bool(Vehicle vehicle)> _CAN_VEHICLE_PARACHUTE_BE_ACTIVATED;
+			extern typed_lazy_func_t<void(Vehicle vehicle, bool active)> _SET_VEHICLE_PARACHUTE_ACTIVE;
+			extern typed_lazy_func_t<bool(Hash model)> _IS_THIS_MODEL_AN_AMPHIBIOUS_CAR;
+
 			extern typed_lazy_func_t<bool(Vehicle vehicle, bool front)> IS_VEHICLE_BUMPER_BROKEN_OFF;
 			extern typed_lazy_func_t<float(int vehicleClass)> _0x00C09F246ABEDD82;
 			extern typed_lazy_func_t<bool(Vehicle vehicle)> GET_IS_VEHICLE_ENGINE_RUNNING;

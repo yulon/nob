@@ -3,6 +3,16 @@
 namespace nob {
 	namespace ntv {
 		namespace VEHICLE {
+			typed_lazy_func_t<bool(Vehicle vehicle)> _HAS_VEHICLE_ROCKET_BOOST(0x36D782F68B309BDA, true);
+			typed_lazy_func_t<bool(Vehicle vehicle)> _IS_VEHICLE_ROCKET_BOOST_ACTIVE(0x3D34E80EED4AE3BE, true);
+			typed_lazy_func_t<void(Vehicle vehicle, bool active)> _SET_VEHICLE_ROCKET_BOOST_ACTIVE(0x81E1552E35DC3839, true);
+			typed_lazy_func_t<void(Vehicle vehicle, float seconds)> _SET_VEHICLE_ROCKET_BOOST_REFILL_TIME(0xE00F2AB100B76E89, true);
+			typed_lazy_func_t<bool(Vehicle vehicle)> _HAS_VEHICLE_JUMPING_ABILITY(0x9078C0C5EF8C19E9, true);
+			typed_lazy_func_t<bool(Vehicle vehicle)> _HAS_VEHICLE_PARACHUTE(0xBC9CFF381338CB4F, true);
+			typed_lazy_func_t<bool(Vehicle vehicle)> _CAN_VEHICLE_PARACHUTE_BE_ACTIVATED(0xA916396DF4154EE3, true);
+			typed_lazy_func_t<void(Vehicle vehicle, bool active)> _SET_VEHICLE_PARACHUTE_ACTIVE(0x0BFFB028B3DD0A97, true);
+			typed_lazy_func_t<bool(Hash model)> _IS_THIS_MODEL_AN_AMPHIBIOUS_CAR(0x633F6F44A537EBB6, true);
+
 			typed_lazy_func_t<void(float multiplier)> SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0x245A6883D966D537, true);
 			typed_lazy_func_t<void(float value)> _SET_SOME_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0x90B6DA738A9A25DA, true);
 			typed_lazy_func_t<void(Vehicle vehicle, Ped ped, int p2)> _SET_VEHICLE_EXCLUSIVE_DRIVER_2(0xB5C51B5502E85E83, true);
