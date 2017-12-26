@@ -102,59 +102,53 @@ namespace nob {
 
 		struct script_t {
 			uintptr_t _unk1[2];
-			uint8_t **page_offset;
+			uintptr_t *page;
 			alignas(uintptr_t) uint32_t length;
 			alignas(uintptr_t) uint32_t local_count;
 			alignas(uintptr_t) uint32_t native_count;
-			int64_t *local_offset;
+			uintptr_t *local_page;
 			uintptr_t _unk2;
-			int64_t *native_offset;
+			uintptr_t *native_page;
 			uintptr_t _unk3[2];
 			alignas(uintptr_t) uint32_t name_hash;
-			char *name;
-			char **strings_offset;
-			alignas(uintptr_t) uint32_t string_size;
+			const char *name;
+			const char **string_pool_page;
+			alignas(uintptr_t) uint32_t string_pool_length;
 			uintptr_t _unk4;
+
+			static constexpr size_t max_page_length = 0x4000;
 
 			bool is_valid() const {
 				return length;
 			}
 
 			size_t page_count() const {
-				return (length + 0x3FFF) >> 14;
+				return (length - 1) / max_page_length + 1;
 			}
 
-			size_t page_size(size_t page) const {
-				return (page == page_count() - 1) ? length & 0x3FFF : 0x4000;
+			size_t page_length(size_t pg) const {
+				return (pg == page_count() - 1) ? length % max_page_length : max_page_length;
 			}
 
-			uintptr_t page_base(size_t page) const {
-				return reinterpret_cast<uintptr_t>(page_offset[page]);
+			size_t code_off(size_t pg, uintptr_t addr) const {
+				return addr - page[pg] + pg * max_page_length;
 			}
 
-			uintptr_t base() const {
-				return reinterpret_cast<uintptr_t>(page_offset[0]);
+			size_t code_off(uintptr_t addr) const {
+				for (size_t i = 0; i < page_count(); ++i) {
+					if (addr - page[i] < max_page_length) {
+						return addr - page[i] + i * max_page_length;
+					}
+				}
+				return 0;
 			}
 
-			size_t size() const {
-				return (page_count() - 1) * 0x4000 + (length & 0x3FFF);
+			uintptr_t code_addr(size_t off) const {
+				return page[off / max_page_length] + off % max_page_length;
 			}
 
-			size_t page_from_addr(uintptr_t addr) const {
-				return (addr - base()) / 0x4000;
-			}
-
-			uintptr_t code_off(size_t addr) const {
-				auto page = page_from_addr(addr);
-				return addr - page_base(page) + (page << 14);
-			}
-
-			uint8_t *code_off_addr(size_t off) const {
-				return &page_offset[off >> 14][off & 0x3FFF];
-			}
-
-			char *get_string(size_t str_pos) const {
-				return str_pos >= string_size ? NULL : &strings_offset[str_pos >> 14][str_pos & 0x3FFF];
+			const char *str_addr(size_t off) const {
+				return &string_pool_page[off / max_page_length][off % max_page_length];
 			}
 		};
 
