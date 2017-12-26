@@ -102,8 +102,8 @@ namespace nob {
 
 		struct script_t {
 			uintptr_t _unk1[2];
-			uintptr_t *page;
-			alignas(uintptr_t) uint32_t length;
+			uintptr_t *code_page;
+			alignas(uintptr_t) uint32_t code_length;
 			alignas(uintptr_t) uint32_t local_count;
 			alignas(uintptr_t) uint32_t native_count;
 			uintptr_t *local_page;
@@ -112,43 +112,44 @@ namespace nob {
 			uintptr_t _unk3[2];
 			alignas(uintptr_t) uint32_t name_hash;
 			const char *name;
-			const char **string_pool_page;
-			alignas(uintptr_t) uint32_t string_pool_length;
+			const char **str_pool_page;
+			alignas(uintptr_t) uint32_t str_pool_length;
 			uintptr_t _unk4;
 
 			static constexpr size_t max_page_length = 0x4000;
 
 			bool is_valid() const {
-				return length;
+				return code_length;
 			}
 
-			size_t page_count() const {
-				return (length - 1) / max_page_length + 1;
+			size_t code_page_count() const {
+				return (code_length - 1) / max_page_length + 1;
 			}
 
-			size_t page_length(size_t pg) const {
-				return (pg == page_count() - 1) ? length % max_page_length : max_page_length;
+			size_t code_page_length(size_t page_ix) const {
+				return (page_ix == code_page_count() - 1) ? code_length % max_page_length : max_page_length;
 			}
 
-			size_t code_off(size_t pg, uintptr_t addr) const {
-				return addr - page[pg] + pg * max_page_length;
+			size_t code_off(size_t page_ix, uintptr_t addr) const {
+				return addr - code_page[page_ix] + page_ix * max_page_length;
 			}
 
 			size_t code_off(uintptr_t addr) const {
-				for (size_t i = 0; i < page_count(); ++i) {
-					if (addr - page[i] < max_page_length) {
-						return addr - page[i] + i * max_page_length;
+				for (size_t i = 0; i < code_page_count(); ++i) {
+					auto diff = addr - code_page[i];
+					if (diff < max_page_length) {
+						return diff + i * max_page_length;
 					}
 				}
 				return 0;
 			}
 
 			uintptr_t code_addr(size_t off) const {
-				return page[off / max_page_length] + off % max_page_length;
+				return code_page[off / max_page_length] + off % max_page_length;
 			}
 
 			const char *str_addr(size_t off) const {
-				return &string_pool_page[off / max_page_length][off % max_page_length];
+				return &str_pool_page[off / max_page_length][off % max_page_length];
 			}
 		};
 

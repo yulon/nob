@@ -55,10 +55,10 @@ namespace nob {
 		chan<uint32_t> id_ch;
 
 		std::thread([shop_ctrllr, id_ch]() mutable {
-			for (size_t i = 0; i < shop_ctrllr->page_count(); ++i) {
+			for (size_t i = 0; i < shop_ctrllr->code_page_count(); ++i) {
 				auto addr = tmd::bin_ref(
-					shop_ctrllr->page[i],
-					shop_ctrllr->page_length(i)
+					shop_ctrllr->code_page[i],
+					shop_ctrllr->code_page_length(i)
 				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).data();
 				if (!addr) {
 					continue;
