@@ -137,7 +137,20 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		}),
 		action("Other", []() {
 			auto pb = nob::player::body();
-			nob::task([pb]() {
+			nob::ntv::PED::_0x39D55A620FCB6A3A(
+				pb,
+				0,
+				18,
+				0
+			);
+			auto chr = nob::character("mp_m_freemode_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
+			nob::ntv::PED::_0x39D55A620FCB6A3A(
+				chr,
+				0,
+				119,
+				0
+			);
+/*			nob::task([pb]() {
 				nob::ntv::Vector3 v3;
 				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
 					//nob::wait_next_frame();
@@ -145,7 +158,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					//std::cout << v3._paddingx << ", " << v3._paddingy << ", " << v3._paddingz << "=======================" << std::endl;
 				}
 			});
-/*			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
+			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
 			auto d = "skydive@parachute@chute";
 			nob::ntv::STREAMING::REQUEST_ANIM_DICT(d);
 			if (!nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d)) {
@@ -278,8 +291,8 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		})
 	}),
 	list("Screen", {
-		flag("Heat Vision", [](bool val) {
-			nob::screen::heat_vision(val);
+		flag("Thermal Vision", [](bool val) {
+			nob::screen::thermal_vision(val);
 		}),
 		flag("Night Vision", [](bool val) {
 			nob::screen::night_vision(val);

@@ -14,11 +14,11 @@ namespace nob {
 			return ntv::GRAPHICS::_IS_NIGHTVISION_ACTIVE();
 		}
 
-		inline void heat_vision(bool toggle = true) {
+		inline void thermal_vision(bool toggle = true) {
 			ntv::GRAPHICS::SET_SEETHROUGH(toggle);
 		}
 
-		inline bool is_heat_vision_active() {
+		inline bool is_thermal_vision_active() {
 			return ntv::GRAPHICS::_IS_SEETHROUGH_ACTIVE();
 		}
 
