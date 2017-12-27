@@ -21,13 +21,13 @@ namespace nob {
 		public:
 			task(std::nullptr_t np = nullptr) : _cp_tsk(np) {}
 
-			task(const std::function<void()> &handler, int duration_of_life = -1);
+			task(const std::function<void()> &handler, size_t duration_of_life = -1);
 
 			operator bool() const;
 
 			void del();
 
-			void reset_dol(int duration_of_life = -1);
+			void reset_dol(size_t duration_of_life = -1);
 
 		private:
 			tmd::co_pool::task _cp_tsk;

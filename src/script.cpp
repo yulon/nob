@@ -1,6 +1,5 @@
 #include <nob/script.hpp>
 #include <nob/ntv.hpp>
-#include <nob/model.hpp>
 
 #include <nob/shv/main.hpp>
 
@@ -21,30 +20,30 @@ namespace nob {
 		return _cp.in_task();
 	}
 
-	task::task(const std::function<void()> &handler, int duration_of_life) :
-		_cp_tsk(_cp.add_task(handler, duration_of_life))
+	task::task(const std::function<void()> &handler, size_t duration_of_life) :
+		_cp_tsk(_cp.add(handler, duration_of_life))
 	{}
 
 	void task::del() {
-		_cp.del_task(_cp_tsk);
+		_cp.erase(_cp_tsk);
 		_cp_tsk.reset();
 	}
 
-	void task::reset_dol(int duration_of_life) {
-		_cp.reset_task_dol(_cp_tsk, duration_of_life);
+	void task::reset_dol(size_t duration_of_life) {
+		_cp.reset_dol(_cp_tsk, duration_of_life);
 	}
 
 	namespace this_task {
 		void del() {
-			_cp.del_task(_cp.get_this_task());
+			_cp.erase();
 		}
-		void reset_dol(int duration_of_life) {
-			_cp.reset_task_dol(_cp.get_this_task(), duration_of_life);
+		void reset_dol(size_t duration_of_life) {
+			_cp.reset_dol(duration_of_life);
 		}
 	}
 
 	void wait(size_t ms) {
-		_cp.wait(ms);
+		_cp.sleep(ms);
 	}
 
 	void wait(const std::function<bool()> &cond) {
@@ -52,8 +51,10 @@ namespace nob {
 	}
 
 	task::operator bool() const {
-		return _cp_tsk && _cp.has_task(_cp_tsk);
+		return _cp_tsk && _cp.has(_cp_tsk);
 	}
+
+	tmd::co_pool _initer_cp;
 
 	std::vector<std::function<void()>> _initers;
 
@@ -61,51 +62,49 @@ namespace nob {
 		_initers.push_back(handler);
 	}
 
-	namespace window {
-		void _hook_proc();
-	} /* window */
-
-	extern std::vector<model_info> banned_vehicles;
-
 	std::queue<std::function<void()>> _input_events;
 
-	namespace ui {
-		extern int _bnr_sf;
-	}
-
 	namespace this_script {
+		static inline void _yield() {
+			if (asi_mode) {
+				shv::WAIT(0);
+			} else {
+				ntv::SYSTEM::WAIT(0);
+			}
+		}
+
 		void _main() {
 			thread_id = std::this_thread::get_id();
 
-			window::_hook_proc();
+			_cp.init();
+			_initer_cp.init();
 
 			for (auto &handler : _initers) {
-				go(handler);
+				_initer_cp.go(handler);
 			}
 
-			banned_vehicles.resize(0);
+			for (;;) {
+				_initer_cp.handle_tasks();
 
-			while (_input_events.size()) {
-				_input_events.pop();
+				if (!_initer_cp.size()) {
+					_input_events = decltype(_input_events)();
+					_yield();
+					break;
+				}
+
+				_yield();
 			}
 
-			ui::_bnr_sf = 0;
-
-			void (*yield)();
-			if (asi_mode) {
-				yield = [](){ shv::WAIT(0); };
-			} else {
-				yield = [](){ ntv::SYSTEM::WAIT(0); };
-			}
-
-			_cp.handle_tasks([yield]() {
-				yield();
-
+			for (;;) {
 				while (_input_events.size()) {
 					go(_input_events.front());
 					_input_events.pop();
 				}
-			});
+
+				_cp.handle_tasks();
+
+				_yield();
+			}
 		}
 	} /* this_script */
 

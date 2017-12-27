@@ -10,6 +10,10 @@
 namespace nob {
 	std::vector<model_info> banned_vehicles;
 
+	static initer _initer([]() {
+		banned_vehicles.resize(0);
+	});
+
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 	void _find_banned_vehicles(ntv::script_t *shop_ctrllr, size_t func_call_off) {
 		for (size_t i = 14; i < 400; i++) {

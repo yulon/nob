@@ -1,4 +1,5 @@
 #include <nob/keyboard.hpp>
+#include <nob/script.hpp>
 
 #include <windows.h>
 
@@ -68,6 +69,10 @@ namespace nob {
 				_old_proc = (WNDPROC)SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)&_proc);
 			}
 		}
+
+		initer _initer([]() {
+			_hook_proc();
+		});
 
 		void _unhook_proc() {
 			if (_old_proc) {

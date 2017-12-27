@@ -1,5 +1,6 @@
 #include <nob/ui.hpp>
 #include <nob/program.hpp>
+#include <nob/script.hpp>
 
 #include <tmd/hook.hpp>
 #include <tmd/hook.inc>
@@ -265,6 +266,10 @@ namespace nob {
 
 		int _bnr_sf;
 		task _bnr_tsk;
+
+		initer _initer([]() {
+			_bnr_sf = 0;
+		});
 
 		void banner(const std::string &text) {
 			clear_banner();
