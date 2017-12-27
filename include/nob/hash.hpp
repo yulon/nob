@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ntv.hpp"
-
 #include <string>
 
 namespace nob {
@@ -37,12 +35,7 @@ namespace nob {
 				return _h;
 			}
 
-			const char *src_c_str() const {
-				if (!_str && _h && ntv::STREAMING::IS_MODEL_A_VEHICLE(_h)) {
-					return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(_h);
-				}
-				return _str;
-			}
+			const char *src_c_str() const;
 
 			std::string src_str() const {
 				return src_c_str();

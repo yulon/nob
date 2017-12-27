@@ -4,23 +4,11 @@
 
 namespace nob {
 	namespace ntv {
-		global_table_t::global_table_t() : _base_addr(program::code.match_rel_ptr({
+		global_table_t::global_table_t() : _page(program::code.match_rel_ptr({
 			// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 			0x4C, 0x8D, 0x05, 1111, 1111, 1111, 1111, 0x4D, 0x8B, 0x08,
 			0x4D, 0x85, 0xC9, 0x74, 0x11
 		})) {}
-
-		script_list_t::node_t *script_list_t::find(const char *name) const {
-			assert(nodes);
-
-			auto h = hash(name);
-			for (size_t i = 0; i < size; i++) {
-				if (nodes[i].hash == h) {
-					return &nodes[i];
-				}
-			}
-			return nullptr;
-		}
 
 		const func_t call_context_t::fix_res_fn = program::code.match({
 			// Reference from https://github.com/ivanmeler/OpenVHook

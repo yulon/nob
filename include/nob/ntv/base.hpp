@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../hash.hpp"
 #include "../program.hpp"
 #include "../shv/fhtt.hpp"
 
@@ -34,6 +35,7 @@
 #include <cassert>
 #include <array>
 #include <cstring>
+#include <thread>
 #include <iostream>
 
 namespace nob {
@@ -80,22 +82,24 @@ namespace nob {
 			public:
 				global_table_t();
 
-				uint64_t &operator[](uint32_t hash) {
+				operator bool() const {
+					return _page && *_page;
+				}
+
+				uint64_t &operator[](size_t off) const {
 					assert(*this);
 
-					return _base_addr[hash >> 18 & 0x3F][hash & 0x3FFFF];
+					return _page[off / 0x40000 % 0x40][off % 0x40000];
 				}
 
-				uint64_t operator[](uint32_t hash) const {
-					return (*const_cast<global_table_t *>(this))[hash];
-				}
-
-				operator bool() const {
-					return _base_addr && *_base_addr;
+				void wait_for_loaded() const {
+					while (!*this) {
+						std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					}
 				}
 
 			private:
-				uint64_t **_base_addr;
+				uint64_t **_page;
 		};
 
 		extern global_table_t global_table;
@@ -164,7 +168,21 @@ namespace nob {
 			uint8_t _unk[16];
 			uint32_t size;
 
-			node_t *find(const char *name) const;
+			operator bool() const {
+				return nodes;
+			}
+
+			node_t *find(const char *name) const {
+				assert(*this);
+
+				auto h = hash(name);
+				for (size_t i = 0; i < size; i++) {
+					if (nodes[i].hash == h) {
+						return &nodes[i];
+					}
+				}
+				return nullptr;
+			}
 		};
 
 		extern script_list_t *script_list;
@@ -253,8 +271,6 @@ namespace nob {
 		template <>
 		inline void call_context_t::result<void>() const {}
 
-		static func_t nullfunc = nullptr;
-
 		class func_table_t {
 			public:
 				struct node_t {
@@ -319,8 +335,13 @@ namespace nob {
 
 				func_table_t();
 
-				func_t &operator[](uint64_t hash) const {
-					return program::version < 1290 ? _get<node_t>(hash) : _get<node_1290_t>(hash);
+				func_t *find(uint64_t hash) const {
+					return program::version < 1290 ? _find<node_t>(hash) : _find<node_1290_t>(hash);
+				}
+
+				func_t operator[](uint64_t hash) const {
+					auto fp = find(hash);
+					return fp ? *fp : nullptr;
 				}
 
 				operator bool() const {
@@ -331,18 +352,18 @@ namespace nob {
 				uintptr_t _nodes;
 
 				template <typename T>
-				func_t &_get(uint64_t hash) const {
+				func_t *_find(uint64_t hash) const {
 					if (!_nodes) {
-						return nullfunc;
+						return nullptr;
 					}
 					for (auto n = reinterpret_cast<T **>(_nodes)[hash & 0xFF]; n; n = n->next()) {
 						for (uint8_t i = 0; i < n->length(); ++i) {
 							if (n->hash(i) == hash) {
-								return n->funcs[i];
+								return &n->funcs[i];
 							}
 						}
 					}
-					return nullfunc;
+					return nullptr;
 				}
 		};
 
