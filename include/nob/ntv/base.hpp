@@ -76,6 +76,15 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
+		template <typename T>
+		inline void wait_for_valid(const T &t) {
+			while (!t) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+		}
+
+		////////////////////////////////////////////////////////////////////////
+
 		// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 
 		class global_table_t {
@@ -90,12 +99,6 @@ namespace nob {
 					assert(*this);
 
 					return _page[off / 0x40000 % 0x40][off % 0x40000];
-				}
-
-				void wait_for_loaded() const {
-					while (!*this) {
-						std::this_thread::sleep_for(std::chrono::milliseconds(100));
-					}
 				}
 
 			private:
