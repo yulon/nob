@@ -4,12 +4,13 @@
 
 #include <windows.h>
 
+#include <thread>
+
 namespace nob {
 	namespace this_script {
 		void _main();
+		void _main2();
 	} /* this_script */
-
-	HMODULE _this_module;
 
 	namespace window {
 		void _unhook_proc();
@@ -24,8 +25,8 @@ BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID) {
 				nob::shv::scriptRegister(hinstDLL, nob::this_script::_main);
 			} else {
 				return FALSE;
+				//std::thread(nob::this_script::_main2).detach();
 			}
-			nob::_this_module = hinstDLL;
 			break;
 		case DLL_PROCESS_DETACH:
 			nob::window::_unhook_proc();

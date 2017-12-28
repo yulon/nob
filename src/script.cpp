@@ -1,13 +1,17 @@
 #include <nob/script.hpp>
 #include <nob/ntv.hpp>
+#include <nob/ui.hpp>
 
 #include <nob/shv/main.hpp>
+
+#include <tmd/hook.hpp>
 
 #include <windows.h>
 
 #include <queue>
 #include <vector>
 #include <memory>
+#include <cstring>
 
 namespace nob {
 	namespace this_script {
@@ -109,6 +113,66 @@ namespace nob {
 
 				_yield();
 			}
+		}
+
+		void _main2() {
+			static tmd::hook<ntv::func_t> wait_hk;
+
+			while (!ntv::SYSTEM::WAIT.target()) {
+				Sleep(500);
+			}
+
+			wait_hk.assign(
+				ntv::SYSTEM::WAIT.target(),
+				[](ntv::call_context_t &cc) {
+					static size_t last_fc = 0;
+
+					size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
+
+					if (cur_fc > last_fc) {
+						if (cur_fc - last_fc > 1) {
+							thread_id = std::this_thread::get_id();
+
+							_cp.init();
+							_initer_cp.init();
+
+							for (auto &handler : *_initers) {
+								_initer_cp.go(handler);
+							}
+
+							_input_events = decltype(_input_events)();
+
+							/*auto old_ti = cc.arg<int>(0);
+							cc.set_arg<int>(0, 0);
+
+							for (;;) {
+								_initer_cp.handle_tasks();
+
+								if (!_initer_cp.size()) {
+									_input_events = decltype(_input_events)();
+									wait_hk.orig_fn(cc);
+									break;
+								}
+
+								wait_hk.orig_fn(cc);
+							}
+
+							cc.set_arg<int>(0, old_ti);//*/
+						}
+
+						last_fc = cur_fc;
+
+						/*while (_input_events.size()) {
+							go(_input_events.front());
+							_input_events.pop();
+						}
+
+						_cp.handle_tasks();*/
+					}
+
+					wait_hk.orig_fn(cc);
+				}
+			);
 		}
 	} /* this_script */
 
@@ -879,7 +943,7 @@ namespace nob {
 				ntv::GAMEPLAY::TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME(si.name); // Terminate
 			}
 		}
-		nob::ntv::PLAYER::FORCE_CLEANUP(8);
-		nob::ntv::PLAYER::FORCE_CLEANUP(64);
+		ntv::PLAYER::FORCE_CLEANUP(8);
+		ntv::PLAYER::FORCE_CLEANUP(64);
 	}
 } /* nob */
