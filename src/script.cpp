@@ -7,6 +7,7 @@
 
 #include <queue>
 #include <vector>
+#include <memory>
 
 namespace nob {
 	namespace this_script {
@@ -56,10 +57,13 @@ namespace nob {
 
 	tmd::co_pool _initer_cp;
 
-	std::vector<std::function<void()>> _initers;
+	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
 
 	initer::initer(const std::function<void()> &handler) {
-		_initers.push_back(handler);
+		if (!_initers) {
+			_initers.reset(new std::vector<std::function<void()>>);
+		}
+		_initers->push_back(handler);
 	}
 
 	std::queue<std::function<void()>> _input_events;
@@ -79,7 +83,7 @@ namespace nob {
 			_cp.init();
 			_initer_cp.init();
 
-			for (auto &handler : _initers) {
+			for (auto &handler : *_initers) {
 				_initer_cp.go(handler);
 			}
 
