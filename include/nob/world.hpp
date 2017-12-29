@@ -143,5 +143,7 @@ namespace nob {
 				lock_door(dr, toggle);
 			}
 		}
+
+		void snowy(bool toggle = true);
 	}
 } /* nob */

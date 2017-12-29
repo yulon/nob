@@ -129,13 +129,36 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::ntv::ENTITY::DELETE_ENTITY(&p);
 		}),
 		action("Other 0", []() {
-			///*
 			auto pb = nob::player::body();
 			pb.add_parachute_pack();
 			pb.move(pb.pos({0, 0, 1000}));
-			//*/
 		}),
 		action("Other", []() {
+
+/*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
+				if (nob::ntv::script_list->nodes[i].hash == nob::hash("friends_debug_controller")) {
+					std::cout << "!!!!!!!!!!!!!!!!!!" << std::endl;
+
+					std::cout << nob::ntv::script_list->nodes[i].script << std::endl;
+					std::cout << (nob::ntv::script_list->nodes[i].script ? nob::ntv::script_list->nodes[i].script->is_valid() : false) << std::endl;
+
+					if (!nob::ntv::SCRIPT::HAS_SCRIPT_LOADED("friends_debug_controller")) {
+						nob::ntv::SCRIPT::REQUEST_SCRIPT("friends_debug_controller");
+						while (!nob::ntv::SCRIPT::HAS_SCRIPT_LOADED("friends_debug_controller")) {
+							nob::wait_next_frame();
+						}
+					}
+
+					std::cout << "!~~~~~~~~~~~~~~~~" << std::endl;
+
+					std::cout << nob::ntv::script_list->nodes[i].script->code_length << std::endl;
+
+					nob::ntv::script_list->nodes[i].script->code_page[0] = reinterpret_cast<uintptr_t>(&xxx2);
+
+					nob::ntv::SYSTEM::START_NEW_SCRIPT("friends_debug_controller", 4096);
+					break;
+				}
+			}
 			auto pb = nob::player::body();
 			nob::ntv::PED::_0x39D55A620FCB6A3A(
 				pb,
@@ -150,7 +173,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				119,
 				0
 			);
-/*			nob::task([pb]() {
+			nob::task([pb]() {
 				nob::ntv::Vector3 v3;
 				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
 					//nob::wait_next_frame();
@@ -259,6 +282,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	list("World", {
 		flag("No Man's Island", [](bool val) {
 			nob::world::no_mans_island(val);
+		}),
+		flag("Snowy", [](bool val) {
+			nob::world::snowy(val);
 		}),
 		action("Clean Pickups", []() {
 			nob::world::clean_pickups();

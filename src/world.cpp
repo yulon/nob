@@ -1,5 +1,9 @@
 #include <nob/world.hpp>
 #include <nob/object.hpp>
+#include <nob/program.hpp>
+#include <nob/script.hpp>
+
+#include <cstring>
 
 namespace nob {
 	namespace world {
@@ -1164,6 +1168,159 @@ namespace nob {
 					return {3068.94f, -4721.21f, 15.2614f};
 			}
 			return {0.0f, 0.0f, 0.0f};
+		}
+
+		void snowy(bool toggle) {
+			static class snowy_mgr_t {
+				public:
+					void *addr;
+					uint8_t src_data[20];
+					uint8_t *feet_tracks, *veh_tracks, *veh_track_types, *ped_track_types;
+					bool enabled;
+
+					snowy_mgr_t() : addr(nullptr), enabled(false) {}
+
+					void find() {
+						if (addr) {
+							return;
+						}
+
+						chan<void *> ch;
+
+						std::thread([this, ch]() mutable {
+							auto ptr = program::code.match({
+								// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
+								0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
+							}).data();
+
+							if (ptr) {
+								VirtualProtect(addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
+								memcpy(&src_data, ptr, 20);
+							}
+							#ifdef DEBUG
+								else {
+									std::cout << "nob::world::snowy::addr: not found!" << std::endl;
+								}
+							#endif
+
+							////////////////////////////////////////////////////////////
+
+							// Reference from https://www.gta5-mods.com/scripts/singleplayer-snow
+
+							feet_tracks = program::code.match_rel_ptr({
+								0x80, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xD9, 0x74, 0x37
+							});
+
+							if (feet_tracks) {
+								VirtualProtect(feet_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							}
+							#ifdef DEBUG
+								else {
+									std::cout << "nob::world::snowy::feet_tracks: not found!" << std::endl;
+								}
+							#endif
+
+							veh_tracks = program::code.match_rel_ptr({
+								0x40, 0x38, 0x3D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x42, 0x20
+							});
+
+							if (veh_tracks) {
+								VirtualProtect(veh_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							}
+							#ifdef DEBUG
+								else {
+									std::cout << "nob::world::snowy::veh_tracks: not found!" << std::endl;
+								}
+							#endif
+
+							++(veh_track_types = program::code.match({
+								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x44, 0x0F, 0x44, 0xF1
+							}).data());
+
+							if (veh_track_types) {
+								VirtualProtect(veh_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							}
+							#ifdef DEBUG
+								else {
+									std::cout << "nob::world::snowy::veh_track_types: not found!" << std::endl;
+								}
+							#endif
+
+							++(ped_track_types = program::code.match({
+								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x0F, 0x44, 0xD9, 0x48, 0x8B, 0x4F, 0x30
+							}).data());
+
+							if (ped_track_types) {
+								VirtualProtect(ped_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							}
+							#ifdef DEBUG
+								else {
+									std::cout << "nob::world::snowy::ped_track_types: not found!" << std::endl;
+								}
+							#endif
+
+							////////////////////////////////////////////////////////////
+
+							ch << ptr;
+						}).detach();
+
+						ch >> addr;
+					}
+
+					void enable() {
+						enabled = true;
+
+						if (addr && *reinterpret_cast<uint8_t *>(addr) == 0x74) {
+							memset(addr, 0x90, 20);
+						}
+						if (feet_tracks) {
+							*feet_tracks = true;
+						}
+						if (veh_tracks) {
+							*veh_tracks = true;
+						}
+						if (veh_track_types) {
+							*veh_track_types = 0x13;
+						}
+						if (ped_track_types) {
+							*ped_track_types = 0x13;
+						}
+					}
+
+					void disable() {
+						enabled = false;
+
+						if (addr && *reinterpret_cast<uint8_t *>(addr) == 0x90) {
+							memcpy(addr, &src_data, 20);
+						}
+						if (feet_tracks) {
+							*feet_tracks = false;
+						}
+						if (veh_tracks) {
+							*veh_tracks = false;
+						}
+						if (veh_track_types) {
+							*veh_track_types = 0x14;
+						}
+						if (ped_track_types) {
+							*ped_track_types = 0x14;
+						}
+					}
+
+					~snowy_mgr_t() {
+						if (enabled) {
+							disable();
+						}
+					}
+			} snowy_mgr;
+
+			snowy_mgr.find();
+
+			if (toggle) {
+				snowy_mgr.enable();
+			} else {
+				snowy_mgr.disable();
+			}
 		}
 	} /* world */
 } /* nob */
