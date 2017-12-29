@@ -99,7 +99,7 @@ namespace nob {
 			#endif
 
 			for (;;) {
-				_initer_cp.handle_tasks();
+				_initer_cp.handle();
 
 				if (!_initer_cp.size()) {
 					_input_events = decltype(_input_events)();
@@ -124,7 +124,7 @@ namespace nob {
 					_input_events.pop();
 				}
 
-				_cp.handle_tasks();
+				_cp.handle();
 
 				_yield();
 			}
@@ -159,7 +159,7 @@ namespace nob {
 							cc.set_arg<int>(0, 0);
 
 							for (;;) {
-								_initer_cp.handle_tasks();
+								_initer_cp.handle();
 
 								if (!_initer_cp.size()) {
 									_input_events = decltype(_input_events)();
@@ -179,7 +179,7 @@ namespace nob {
 							_input_events.pop();
 						}
 
-						_cp.handle_tasks();*/
+						_cp.handle();*/
 					}
 
 					wait_hk.orig_fn(cc);
