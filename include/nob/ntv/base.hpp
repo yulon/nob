@@ -376,16 +376,16 @@ namespace nob {
 
 		class lazy_func_t {
 			public:
-				constexpr lazy_func_t() : _f(nullptr), _h(0), _shv_h(0) {}
-				constexpr lazy_func_t(func_t func) : _f(func), _h(0), _shv_h(0) {}
-				constexpr lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) :
-					_f(nullptr), _h(is_like_shv_hash ? 0 : hash), _shv_h(is_like_shv_hash ? hash : 0)
+				constexpr lazy_func_t() : _f(nullptr), _h(0), _1st_h(0) {}
+				constexpr lazy_func_t(func_t func) : _f(func), _h(0), _1st_h(0) {}
+				constexpr lazy_func_t(uint64_t hash, bool is_first_hash = true) :
+					_f(nullptr), _h(is_first_hash ? 0 : hash), _1st_h(is_first_hash ? hash : 0)
 				{}
 
 				void operator()(call_context_t &ctx) {
 					#ifdef NOB_USING_SHV_CALL
-						if (_shv_h) {
-							shv::nativeInit(_shv_h);
+						if (_1st_h) {
+							shv::nativeInit(_1st_h);
 							for (size_t i = 0; i < ctx.arg_count; ++i) {
 								shv::nativePush64(ctx.args_ptr[i]);
 							}
@@ -396,7 +396,7 @@ namespace nob {
 
 					if (!target()) {
 						#ifdef DEBUG
-							std::cout << "nob::ntv::lazy_func_t[" << std::hex << _shv_h << "," << _h << "]: not found!" << std::endl;
+							std::cout << "nob::ntv::lazy_func_t[" << std::hex << _1st_h << "," << _h << "]: not found!" << std::endl;
 						#endif
 						return;
 					}
@@ -409,10 +409,10 @@ namespace nob {
 				func_t target() {
 					if (!_f) {
 						if (!_h) {
-							if (!_shv_h && !cur_fhtt_ptr) {
+							if (!_1st_h && !cur_fhtt_ptr) {
 								return nullptr;
 							}
-							auto it = cur_fhtt_ptr->find(_shv_h);
+							auto it = cur_fhtt_ptr->find(_1st_h);
 							if (it == cur_fhtt_ptr->end()) {
 								return nullptr;
 							}
@@ -432,7 +432,7 @@ namespace nob {
 			protected:
 				func_t _f;
 				uint64_t _h;
-				uint64_t _shv_h;
+				uint64_t _1st_h;
 		};
 
 		class full_call_context_t : public call_context_t {
@@ -456,12 +456,12 @@ namespace nob {
 			public:
 				constexpr typed_lazy_func_t() : lazy_func_t() {}
 				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
-				constexpr typed_lazy_func_t(uint64_t hash, bool is_like_shv_hash = false) : lazy_func_t(hash, is_like_shv_hash) {}
+				constexpr typed_lazy_func_t(uint64_t hash, bool is_first_hash = false) : lazy_func_t(hash, is_first_hash) {}
 
 				R operator()(A... args) {
 					#ifdef NOB_USING_SHV_CALL
-						if (_shv_h) {
-							shv::nativeInit(_shv_h);
+						if (_1st_h) {
+							shv::nativeInit(_1st_h);
 							shv::nativePushs<A...>(args...);
 							return shv::typedNativeCall<R>();
 						}

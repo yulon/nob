@@ -16,6 +16,7 @@ type nfsMap map[string]map[string]struct {
 }
 
 var nfs nfsMap
+var nfsPacth nfsMap
 
 func main() {
 	nf, err := os.Open("natives.json")
@@ -30,6 +31,25 @@ func main() {
 		return
 	}
 	nf.Close()
+
+	nf, err = os.Open("natives_patch.json")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	dec = json.NewDecoder(nf)
+	err = dec.Decode(&nfsPacth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	nf.Close()
+
+	for ns, fs := range nfsPacth {
+		for h, fn := range fs {
+			nfs[ns][h] = fn
+		}
+	}
 
 	hpp, err := os.Create("../include/nob/ntv/funcs.hpp")
 	if err != nil {
@@ -100,9 +120,6 @@ namespace nob {
 				fn.Name = "_" + h
 			}
 			file.WriteString(")> " + fn.Name)
-			if !isHeadFile {
-				file.WriteString("(" + h + ", true)")
-			}
 			file.WriteString(";\n")
 		}
 		//////////////////////////////////////

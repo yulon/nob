@@ -1,0 +1,83 @@
+{
+	"AI": {
+		"0x0AE4086104E067B1": {
+			"name": "TASK_JUMP",
+			"params": [
+				{"type": "Ped", "name": "ped"},
+				{"type": "BOOL", "name": "unused"},
+				{"type": "BOOL", "name": "flag1"},
+				{"type": "BOOL", "name": "flag2"}
+			],
+			"results": "void",
+			"jhash": "0x0356E3CE"
+		}
+	},
+	"VEHICLE": {
+		"0x36D782F68B309BDA": {
+			"name": "_HAS_VEHICLE_ROCKET_BOOST",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"}
+			],
+			"results": "BOOL"
+		},
+		"0x3D34E80EED4AE3BE": {
+			"name": "_IS_VEHICLE_ROCKET_BOOST_ACTIVE",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"}
+			],
+			"results": "BOOL"
+		},
+		"0x81E1552E35DC3839": {
+			"name": "_SET_VEHICLE_ROCKET_BOOST_ACTIVE",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"},
+				{"type": "BOOL", "name": "active"}
+			],
+			"results": "void"
+		},
+		"0xE00F2AB100B76E89": {
+			"name": "_SET_VEHICLE_ROCKET_BOOST_REFILL_TIME",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"},
+				{"type": "float", "name": "seconds"}
+			],
+			"results": "void"
+		},
+		"0x9078C0C5EF8C19E9": {
+			"name": "_HAS_VEHICLE_JUMPING_ABILITY",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"}
+			],
+			"results": "BOOL"
+		},
+		"0xBC9CFF381338CB4F": {
+			"name": "_HAS_VEHICLE_PARACHUTE",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"}
+			],
+			"results": "BOOL"
+		},
+		"0xA916396DF4154EE3": {
+			"name": "_CAN_VEHICLE_PARACHUTE_BE_ACTIVATED",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"}
+			],
+			"results": "BOOL"
+		},
+		"0x0BFFB028B3DD0A97": {
+			"name": "_SET_VEHICLE_PARACHUTE_ACTIVE",
+			"params": [
+				{"type": "Vehicle", "name": "vehicle"},
+				{"type": "BOOL", "name": "active"}
+			],
+			"results": "void"
+		},
+		"0x633F6F44A537EBB6": {
+			"name": "_IS_THIS_MODEL_AN_AMPHIBIOUS_CAR",
+			"params": [
+				{"type": "Hash", "name": "model"}
+			],
+			"results": "BOOL"
+		}
+	}
+}
