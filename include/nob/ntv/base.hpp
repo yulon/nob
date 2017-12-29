@@ -2,10 +2,10 @@
 
 #include "../hash.hpp"
 #include "../program.hpp"
-#include "../shv/fhtt.hpp"
+#include "fhtt.hpp"
 
 #ifdef NOB_USING_SHV_CALL
-	#include "../shv/main.hpp"
+	#include "../shv.hpp"
 
 	namespace nob {
 		namespace shv {
@@ -409,21 +409,17 @@ namespace nob {
 				func_t target() {
 					if (!_f) {
 						if (!_h) {
-							if (!_shv_h) {
+							if (!_shv_h && !cur_fhtt_ptr) {
 								return nullptr;
 							}
-							auto sub_map_it = shv::fhtt.find(program::version);
-							if (sub_map_it == shv::fhtt.end()) {
+							auto it = cur_fhtt_ptr->find(_shv_h);
+							if (it == cur_fhtt_ptr->end()) {
 								return nullptr;
 							}
-							auto it = sub_map_it->second.find(_shv_h);
-							if (it == sub_map_it->second.end()) {
+							if (!it->second) {
 								return nullptr;
 							}
 							_h = it->second;
-							if (!_h) {
-								return nullptr;
-							}
 						}
 						_f = func_table[_h];
 						if (!_f) {

@@ -1,6 +1,5 @@
 #include <nob/script.hpp>
-
-#include <nob/shv/main.hpp>
+#include <nob/shv.hpp>
 
 #include <windows.h>
 

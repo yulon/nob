@@ -1,8 +1,7 @@
 #include <nob/script.hpp>
 #include <nob/ntv.hpp>
 #include <nob/ui.hpp>
-
-#include <nob/shv/main.hpp>
+#include <nob/shv.hpp>
 
 #include <tmd/hook.hpp>
 

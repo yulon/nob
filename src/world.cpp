@@ -1,8 +1,6 @@
 #include <nob/world.hpp>
 #include <nob/object.hpp>
 
-#include <nob/shv/main.hpp>
-
 namespace nob {
 	namespace world {
 		/*

@@ -22,9 +22,7 @@ workspace "nob"
 			"src/*.cpp", "src/*.hpp", "src/*.h",
 
 			"src/ntv/*.cpp", "src/ntv/*.hpp", "src/ntv/*.h",
-
-			"src/shv/*.cpp", "src/shv/*.hpp", "src/shv/*.h",
-			"src/shv/fhtt/*.inc"
+			"src/ntv/fhtt/*.inc"
 		}
 
 		configuration { "gmake" }

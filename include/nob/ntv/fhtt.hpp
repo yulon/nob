@@ -4,7 +4,8 @@
 #include <unordered_map>
 
 namespace nob {
-	namespace shv {
+	namespace ntv {
 		extern const std::unordered_map<uint16_t, const std::unordered_map<uint64_t, uint64_t>> fhtt;
-	} /* shv */
-} /* nob */
+		extern const std::unordered_map<uint64_t, uint64_t> *const cur_fhtt_ptr;
+	}
+}
