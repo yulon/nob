@@ -395,6 +395,9 @@ namespace nob {
 					#endif
 
 					if (!target()) {
+						#ifdef DEBUG
+							std::cout << "nob::ntv::lazy_func_t[" << std::hex << _shv_h << "," << _h << "]: not found!" << std::endl;
+						#endif
 						return;
 					}
 
