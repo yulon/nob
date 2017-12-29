@@ -120,6 +120,9 @@ namespace nob {
 				fn.Name = "_" + h
 			}
 			file.WriteString(")> " + fn.Name)
+			if !isHeadFile {
+				file.WriteString("(" + h + ")")
+			}
 			file.WriteString(";\n")
 		}
 		//////////////////////////////////////

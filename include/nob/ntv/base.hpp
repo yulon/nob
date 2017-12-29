@@ -409,7 +409,7 @@ namespace nob {
 				func_t target() {
 					if (!_f) {
 						if (!_h) {
-							if (!_1st_h && !cur_fhtt_ptr) {
+							if (!_1st_h || !cur_fhtt_ptr) {
 								return nullptr;
 							}
 							auto it = cur_fhtt_ptr->find(_1st_h);
@@ -456,7 +456,7 @@ namespace nob {
 			public:
 				constexpr typed_lazy_func_t() : lazy_func_t() {}
 				constexpr typed_lazy_func_t(func_t func) : lazy_func_t(func) {}
-				constexpr typed_lazy_func_t(uint64_t hash, bool is_first_hash = false) : lazy_func_t(hash, is_first_hash) {}
+				constexpr typed_lazy_func_t(uint64_t hash, bool is_first_hash = true) : lazy_func_t(hash, is_first_hash) {}
 
 				R operator()(A... args) {
 					#ifdef NOB_USING_SHV_CALL
