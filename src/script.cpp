@@ -46,12 +46,14 @@ namespace nob {
 		}
 	}
 
+	tmd::co_pool *_cur_cp_ptr;
+
 	void wait(size_t ms) {
-		_cp.sleep(ms);
+		_cur_cp_ptr->sleep(ms);
 	}
 
 	void wait(const std::function<bool()> &cond) {
-		_cp.wait(cond);
+		_cur_cp_ptr->wait(cond);
 	}
 
 	task::operator bool() const {
@@ -90,17 +92,31 @@ namespace nob {
 				_initer_cp.go(handler);
 			}
 
+			_cur_cp_ptr = &_initer_cp;
+
+			#ifdef DEBUG
+				bool initer_warned = false;
+			#endif
+
 			for (;;) {
 				_initer_cp.handle_tasks();
 
 				if (!_initer_cp.size()) {
 					_input_events = decltype(_input_events)();
-					_yield();
 					break;
 				}
 
+				#ifdef DEBUG
+					if (!initer_warned) {
+						std::cout << "nob::initer: best don't use wait() in non-task." << std::endl;
+						initer_warned = true;
+					}
+				#endif
+
 				_yield();
 			}
+
+			_cur_cp_ptr = &_cp;
 
 			for (;;) {
 				while (_input_events.size()) {
@@ -139,8 +155,6 @@ namespace nob {
 								_initer_cp.go(handler);
 							}
 
-							_input_events = decltype(_input_events)();
-
 							/*auto old_ti = cc.arg<int>(0);
 							cc.set_arg<int>(0, 0);
 
@@ -149,7 +163,6 @@ namespace nob {
 
 								if (!_initer_cp.size()) {
 									_input_events = decltype(_input_events)();
-									wait_hk.orig_fn(cc);
 									break;
 								}
 
