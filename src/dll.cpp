@@ -23,8 +23,7 @@ BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID) {
 				nob::this_script::asi_mode = true;
 				nob::shv::scriptRegister(hinstDLL, nob::this_script::_main);
 			} else {
-				return FALSE;
-				//std::thread(nob::this_script::_main2).detach();
+				std::thread(nob::this_script::_main2).detach();
 			}
 			break;
 		case DLL_PROCESS_DETACH:

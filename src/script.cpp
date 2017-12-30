@@ -155,8 +155,9 @@ namespace nob {
 								_initer_cp.go(handler);
 							}
 
-							/*auto old_ti = cc.arg<int>(0);
-							cc.set_arg<int>(0, 0);
+							#ifdef DEBUG
+								bool initer_warned = false;
+							#endif
 
 							for (;;) {
 								_initer_cp.handle();
@@ -166,20 +167,30 @@ namespace nob {
 									break;
 								}
 
-								wait_hk.orig_fn(cc);
-							}
+								#ifdef DEBUG
+									if (!initer_warned) {
+										std::cout << "nob::initer: best don't use wait() in non-task." << std::endl;
+										initer_warned = true;
+									}
+								#endif
 
-							cc.set_arg<int>(0, old_ti);//*/
+								auto old_ti = cc.arg<int>(0);
+								cc.set_arg<int>(0, 0);
+
+								wait_hk.orig_fn(cc);
+
+								cc.set_arg<int>(0, old_ti);
+							}
 						}
 
 						last_fc = cur_fc;
 
-						/*while (_input_events.size()) {
+						while (_input_events.size()) {
 							go(_input_events.front());
 							_input_events.pop();
 						}
 
-						_cp.handle();*/
+						_cp.handle();
 					}
 
 					wait_hk.orig_fn(cc);
