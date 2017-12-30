@@ -1173,15 +1173,15 @@ namespace nob {
 		void snowy(bool toggle) {
 			static class snowy_mgr_t {
 				public:
-					void *addr;
-					uint8_t src_data[20];
+					void *block_code_addr;
+					uint8_t block_code[20];
 					uint8_t *feet_tracks, *veh_tracks, *veh_track_types, *ped_track_types;
 					bool enabled;
 
-					snowy_mgr_t() : addr(nullptr), enabled(false) {}
+					snowy_mgr_t() : block_code_addr(nullptr), enabled(false) {}
 
 					void find() {
-						if (addr) {
+						if (block_code_addr) {
 							return;
 						}
 
@@ -1194,12 +1194,12 @@ namespace nob {
 							}).data();
 
 							if (ptr) {
-								VirtualProtect(addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
-								memcpy(&src_data, ptr, 20);
+								VirtualProtect(block_code_addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
+								memcpy(&block_code, ptr, 20);
 							}
 							#ifdef DEBUG
 								else {
-									std::cout << "nob::world::snowy::addr: not found!" << std::endl;
+									std::cout << "nob::world::snowy::block_code_addr: not found!" << std::endl;
 								}
 							#endif
 
@@ -1264,14 +1264,14 @@ namespace nob {
 							ch << ptr;
 						}).detach();
 
-						ch >> addr;
+						ch >> block_code_addr;
 					}
 
 					void enable() {
 						enabled = true;
 
-						if (addr && *reinterpret_cast<uint8_t *>(addr) == 0x74) {
-							memset(addr, 0x90, 20);
+						if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x74) {
+							memset(block_code_addr, 0x90, 20);
 						}
 						if (feet_tracks) {
 							*feet_tracks = true;
@@ -1290,8 +1290,8 @@ namespace nob {
 					void disable() {
 						enabled = false;
 
-						if (addr && *reinterpret_cast<uint8_t *>(addr) == 0x90) {
-							memcpy(addr, &src_data, 20);
+						if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
+							memcpy(block_code_addr, &block_code, 20);
 						}
 						if (feet_tracks) {
 							*feet_tracks = false;
