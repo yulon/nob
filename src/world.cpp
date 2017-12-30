@@ -1188,14 +1188,14 @@ namespace nob {
 						chan<void *> ch;
 
 						std::thread([this, ch]() mutable {
-							auto ptr = program::code.match({
+							auto bca = program::code.match({
 								// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
 								0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
 							}).data();
 
-							if (ptr) {
+							if (bca) {
 								VirtualProtect(block_code_addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
-								memcpy(&block_code, ptr, 20);
+								memcpy(&block_code, bca, 20);
 							}
 							#ifdef DEBUG
 								else {
@@ -1207,9 +1207,9 @@ namespace nob {
 
 							// Reference from https://www.gta5-mods.com/scripts/singleplayer-snow
 
-							feet_tracks = program::code.match_rel_ptr({
+							feet_tracks = tmd::unsafe_ptr(program::code.match_rel_ptr({
 								0x80, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xD9, 0x74, 0x37
-							});
+							}).value() + 1);
 
 							if (feet_tracks) {
 								VirtualProtect(feet_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
@@ -1233,9 +1233,9 @@ namespace nob {
 								}
 							#endif
 
-							++(veh_track_types = program::code.match({
+							veh_track_types = program::code.match({
 								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x44, 0x0F, 0x44, 0xF1
-							}).data());
+							}, true).data();
 
 							if (veh_track_types) {
 								VirtualProtect(veh_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
@@ -1246,9 +1246,9 @@ namespace nob {
 								}
 							#endif
 
-							++(ped_track_types = program::code.match({
+							ped_track_types = program::code.match({
 								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x0F, 0x44, 0xD9, 0x48, 0x8B, 0x4F, 0x30
-							}).data());
+							}, true).data();
 
 							if (ped_track_types) {
 								VirtualProtect(ped_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
@@ -1261,7 +1261,7 @@ namespace nob {
 
 							////////////////////////////////////////////////////////////
 
-							ch << ptr;
+							ch << bca;
 						}).detach();
 
 						ch >> block_code_addr;
