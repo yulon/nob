@@ -194,6 +194,16 @@ namespace nob {
 
 		// Reference from https://github.com/ivanmeler/OpenVHook
 
+		enum class game_state_t : uint8_t {
+			playing,
+			intro,
+			license_shit = 3,
+			main_menu = 5,
+			preloading = 6
+		};
+
+		extern game_state_t *game_state;
+
 		struct call_context_t;
 
 		typedef void (__cdecl *func_t)(call_context_t &);

@@ -35,6 +35,11 @@ namespace nob {
 			0x49, 0x8B, 0x08
 		});
 
+		game_state_t *game_state = tmd::unsafe_ptr(program::code.match_rel_ptr({
+			// Reference from https://github.com/ivanmeler/OpenVHook
+			0x83, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x8A, 0xD9, 0x74, 0x0A
+		}).value() + 1);
+
 		func_table_t func_table;
 
 		full_call_context_t _dft_call_ctx;
