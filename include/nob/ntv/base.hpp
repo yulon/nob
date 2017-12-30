@@ -195,11 +195,12 @@ namespace nob {
 		// Reference from https://github.com/ivanmeler/OpenVHook
 
 		enum class game_state_t : uint8_t {
-			playing,
-			intro,
-			license_shit = 3,
-			main_menu = 5,
-			preloading = 6
+			playing = 0,
+			preloading = 1,
+			preload_blocking = 3,
+			mode_menu = 5,
+			loading = 6,
+			reloading_archive = 8
 		};
 
 		extern game_state_t *game_state;
