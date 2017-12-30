@@ -1,0 +1,3 @@
+[submodule "deps/rua"]
+	path = deps/rua
+	url = https://github.com/yulon/rua.git

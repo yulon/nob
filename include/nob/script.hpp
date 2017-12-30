@@ -1,7 +1,7 @@
 #pragma once
 
-#include <tmd/co_pool.hpp>
-#include <tmd/chan.hpp>
+#include <rua/co_pool.hpp>
+#include <rua/chan.hpp>
 
 #include <functional>
 #include <thread>
@@ -30,7 +30,7 @@ namespace nob {
 			void reset_dol(size_t duration_of_life = -1);
 
 		private:
-			tmd::co_pool::task _cp_tsk;
+			rua::co_pool::task _cp_tsk;
 	};
 
 	inline void go(const std::function<void()> &handler) {
@@ -51,9 +51,9 @@ namespace nob {
 	};
 
 	template <typename T>
-	class chan : public tmd::chan<T> {
+	class chan : public rua::chan<T> {
 		public:
-			chan() : tmd::chan<T>({{
+			chan() : rua::chan<T>({{
 				in_task,
 				wait_next_frame,
 				static_cast<void (*)(const std::function<bool()> &)>(wait)

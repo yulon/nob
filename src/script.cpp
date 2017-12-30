@@ -3,7 +3,7 @@
 #include <nob/ui.hpp>
 #include <nob/shv.hpp>
 
-#include <tmd/hook.hpp>
+#include <rua/hook.hpp>
 
 #include <windows.h>
 
@@ -18,7 +18,7 @@ namespace nob {
 		bool asi_mode = false;
 	} /* this_script */
 
-	tmd::co_pool _cp;
+	rua::co_pool _cp;
 
 	bool in_task() {
 		return _cp.in_task();
@@ -46,7 +46,7 @@ namespace nob {
 		}
 	}
 
-	tmd::co_pool *_cur_cp_ptr;
+	rua::co_pool *_cur_cp_ptr;
 
 	void wait(size_t ms) {
 		_cur_cp_ptr->sleep(ms);
@@ -60,7 +60,7 @@ namespace nob {
 		return _cp_tsk && _cp.has(_cp_tsk);
 	}
 
-	tmd::co_pool _initer_cp;
+	rua::co_pool _initer_cp;
 
 	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
 
@@ -131,7 +131,7 @@ namespace nob {
 		}
 
 		void _main2() {
-			static tmd::hook<ntv::func_t> wait_hk;
+			static rua::hook<ntv::func_t> wait_hk;
 
 			while (!ntv::SYSTEM::WAIT.target()) {
 				Sleep(500);

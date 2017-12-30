@@ -2,8 +2,8 @@
 #include <nob/program.hpp>
 #include <nob/script.hpp>
 
-#include <tmd/hook.hpp>
-#include <tmd/hook.inc>
+#include <rua/hook.hpp>
+#include <rua/hook.inc>
 
 #include <thread>
 #include <sstream>
@@ -37,7 +37,7 @@ namespace nob {
 
 		void disable_wheel_slowmo(bool toggle) {
 			static void (*sf)() = nullptr;
-			static tmd::hook<void (*)()> hk;
+			static rua::hook<void (*)()> hk;
 
 			if (toggle) {
 				if (!sf) {

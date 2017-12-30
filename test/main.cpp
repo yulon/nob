@@ -1,6 +1,6 @@
 #include <nob.hpp>
 
-#include <tmd/hook.hpp>
+#include <rua/hook.hpp>
 
 #include <cstring>
 #include <cstdlib>
@@ -215,7 +215,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 
 			/*
-			static tmd::hook<nob::ntv::func_t> hkk;
+			static rua::hook<nob::ntv::func_t> hkk;
 
 			auto sf = nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD.target();
 			if (sf) {

@@ -6,7 +6,7 @@
 #include "script.hpp"
 #include "keyboard.hpp"
 
-#include <tmd/shared_obj.hpp>
+#include <rua/shared_obj.hpp>
 
 #include <string>
 #include <functional>
@@ -35,7 +35,7 @@ namespace nob {
 			std::function<void()> handler;
 		};
 
-		class action : public tmd::shared_obj<action_s> {
+		class action : public rua::shared_obj<action_s> {
 			public:
 				action() {}
 
@@ -107,7 +107,7 @@ namespace nob {
 			}
 		};
 
-		class list : public tmd::shared_obj<list_s> {
+		class list : public rua::shared_obj<list_s> {
 			public:
 				list() {}
 
@@ -170,7 +170,7 @@ namespace nob {
 			std::function<void(bool)> on_change;
 		};
 
-		class flag : public tmd::shared_obj<flag_s> {
+		class flag : public rua::shared_obj<flag_s> {
 			public:
 				flag() {}
 
@@ -209,7 +209,7 @@ namespace nob {
 				}
 		};
 
-		class item : public tmd::dynamic_shared_obj<item_s> {
+		class item : public rua::dynamic_shared_obj<item_s> {
 			public:
 				item() {}
 

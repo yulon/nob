@@ -1,6 +1,6 @@
 #include <nob/program.hpp>
 
-#include <tmd/process.hpp>
+#include <rua/process.hpp>
 
 #include <windows.h>
 #include <psapi.h>
@@ -10,7 +10,7 @@
 
 namespace nob {
 	namespace program {
-		tmd::bin_ref code = tmd::process::from_this().mem_ref();
+		rua::bin_ref code = rua::process::from_this().mem_ref();
 
 		uint16_t version = ([]()->uint16_t {
 			WCHAR path[MAX_PATH];

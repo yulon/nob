@@ -221,7 +221,7 @@ namespace nob {
 
 			template <typename T>
 			void set_arg(size_t i, T v) {
-				reinterpret_cast<tmd::unsafe_ptr *>(args_ptr)[i] = v;
+				reinterpret_cast<rua::unsafe_ptr *>(args_ptr)[i] = v;
 			}
 
 			template <typename T>

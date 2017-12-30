@@ -1207,9 +1207,9 @@ namespace nob {
 
 							// Reference from https://www.gta5-mods.com/scripts/singleplayer-snow
 
-							feet_tracks = tmd::unsafe_ptr(program::code.match_rel_ptr({
+							feet_tracks = ++program::code.match_rel_ptr({
 								0x80, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xD9, 0x74, 0x37
-							}).value() + 1);
+							});
 
 							if (feet_tracks) {
 								VirtualProtect(feet_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
