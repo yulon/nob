@@ -21,7 +21,7 @@ namespace nob {
 	rua::co_pool _cp;
 
 	bool in_task() {
-		return _cp.in_task();
+		return _cp.this_caller_in_task();
 	}
 
 	task::task(const std::function<void()> &handler, size_t duration_of_life) :
@@ -46,21 +46,17 @@ namespace nob {
 		}
 	}
 
-	rua::co_pool *_cur_cp_ptr;
-
 	void wait(size_t ms) {
-		_cur_cp_ptr->sleep(ms);
+		_cp.sleep(ms);
 	}
 
 	void wait(const std::function<bool()> &cond) {
-		_cur_cp_ptr->wait(cond);
+		_cp.wait(cond);
 	}
 
 	task::operator bool() const {
-		return _cp_tsk && _cp.has(_cp_tsk);
+		return _cp.has(_cp_tsk);
 	}
-
-	rua::co_pool _initer_cp;
 
 	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
 
@@ -86,42 +82,24 @@ namespace nob {
 			thread_id = std::this_thread::get_id();
 
 			_cp.init();
-			_initer_cp.init();
 
-			for (auto &handler : *_initers) {
-				_initer_cp.go(handler);
+			bool need_init = true;
+
+			if (_input_events.size()) {
+				_input_events = decltype(_input_events)();
 			}
-
-			_cur_cp_ptr = &_initer_cp;
-
-			#ifdef DEBUG
-				bool initer_warned = false;
-			#endif
-
-			for (;;) {
-				_initer_cp.handle();
-
-				if (!_initer_cp.size()) {
-					_input_events = decltype(_input_events)();
-					break;
-				}
-
-				#ifdef DEBUG
-					if (!initer_warned) {
-						std::cout << "nob::initer: best don't use wait() in non-task." << std::endl;
-						initer_warned = true;
-					}
-				#endif
-
-				_yield();
-			}
-
-			_cur_cp_ptr = &_cp;
 
 			for (;;) {
 				while (_input_events.size()) {
 					go(_input_events.front());
 					_input_events.pop();
+				}
+
+				if (need_init) {
+					need_init = false;
+					for (auto &handler : *_initers) {
+						go(handler);
+					}
 				}
 
 				_cp.handle();
@@ -141,6 +119,7 @@ namespace nob {
 				ntv::SYSTEM::WAIT.target(),
 				[](ntv::call_context_t &cc) {
 					static size_t last_fc = 0;
+					static bool need_init;
 
 					size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
 
@@ -153,43 +132,24 @@ namespace nob {
 							thread_id = this_tid;
 
 							_cp.init();
-							_initer_cp.init();
 
-							for (auto &handler : *_initers) {
-								_initer_cp.go(handler);
-							}
+							need_init = true;
 
-							#ifdef DEBUG
-								bool initer_warned = false;
-							#endif
-
-							for (;;) {
-								_initer_cp.handle();
-
-								if (!_initer_cp.size()) {
-									_input_events = decltype(_input_events)();
-									break;
-								}
-
-								#ifdef DEBUG
-									if (!initer_warned) {
-										std::cout << "nob::initer: best don't use wait() in non-task." << std::endl;
-										initer_warned = true;
-									}
-								#endif
-
-								auto old_ti = cc.arg<int>(0);
-								cc.set_arg<int>(0, 0);
-
-								wait_hk.orig_fn(cc);
-
-								cc.set_arg<int>(0, old_ti);
+							if (_input_events.size()) {
+								_input_events = decltype(_input_events)();
 							}
 						}
 
 						while (_input_events.size()) {
 							go(_input_events.front());
 							_input_events.pop();
+						}
+
+						if (need_init) {
+							need_init = false;
+							for (auto &handler : *_initers) {
+								go(handler);
+							}
 						}
 
 						_cp.handle();
