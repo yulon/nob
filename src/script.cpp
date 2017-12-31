@@ -144,9 +144,13 @@ namespace nob {
 
 					size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
 
-					if (cur_fc > last_fc) {
-						if (cur_fc - last_fc > 1) {
-							thread_id = std::this_thread::get_id();
+					if (cur_fc > last_fc && strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
+						last_fc = cur_fc;
+
+						auto this_tid = std::this_thread::get_id();
+
+						if (thread_id != this_tid) {
+							thread_id = this_tid;
 
 							_cp.init();
 							_initer_cp.init();
@@ -182,8 +186,6 @@ namespace nob {
 								cc.set_arg<int>(0, old_ti);
 							}
 						}
-
-						last_fc = cur_fc;
 
 						while (_input_events.size()) {
 							go(_input_events.front());
