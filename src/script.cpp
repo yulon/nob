@@ -82,7 +82,7 @@ namespace nob {
 			}
 		}
 
-		void _asi_main() {
+		void _shv_main() {
 			_init();
 			for (;;) {
 				_cp.handle();

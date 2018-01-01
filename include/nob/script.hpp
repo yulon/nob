@@ -11,7 +11,7 @@ namespace nob {
 	namespace this_script {
 		enum class mode_t {
 			invalid,
-			asi,
+			shv,
 			ysc,
 			exclusive
 		};
