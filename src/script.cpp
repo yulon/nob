@@ -67,7 +67,7 @@ namespace nob {
 		std::thread::id thread_id;
 		std::atomic<size_t> first_frame_count(0);
 
-		void _init() {
+		static inline void _init() {
 			auto this_tid = std::this_thread::get_id();
 			if (this_tid == thread_id) {
 				return;
@@ -562,7 +562,7 @@ namespace nob {
 		{ "main", false },
 		{ "maintransition", false },
 		{ "main_install", false },
-		{ "main_persistent", false },
+		{ "main_persistent", true },
 		{ "martin1", false },
 		{ "maude1", false },
 		{ "maude_postbailbond", false },
