@@ -7,8 +7,9 @@
 
 namespace nob {
 	namespace this_script {
-		void _main();
-		void _main2();
+		void _asi_main();
+		void _ysc_main();
+		void _exclusive_main();
 	} /* this_script */
 
 	namespace window {
@@ -20,17 +21,18 @@ BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID) {
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH:
 			if (nob::shv::valid) {
-				nob::this_script::asi_mode = true;
-				nob::shv::scriptRegister(hinstDLL, nob::this_script::_main);
+				nob::this_script::mode = nob::this_script::mode_t::asi;
+				nob::shv::scriptRegister(hinstDLL, nob::this_script::_asi_main);
 			} else {
-				std::thread(nob::this_script::_main2).detach();
+				nob::this_script::mode = nob::this_script::mode_t::exclusive;
+				std::thread(nob::this_script::_exclusive_main).detach();
 			}
 			break;
 		case DLL_PROCESS_DETACH:
 			nob::window::_unhook_proc();
 
 			#ifdef DEBUG
-				if (nob::this_script::asi_mode) {
+				if (nob::this_script::mode == nob::this_script::mode_t::asi) {
 					nob::shv::scriptUnregister(hinstDLL);
 				}
 			#endif

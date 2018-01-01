@@ -1,19 +1,18 @@
 #include <nob/keyboard.hpp>
 #include <nob/script.hpp>
+#include <nob/ntv/base.hpp>
 
 #include <windows.h>
 
 #include <cstdio>
 #include <queue>
+#include <atomic>
 #include <iostream>
 
 namespace nob {
 	namespace keyboard {
-		extern bool _downs[120];
-		extern std::list<std::function<bool(int, bool)>> _listeners;
+		void _send(int, bool);
 	} /* keyboard */
-
-	extern std::queue<std::function<void()>> _input_events;
 
 	namespace window {
 		HWND _handle = ([]()->HWND {
@@ -40,26 +39,16 @@ namespace nob {
 		LRESULT CALLBACK _proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			switch (uMsg) {
 				case WM_KEYDOWN:
-					if (!keyboard::_downs[wParam]) {
-						keyboard::_downs[wParam] = true;
-						_input_events.push([wParam]() {
-							for (auto &listener : keyboard::_listeners) {
-								if (!listener(wParam, true)) {
-									return;
-								}
-							}
-						});
+					if (*ntv::game_state != ntv::game_state_t::playing) {
+						break;
 					}
+					keyboard::_send(wParam, true);
 					break;
 				case WM_KEYUP:
-					keyboard::_downs[wParam] = false;
-					_input_events.push([wParam]() {
-						for (auto &listener : keyboard::_listeners) {
-							if (!listener(wParam, false)) {
-								return;
-							}
-						}
-					});
+					if (*ntv::game_state != ntv::game_state_t::playing) {
+						break;
+					}
+					keyboard::_send(wParam, false);
 			}
 			return CallWindowProcW(_old_proc, hWnd, uMsg, wParam, lParam);
 		}

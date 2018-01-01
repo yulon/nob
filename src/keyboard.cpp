@@ -1,19 +1,19 @@
 #include <nob/keyboard.hpp>
+#include <nob/script.hpp>
 
 #include <windows.h>
-
-#include <list>
+#include <atomic>
 #include <cstring>
 
 namespace nob {
 	namespace keyboard {
-		bool _downs[120];
-		class _downs_initer_t {
-			public:
-				_downs_initer_t() {
-					memset(_downs, 0, 120 * sizeof(bool));
-				}
-		} _downs_initer;
+		std::atomic<bool> _downs[120];
+
+		initer _initer([]() {
+			for (size_t i = 0; i < 120; ++i) {
+				_downs[i] = false;
+			}
+		});
 
 		std::list<std::function<bool(int, bool)>> _listeners;
 
@@ -58,6 +58,24 @@ namespace nob {
 
 		bool is_down(int code) {
 			return _downs[code];
+		}
+
+		void _send(int code, bool down) {
+			auto old_state = keyboard::_downs[code].exchange(down);
+			if (old_state == down) {
+				return;
+			}
+			size_t ffc = this_script::first_frame_count;
+			go([ffc, code, down]() {
+				if (ffc != this_script::first_frame_count) {
+					return;
+				}
+				for (auto &listener : keyboard::_listeners) {
+					if (!listener(code, down)) {
+						return;
+					}
+				}
+			});
 		}
 	} /* keyboard */
 } /* nob */

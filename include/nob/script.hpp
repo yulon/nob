@@ -5,11 +5,20 @@
 
 #include <functional>
 #include <thread>
+#include <atomic>
 
 namespace nob {
 	namespace this_script {
+		enum class mode_t {
+			invalid,
+			asi,
+			ysc,
+			exclusive
+		};
+
+		extern mode_t mode;
 		extern std::thread::id thread_id;
-		extern bool asi_mode;
+		extern std::atomic<size_t> first_frame_count;
 	} /* this_script */
 
 	void wait(size_t ms);

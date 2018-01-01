@@ -13,11 +13,6 @@
 #include <cstring>
 
 namespace nob {
-	namespace this_script {
-		std::thread::id thread_id;
-		bool asi_mode = false;
-	} /* this_script */
-
 	rua::co_pool _cp;
 
 	bool in_task() {
@@ -67,48 +62,43 @@ namespace nob {
 		_initers->push_back(handler);
 	}
 
-	std::queue<std::function<void()>> _input_events;
-
 	namespace this_script {
-		static inline void _yield() {
-			if (asi_mode) {
+		mode_t mode = mode_t::invalid;
+		std::thread::id thread_id;
+		std::atomic<size_t> first_frame_count(0);
+
+		void _init() {
+			auto this_tid = std::this_thread::get_id();
+			if (this_tid == thread_id) {
+				return;
+			}
+
+			thread_id = this_tid;
+			first_frame_count = ntv::GAMEPLAY::GET_FRAME_COUNT();
+			_cp.init();
+
+			for (auto &handler : *_initers) {
+				go(handler);
+			}
+		}
+
+		void _asi_main() {
+			_init();
+			for (;;) {
+				_cp.handle();
 				shv::WAIT(0);
-			} else {
+			}
+		}
+
+		void _ysc_main() {
+			_init();
+			for (;;) {
+				_cp.handle();
 				ntv::SYSTEM::WAIT(0);
 			}
 		}
 
-		void _main() {
-			thread_id = std::this_thread::get_id();
-
-			_cp.init();
-
-			bool need_init = true;
-
-			if (_input_events.size()) {
-				_input_events = decltype(_input_events)();
-			}
-
-			for (;;) {
-				while (_input_events.size()) {
-					go(_input_events.front());
-					_input_events.pop();
-				}
-
-				if (need_init) {
-					need_init = false;
-					for (auto &handler : *_initers) {
-						go(handler);
-					}
-				}
-
-				_cp.handle();
-
-				_yield();
-			}
-		}
-
-		void _main2() {
+		void _exclusive_main() {
 			static rua::hook<ntv::func_t> wait_hk;
 
 			while (!ntv::SYSTEM::WAIT.target()) {
@@ -119,39 +109,11 @@ namespace nob {
 				ntv::SYSTEM::WAIT.target(),
 				[](ntv::call_context_t &cc) {
 					static size_t last_fc = 0;
-					static bool need_init;
-
 					size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
 
 					if (cur_fc > last_fc && strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
 						last_fc = cur_fc;
-
-						auto this_tid = std::this_thread::get_id();
-
-						if (thread_id != this_tid) {
-							thread_id = this_tid;
-
-							_cp.init();
-
-							need_init = true;
-
-							if (_input_events.size()) {
-								_input_events = decltype(_input_events)();
-							}
-						}
-
-						while (_input_events.size()) {
-							go(_input_events.front());
-							_input_events.pop();
-						}
-
-						if (need_init) {
-							need_init = false;
-							for (auto &handler : *_initers) {
-								go(handler);
-							}
-						}
-
+						_init();
 						_cp.handle();
 					}
 
