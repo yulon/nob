@@ -68,17 +68,12 @@ namespace nob {
 		std::atomic<size_t> first_frame_count(0);
 
 		static inline void _init() {
-			auto this_tid = std::this_thread::get_id();
-			if (this_tid == thread_id) {
-				return;
-			}
-
-			thread_id = this_tid;
+			thread_id = std::this_thread::get_id();
 			first_frame_count = ntv::GAMEPLAY::GET_FRAME_COUNT();
 			_cp.init();
 
-			for (auto &handler : *_initers) {
-				go(handler);
+			for (auto rit = _initers->rbegin(); rit != _initers->rend(); ++rit) {
+				go(*rit);
 			}
 		}
 
@@ -101,22 +96,29 @@ namespace nob {
 		void _exclusive_main() {
 			static rua::hook<ntv::func_t> wait_hk;
 
-			while (!ntv::SYSTEM::WAIT.target()) {
+			ntv::func_t wait_fp;
+
+			for (wait_fp = ntv::SYSTEM::WAIT.target(); !wait_fp; wait_fp = ntv::SYSTEM::WAIT.target()) {
 				Sleep(500);
 			}
 
+			if (*reinterpret_cast<uint8_t *>(wait_fp) != 0x8B) {
+				std::cout << "nob::this_script::_exclusive_main: hooked by other mod!" << std::endl;
+				return;
+			}
+
 			wait_hk.assign(
-				ntv::SYSTEM::WAIT.target(),
+				wait_fp,
 				[](ntv::call_context_t &cc) {
 					static size_t last_fc = 0;
 					size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
-
 					if (cur_fc > last_fc && strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
+						if (cur_fc - last_fc > 1) {
+							_init();
+						}
 						last_fc = cur_fc;
-						_init();
 						_cp.handle();
 					}
-
 					wait_hk.orig_fn(cc);
 				}
 			);
