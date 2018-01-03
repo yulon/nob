@@ -15,25 +15,7 @@ namespace nob {
 	} /* keyboard */
 
 	namespace window {
-		HWND _handle = ([]()->HWND {
-			#ifdef DEBUG
-				AllocConsole();
-				freopen("conout$", "w+t", stdout);
-				freopen("conout$", "w+t", stderr);
-				freopen("conout$", "w+t", stderr);
-			#endif
-
-			auto wnd = FindWindowW(L"grcWindow", L"Grand Theft Auto V");
-			if (wnd) {
-				DWORD pid;
-				GetWindowThreadProcessId(wnd, &pid);
-				if (pid == GetCurrentProcessId()) {
-					return wnd;
-				}
-			}
-			return nullptr;
-		})();
-
+		HWND _handle = nullptr;
 		WNDPROC _old_proc = nullptr;
 
 		LRESULT CALLBACK _proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -53,20 +35,40 @@ namespace nob {
 			return CallWindowProcW(_old_proc, hWnd, uMsg, wParam, lParam);
 		}
 
-		void _hook_proc() {
-			if (!_old_proc) {
-				_old_proc = (WNDPROC)SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)&_proc);
+		bool find() {
+			if (_handle) {
+				return true;
 			}
+			_handle = FindWindowW(L"grcWindow", L"Grand Theft Auto V");
+			if (!_handle) {
+				return false;
+			}
+			DWORD pid;
+			GetWindowThreadProcessId(_handle, &pid);
+			if (pid != GetCurrentProcessId()) {
+				_handle = nullptr;
+				return false;
+			}
+			return true;
 		}
 
-		initer _initer([]() {
-			_hook_proc();
-		});
+		void _hook_proc() {
+			if (_old_proc) {
+				return;
+			}
+			if (!find()) {
+				return;
+			}
+			_old_proc = (WNDPROC)SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)&_proc);
+		}
+
+		initer _initer(_hook_proc);
 
 		void _unhook_proc() {
-			if (_old_proc) {
-				SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)_old_proc);
+			if (!_old_proc) {
+				return;
 			}
+			SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)_old_proc);
 		}
 	} /* window */
 } /* nob */
