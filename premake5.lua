@@ -44,10 +44,10 @@ workspace "nob"
 		files { "test/*.cpp" }
 		targetextension ".asi"
 		libdirs { "lib" }
-		links { "user32", "nob", "psapi", "version", "MinHook" }
+		links { "nob", "psapi", "version", "MinHook" }
 
 		configuration { "gmake" }
-			linkoptions { "-Wl,--exclude-all-symbols" }
+			linkoptions { "-Wl,--exclude-all-symbols", "-static" }
 
 		configuration "Debug"
 			defines { "DEBUG" }
