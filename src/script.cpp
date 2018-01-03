@@ -94,7 +94,7 @@ namespace nob {
 		}
 
 		void _exclusive_main() {
-			static rua::hook<ntv::func_t> wait_hk;
+			static rua::hooked<ntv::func_t> wait_hkd;
 
 			ntv::func_t wait_fp;
 
@@ -107,7 +107,7 @@ namespace nob {
 				return;
 			}
 
-			wait_hk.assign(
+			if (!wait_hkd.hook(
 				wait_fp,
 				[](ntv::call_context_t &cc) {
 					static size_t last_fc = 0;
@@ -119,9 +119,11 @@ namespace nob {
 						last_fc = cur_fc;
 						_cp.handle();
 					}
-					wait_hk.orig_fn(cc);
+					wait_hkd(cc);
 				}
-			);
+			)) {
+				std::cout << "nob::this_script::_exclusive_main: hook failed!" << std::endl;
+			}
 		}
 	} /* this_script */
 

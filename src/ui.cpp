@@ -37,7 +37,7 @@ namespace nob {
 
 		void disable_wheel_slowmo(bool toggle) {
 			static void (*sf)() = nullptr;
-			static rua::hook<void (*)()> hk;
+			static rua::hooked<void (*)()> hkd;
 
 			if (toggle) {
 				if (!sf) {
@@ -59,11 +59,11 @@ namespace nob {
 						return;
 					}
 				}
-				if (!hk) {
-					hk.assign(sf, []() {});
+				if (!hkd) {
+					hkd.hook(sf, []() {});
 				}
 			} else {
-				hk.unhook();
+				hkd.unhook();
 			}
 		}
 
