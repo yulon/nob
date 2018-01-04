@@ -2,6 +2,7 @@
 #include <nob/object.hpp>
 #include <nob/program.hpp>
 #include <nob/script.hpp>
+#include <nob/log.hpp>
 
 #include <cstring>
 
@@ -1196,12 +1197,9 @@ namespace nob {
 							if (bca) {
 								VirtualProtect(block_code_addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
 								memcpy(&block_code, bca, 20);
+							} else {
+								log("nob::world::snowy::block_code_addr: not found!");
 							}
-							#ifdef DEBUG
-								else {
-									std::cout << "nob::world::snowy::block_code_addr: not found!" << std::endl;
-								}
-							#endif
 
 							////////////////////////////////////////////////////////////
 
@@ -1213,12 +1211,9 @@ namespace nob {
 
 							if (feet_tracks) {
 								VirtualProtect(feet_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							} else {
+								log("nob::world::snowy::feet_tracks: not found!");
 							}
-							#ifdef DEBUG
-								else {
-									std::cout << "nob::world::snowy::feet_tracks: not found!" << std::endl;
-								}
-							#endif
 
 							veh_tracks = program::code.match_rel_ptr({
 								0x40, 0x38, 0x3D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x42, 0x20
@@ -1226,12 +1221,9 @@ namespace nob {
 
 							if (veh_tracks) {
 								VirtualProtect(veh_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							} else {
+								log("nob::world::snowy::veh_tracks: not found!");
 							}
-							#ifdef DEBUG
-								else {
-									std::cout << "nob::world::snowy::veh_tracks: not found!" << std::endl;
-								}
-							#endif
 
 							veh_track_types = program::code.match({
 								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x44, 0x0F, 0x44, 0xF1
@@ -1239,12 +1231,9 @@ namespace nob {
 
 							if (veh_track_types) {
 								VirtualProtect(veh_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							} else {
+								log("nob::world::snowy::veh_track_types: not found!");
 							}
-							#ifdef DEBUG
-								else {
-									std::cout << "nob::world::snowy::veh_track_types: not found!" << std::endl;
-								}
-							#endif
 
 							ped_track_types = program::code.match({
 								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x0F, 0x44, 0xD9, 0x48, 0x8B, 0x4F, 0x30
@@ -1252,12 +1241,9 @@ namespace nob {
 
 							if (ped_track_types) {
 								VirtualProtect(ped_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
+							} else {
+								log("nob::world::snowy::ped_track_types: not found!");
 							}
-							#ifdef DEBUG
-								else {
-									std::cout << "nob::world::snowy::ped_track_types: not found!" << std::endl;
-								}
-							#endif
 
 							////////////////////////////////////////////////////////////
 

@@ -13,3 +13,5 @@
 #include "nob/map.hpp"
 #include "nob/i18n.hpp"
 #include "nob/program.hpp"
+#include "nob/window.hpp"
+#include "nob/log.hpp"

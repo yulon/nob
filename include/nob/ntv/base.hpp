@@ -2,6 +2,7 @@
 
 #include "../hash.hpp"
 #include "../program.hpp"
+#include "../log.hpp"
 #include "fhtt.hpp"
 
 #ifdef NOB_USING_SHV_CALL
@@ -259,26 +260,23 @@ namespace nob {
 				if (res_count) {
 					if (fix_res_fn) {
 						fix_res_fn(*this);
+					} else {
+						log("nob::ntv::call_context_t::fix_res_fn: is null!");
 					}
-					#ifdef DEBUG
-						else {
-							std::cout << "nob::ntv::call_context_t::fix_res_fn: is null!" << std::endl;
-							return;
-						}
-					#endif
 				}
 			}
 
 			void print(const std::string &mark = "") {
 				if (!mark.empty()) {
-					std::cout << mark << std::endl;
+					log(mark);
 				}
 
-				std::cout
-				<< "args_ptr: " << args_ptr << std::endl
-				<< "arg_count: " << arg_count << std::endl
-				<< "result_ptr: " << result_ptr << std::endl
-				<< "res_count: " << res_count << std::endl;
+				log(
+					"args_ptr: ", args_ptr, "\n",
+					"arg_count: ", arg_count, "\n",
+					"result_ptr: ", result_ptr, "\n",
+					"res_count: ", res_count
+				);
 			}
 		};
 
@@ -406,9 +404,7 @@ namespace nob {
 					#endif
 
 					if (!target()) {
-						#ifdef DEBUG
-							std::cout << "nob::ntv::lazy_func_t[" << std::hex << _1st_h << "," << _h << "]: not found!" << std::endl;
-						#endif
+						log("nob::ntv::lazy_func_t[", std::hex, _1st_h, ",", _h, "]: not found!");
 						return;
 					}
 

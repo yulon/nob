@@ -85,7 +85,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			pb.invincible(val);
 			/*auto addr = nob::shv::getScriptHandleBaseAddress(pb);
 			if (addr) {
-				std::cout << addr << std::endl;
+				nob::log(addr);
 				*(DWORD *)(addr + 0x188) |= (1 << 9);
 			}*/
 		}),
@@ -137,10 +137,10 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 /*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->nodes[i].hash == nob::hash("friends_debug_controller")) {
-					std::cout << "!!!!!!!!!!!!!!!!!!" << std::endl;
+					nob::log("!!!!!!!!!!!!!!!!!!");
 
-					std::cout << nob::ntv::script_list->nodes[i].script << std::endl;
-					std::cout << (nob::ntv::script_list->nodes[i].script ? nob::ntv::script_list->nodes[i].script->is_valid() : false) << std::endl;
+					nob::log(nob::ntv::script_list->nodes[i].script);
+					nob::log((nob::ntv::script_list->nodes[i].script ? nob::ntv::script_list->nodes[i].script->is_valid() : false));
 
 					if (!nob::ntv::SCRIPT::HAS_SCRIPT_LOADED("friends_debug_controller")) {
 						nob::ntv::SCRIPT::REQUEST_SCRIPT("friends_debug_controller");
@@ -149,9 +149,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 						}
 					}
 
-					std::cout << "!~~~~~~~~~~~~~~~~" << std::endl;
+					nob::log("!~~~~~~~~~~~~~~~~");
 
-					std::cout << nob::ntv::script_list->nodes[i].script->code_length << std::endl;
+					nob::log(nob::ntv::script_list->nodes[i].script->code_length);
 
 					nob::ntv::script_list->nodes[i].script->code_page[0] = reinterpret_cast<uintptr_t>(&xxx2);
 
@@ -177,8 +177,8 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				nob::ntv::Vector3 v3;
 				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
 					//nob::wait_next_frame();
-					std::cout << &v3 << ": " << v3.x << ", " << v3.y << ", " << v3.z << std::endl;
-					//std::cout << v3._paddingx << ", " << v3._paddingy << ", " << v3._paddingz << "=======================" << std::endl;
+					nob::log(&v3, ": ", v3.x, ", ", v3.y, ", ", v3.z);
+					//nob::log(v3._paddingx, ", ", v3._paddingy, ", ", v3._paddingz, "=======================");
 				}
 			});
 			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
@@ -219,20 +219,20 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			auto sf = nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD.target();
 			if (sf) {
-				std::cout << "hook" << std::endl;
+				nob::log("hook");
 				hkk.assign(sf, [](nob::ntv::call_context_t &cc) {
 					auto begin = *cc.result_ptr;
 					hkk.orig_fn(std::ref(cc));
 					if (!cc.result<bool>()) {
 						return;
 					}
-					std::cout << "=======================" << std::endl;
-					std::cout << begin << std::endl;
+					nob::log("=======================");
+					nob::log(begin);
 					//begin.print();
-					//std::cout << "-----------------------" << std::endl;
-					std::cout << *cc.result_ptr << std::endl;
+					//nob::log("-----------------------");
+					nob::log(*cc.result_ptr);
 					//cc.print();
-					std::cout << "=======================" << std::endl;
+					nob::log("=======================");
 				});
 			}//*/
 

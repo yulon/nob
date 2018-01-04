@@ -6,8 +6,7 @@
 #include "hash.hpp"
 #include "arm.hpp"
 #include "script.hpp"
-
-#include <iostream>
+#include "log.hpp"
 
 namespace nob {
 	class entity {
@@ -502,58 +501,64 @@ namespace nob {
 			}
 
 			void print_weapon_info() {
-				auto cur_wpn = current_weapon();
-				if (cur_wpn == "WEAPON_UNARMED") {
-					std::cout << "unarmed!" << std::endl;
-					return;
-				}
-
-				std::cout << "weapon ";
-				for (auto &hr : arm::weapons) {
-					if (hr == cur_wpn) {
-						std::cout << hr.src_c_str() << " ";
-						break;
+				#ifdef DEBUG
+					auto cur_wpn = current_weapon();
+					if (cur_wpn == "WEAPON_UNARMED") {
+						log("unarmed!");
+						return;
 					}
-				}
-				if (is_in_vehicle()) {
-					for (auto &hr : arm::vehicle_weapons) {
+
+					std::stringstream ss;
+
+					ss << "weapon ";
+					for (auto &hr : arm::weapons) {
 						if (hr == cur_wpn) {
-							std::cout << hr.src_c_str() << " ";
+							ss << hr.src_c_str() << " ";
 							break;
 						}
 					}
-				}
-				std::cout << std::hex << cur_wpn.hash() << std::endl;
-
-				auto grp = arm::weapon_group(cur_wpn);
-				std::cout << "  group: ";
-				for (auto &hr : arm::weapon_groups) {
-					if (hr == grp) {
-						std::cout << hr.src_c_str() << " ";
-						break;
+					if (is_in_vehicle()) {
+						for (auto &hr : arm::vehicle_weapons) {
+							if (hr == cur_wpn) {
+								ss << hr.src_c_str() << " ";
+								break;
+							}
+						}
 					}
-				}
-				std::cout << grp.hash() << std::endl;
+					ss << std::hex << cur_wpn.hash() << std::endl;
 
-				auto amm_ty = weapon_ammo_type(cur_wpn);
-				std::cout << "  ammo type: ";
-				for (auto &hr : arm::ammo_types) {
-					if (hr == amm_ty) {
-						std::cout << hr.src_c_str() << " ";
-						break;
+					auto grp = arm::weapon_group(cur_wpn);
+					ss << "  group: ";
+					for (auto &hr : arm::weapon_groups) {
+						if (hr == grp) {
+							ss << hr.src_c_str() << " ";
+							break;
+						}
 					}
-				}
-				std::cout << amm_ty.hash() << std::endl;
+					ss << grp.hash() << std::endl;
 
-				auto info = arm::weapon_info(cur_wpn);
-				if (info.valid) {
-					std::cout
-					<< "  damage: " << info.damage / 255.0f << std::endl
-					<< "  speed: " << info.speed / 255.0f << std::endl
-					<< "  capacity: " << info.capacity / 255.0f << std::endl
-					<< "  accuracy: " << info.accuracy / 255.0f << std::endl
-					<< "  range: " << info.range / 255.0f << std::endl;
-				}
+					auto amm_ty = weapon_ammo_type(cur_wpn);
+					ss << "  ammo type: ";
+					for (auto &hr : arm::ammo_types) {
+						if (hr == amm_ty) {
+							ss << hr.src_c_str() << " ";
+							break;
+						}
+					}
+					ss << amm_ty.hash();
+
+					auto info = arm::weapon_info(cur_wpn);
+					if (info.valid) {
+						ss << std::endl
+						<< "  damage: " << info.damage / 255.0f << std::endl
+						<< "  speed: " << info.speed / 255.0f << std::endl
+						<< "  capacity: " << info.capacity / 255.0f << std::endl
+						<< "  accuracy: " << info.accuracy / 255.0f << std::endl
+						<< "  range: " << info.range / 255.0f;
+					}
+
+					log(ss.str());
+				#endif
 			}
 
 			void aim(const vector3 &coords) {

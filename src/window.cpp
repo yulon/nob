@@ -5,9 +5,6 @@
 #include <windows.h>
 
 #include <cstdio>
-#include <queue>
-#include <atomic>
-#include <iostream>
 
 namespace nob {
 	namespace keyboard {
@@ -16,6 +13,24 @@ namespace nob {
 
 	namespace window {
 		HWND _handle = nullptr;
+
+		HWND native_handle() {
+			if (_handle) {
+				return _handle;
+			}
+			_handle = FindWindowW(L"grcWindow", L"Grand Theft Auto V");
+			if (!_handle) {
+				return nullptr;
+			}
+			DWORD pid;
+			GetWindowThreadProcessId(_handle, &pid);
+			if (pid != GetCurrentProcessId()) {
+				_handle = nullptr;
+				return nullptr;
+			}
+			return _handle;
+		}
+
 		WNDPROC _old_proc = nullptr;
 
 		LRESULT CALLBACK _proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -35,28 +50,11 @@ namespace nob {
 			return CallWindowProcW(_old_proc, hWnd, uMsg, wParam, lParam);
 		}
 
-		bool find() {
-			if (_handle) {
-				return true;
-			}
-			_handle = FindWindowW(L"grcWindow", L"Grand Theft Auto V");
-			if (!_handle) {
-				return false;
-			}
-			DWORD pid;
-			GetWindowThreadProcessId(_handle, &pid);
-			if (pid != GetCurrentProcessId()) {
-				_handle = nullptr;
-				return false;
-			}
-			return true;
-		}
-
 		void _hook_proc() {
 			if (_old_proc) {
 				return;
 			}
-			if (!find()) {
+			if (!native_handle()) {
 				return;
 			}
 			_old_proc = (WNDPROC)SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)&_proc);

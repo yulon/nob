@@ -2,6 +2,7 @@
 #include <nob/ntv.hpp>
 #include <nob/ui.hpp>
 #include <nob/shv.hpp>
+#include <nob/log.hpp>
 
 #include <rua/hook.hpp>
 
@@ -103,7 +104,7 @@ namespace nob {
 			}
 
 			if (*reinterpret_cast<uint8_t *>(wait_fp) != 0x8B) {
-				std::cout << "nob::this_script::_exclusive_main: hooked by other mod!" << std::endl;
+				log("nob::this_script::_exclusive_main: hooked by other mod!");
 				return;
 			}
 
@@ -122,7 +123,7 @@ namespace nob {
 					wait_hkd(cc);
 				}
 			)) {
-				std::cout << "nob::this_script::_exclusive_main: hook failed!" << std::endl;
+				log("nob::this_script::_exclusive_main: hook failed!");
 			}
 		}
 	} /* this_script */
