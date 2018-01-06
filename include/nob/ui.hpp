@@ -29,9 +29,9 @@ namespace nob {
 			std::string desc;
 
 			_item(
-				const std::string &name = "",
-				const std::string &desc = ""
-			) : name(name), desc(desc) {}
+				std::string name = "",
+				std::string desc = ""
+			) : name(std::move(name)), desc(std::move(desc)) {}
 		};
 
 		using item = rua::itf<_item>;
@@ -40,15 +40,15 @@ namespace nob {
 			std::function<void()> handler;
 
 			_action(
-				const std::string &name,
-				const std::string &desc,
-				const std::function<void()> &handler
-			) : _item(name, desc), handler(handler) {}
+				std::string name,
+				std::string desc,
+				std::function<void()> handler
+			) : _item(std::move(name), std::move(desc)), handler(std::move(handler)) {}
 
 			_action(
-					const std::string &name,
-					const std::function<void()> &handler
-			) : _item(name), handler(handler) {}
+				std::string name,
+				std::function<void()> handler
+			) : _item(std::move(name)), handler(std::move(handler)) {}
 		};
 
 		using action = rua::obj<_action>;
@@ -62,11 +62,11 @@ namespace nob {
 			size_t selected = 0;
 
 			_list(
-				const std::string &name,
-				const std::string &desc,
-				const std::vector<item> &items,
-				const std::function<void(list)> &on_show
-			) : _item(name, desc), items(items), on_show(on_show) {}
+				std::string name,
+				std::string desc,
+				std::vector<item> items,
+				std::function<void(list)> on_show
+			) : _item(std::move(name), std::move(desc)), items(std::move(items)), on_show(std::move(on_show)) {}
 
 			void fix() {
 				if (selected >= items.size()) {
@@ -112,40 +112,34 @@ namespace nob {
 				constexpr list(std::nullptr_t) : rua::obj<_list>(nullptr) {}
 
 				list(
-					const std::string &name,
-					const std::string &desc,
-					const std::vector<item> &items,
-					const std::function<void(list)> &on_show
-				) : rua::obj<_list>(name, desc, items, on_show) {}
+					std::string name,
+					std::string desc,
+					std::vector<item> items,
+					std::function<void(list)> on_show = nullptr
+				) : rua::obj<_list>(std::move(name), std::move(desc), std::move(items), std::move(on_show)) {}
 
 				list(
-					const std::string &name,
-					const std::string &desc,
+					std::string name,
+					std::string desc,
 					std::initializer_list<item> items,
-					const std::function<void(list)> &on_show
-				) : list(name, desc, std::vector<item>(items), on_show) {}
+					std::function<void(list)> on_show = nullptr
+				) : list(std::move(name), std::move(desc), std::vector<item>(items), std::move(on_show)) {}
 
 				list(
-					const std::string &name,
-					const std::string &desc,
+					std::string name,
 					std::initializer_list<item> items
-				) : list(name, desc, std::vector<item>(items), nullptr) {}
+				) : list(std::move(name), "", std::vector<item>(items), nullptr) {}
 
 				list(
-					const std::string &name,
-					std::initializer_list<item> items
-				) : list(name, "", std::vector<item>(items), nullptr) {}
+					std::string name,
+					std::string desc,
+					std::function<void(list)> on_show
+				) : list(std::move(name), std::move(desc), std::vector<item>(), std::move(on_show)) {}
 
 				list(
-					const std::string &name,
-					const std::string &desc,
-					const std::function<void(list)> &on_show
-				) : list(name, desc, std::vector<item>(), on_show) {}
-
-				list(
-					const std::string &name,
-					const std::function<void(list)> &on_show
-				) : list(name, "", std::vector<item>(), on_show) {}
+					std::string name,
+					std::function<void(list)> on_show
+				) : list(std::move(name), "", std::vector<item>(), std::move(on_show)) {}
 		};
 
 		struct _flag : _item {
@@ -153,28 +147,28 @@ namespace nob {
 			std::function<void(bool)> on_change;
 
 			_flag(
-				const std::string &name,
-				const std::string &desc,
+				std::string name,
+				std::string desc,
 				bool value,
 				std::function<void(bool)> on_change
-			) : _item(name, desc), value(value), on_change(on_change) {}
+			) : _item(std::move(name), std::move(desc)), value(value), on_change(std::move(on_change)) {}
 
 			_flag(
-				const std::string &name,
+				std::string name,
 				bool value,
 				std::function<void(bool)> on_change
-			) : _item(name), value(value), on_change(on_change) {}
+			) : _item(std::move(name)), value(value), on_change(std::move(on_change)) {}
 
 			_flag(
-				const std::string &name,
-				const std::string &desc,
+				std::string name,
+				std::string desc,
 				std::function<void(bool)> on_change
-			) : _item(name, desc), value(false), on_change(on_change) {}
+			) : _item(std::move(name), std::move(desc)), value(false), on_change(std::move(on_change)) {}
 
 			_flag(
-				const std::string &name,
+				std::string name,
 				std::function<void(bool)> on_change
-			) : _item(name), value(false), on_change(on_change) {}
+			) : _item(std::move(name)), value(false), on_change(std::move(on_change)) {}
 		};
 
 		using flag = rua::obj<_flag>;
