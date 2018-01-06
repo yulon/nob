@@ -6,7 +6,7 @@
 #include "script.hpp"
 #include "keyboard.hpp"
 
-#include <rua/shared_obj.hpp>
+#include <rua/obj.hpp>
 
 #include <string>
 #include <functional>
@@ -24,49 +24,49 @@ namespace nob {
 
 		static constexpr float aspect_ratio = 9.0f / 16.0f;
 
-		class item;
-
-		struct item_s {
+		struct _item {
 			std::string name;
 			std::string desc;
+
+			_item(
+				const std::string &name = "",
+				const std::string &desc = ""
+			) : name(name), desc(desc) {}
 		};
 
-		struct action_s : item_s {
+		using item = rua::itf<_item>;
+
+		struct _action : _item {
 			std::function<void()> handler;
-		};
 
-		class action : public rua::shared_obj<action_s> {
-			public:
-				action() {}
+			_action(
+				const std::string &name,
+				const std::string &desc,
+				const std::function<void()> &handler
+			) : _item(name, desc), handler(handler) {}
 
-				action(
-					const std::string &name,
-					const std::string &desc,
-					const std::function<void()> &handler
-				) {
-					alloc();
-					_m->name = name;
-					_m->desc = desc;
-					_m->handler = handler;
-				}
-
-				action(
+			_action(
 					const std::string &name,
 					const std::function<void()> &handler
-				) {
-					alloc();
-					_m->name = name;
-					_m->handler = handler;
-				}
+			) : _item(name), handler(handler) {}
 		};
+
+		using action = rua::obj<_action>;
 
 		class list;
 
-		struct list_s : item_s {
+		struct _list : _item {
 			std::vector<item> items;
 			std::function<void(list)> on_show;
 			size_t page_top = 0;
 			size_t selected = 0;
+
+			_list(
+				const std::string &name,
+				const std::string &desc,
+				const std::vector<item> &items,
+				const std::function<void(list)> &on_show
+			) : _item(name, desc), items(items), on_show(on_show) {}
 
 			void fix() {
 				if (selected >= items.size()) {
@@ -107,132 +107,77 @@ namespace nob {
 			}
 		};
 
-		class list : public rua::shared_obj<list_s> {
+		class list : public rua::obj<_list> {
 			public:
-				list() {}
+				constexpr list(std::nullptr_t) : rua::obj<_list>(nullptr) {}
+
+				list(
+					const std::string &name,
+					const std::string &desc,
+					const std::vector<item> &items,
+					const std::function<void(list)> &on_show
+				) : rua::obj<_list>(name, desc, items, on_show) {}
 
 				list(
 					const std::string &name,
 					const std::string &desc,
 					std::initializer_list<item> items,
 					const std::function<void(list)> &on_show
-				) {
-					alloc();
-					_m->name = name;
-					_m->desc = desc;
-					_m->items = std::vector<item>(items);
-					_m->on_show = on_show;
-				}
+				) : list(name, desc, std::vector<item>(items), on_show) {}
 
 				list(
 					const std::string &name,
 					const std::string &desc,
 					std::initializer_list<item> items
-				) {
-					alloc();
-					_m->name = name;
-					_m->desc = desc;
-					_m->items = std::vector<item>(items);
-				}
+				) : list(name, desc, std::vector<item>(items), nullptr) {}
 
 				list(
 					const std::string &name,
 					std::initializer_list<item> items
-				) {
-					alloc();
-					_m->name = name;
-					_m->items = std::vector<item>(items);
-				}
+				) : list(name, "", std::vector<item>(items), nullptr) {}
 
 				list(
 					const std::string &name,
 					const std::string &desc,
 					const std::function<void(list)> &on_show
-				) {
-					alloc();
-					_m->name = name;
-					_m->desc = desc;
-					_m->on_show = on_show;
-				}
+				) : list(name, desc, std::vector<item>(), on_show) {}
 
 				list(
 					const std::string &name,
 					const std::function<void(list)> &on_show
-				) {
-					alloc();
-					_m->name = name;
-					_m->on_show = on_show;
-				}
+				) : list(name, "", std::vector<item>(), on_show) {}
 		};
 
-		struct flag_s : item_s {
+		struct _flag : _item {
 			bool value;
 			std::function<void(bool)> on_change;
+
+			_flag(
+				const std::string &name,
+				const std::string &desc,
+				bool value,
+				std::function<void(bool)> on_change
+			) : _item(name, desc), value(value), on_change(on_change) {}
+
+			_flag(
+				const std::string &name,
+				bool value,
+				std::function<void(bool)> on_change
+			) : _item(name), value(value), on_change(on_change) {}
+
+			_flag(
+				const std::string &name,
+				const std::string &desc,
+				std::function<void(bool)> on_change
+			) : _item(name, desc), value(false), on_change(on_change) {}
+
+			_flag(
+				const std::string &name,
+				std::function<void(bool)> on_change
+			) : _item(name), value(false), on_change(on_change) {}
 		};
 
-		class flag : public rua::shared_obj<flag_s> {
-			public:
-				flag() {}
-
-				flag(
-					const std::string &name,
-					const std::string &desc,
-					bool value,
-					const std::function<void(bool)> &on_change
-				) {
-					alloc();
-					_m->name = name;
-					_m->desc = desc;
-					_m->value = value;
-					_m->on_change = on_change;
-				}
-
-				flag(
-					const std::string &name,
-					bool value,
-					const std::function<void(bool)> &on_change
-				) {
-					alloc();
-					_m->name = name;
-					_m->value = value;
-					_m->on_change = on_change;
-				}
-
-				flag(
-					const std::string &name,
-					const std::function<void(bool)> &on_change
-				) {
-					alloc();
-					_m->name = name;
-					_m->value = false;
-					_m->on_change = on_change;
-				}
-		};
-
-		class item : public rua::dynamic_shared_obj<item_s> {
-			public:
-				item() {}
-
-				item(
-					const std::string &name,
-					const std::string &desc
-				) {
-					alloc();
-					_m->name = name;
-					_m->desc = desc;
-				}
-
-				item(
-					const std::string &name
-				) {
-					alloc();
-					_m->name = name;
-				}
-
-				item(const action &it) : item(it.cast_with_type<item>()) {}
-				item(const list &it) : item(it.cast_with_type<item>()) {}
-				item(const flag &it) : item(it.cast_with_type<item>()) {}
-		};
+		using flag = rua::obj<_flag>;
 
 		class menu {
 			public:

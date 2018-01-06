@@ -124,7 +124,7 @@ namespace nob {
 								cm_td.draw("gradient_nav", x, y, w, h);
 
 								if (cur_li->items[i].type_is<flag>()) {
-									auto flg_val = cur_li->items[i].cast<flag>()->value;
+									auto flg_val = cur_li->items[i].to<flag>()->value;
 									if (flg_val) {
 										cm_td.draw("shop_box_tickb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
@@ -135,7 +135,7 @@ namespace nob {
 								r = g = b = 255;
 
 								if (cur_li->items[i].type_is<flag>()) {
-									auto flg_val = cur_li->items[i].cast<flag>()->value;
+									auto flg_val = cur_li->items[i].to<flag>()->value;
 									if (flg_val) {
 										cm_td.draw("shop_box_tick", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
@@ -216,14 +216,14 @@ namespace nob {
 									auto cur_it = cur_li->items[cur_li->selected];
 
 									if (cur_it.type_is<action>()) {
-										auto a = cur_it.cast<action>();
+										auto a = cur_it.to<action>();
 										if (a->handler) {
 											a->handler();
 										}
 									} else
 
 									if (cur_it.type_is<list>()) {
-										cur_li = cur_it.cast<list>();
+										cur_li = cur_it.to<list>();
 										if (cur_li->on_show) {
 											cur_li->on_show(cur_li);
 											cur_li->fix();
@@ -232,7 +232,7 @@ namespace nob {
 									} else
 
 									if (cur_it.type_is<flag>()) {
-										auto flg = cur_it.cast<flag>();
+										auto flg = cur_it.to<flag>();
 										flg->value = !flg->value;
 										if (flg->on_change) {
 											flg->on_change(flg->value);
