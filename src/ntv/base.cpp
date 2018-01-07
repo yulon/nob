@@ -17,6 +17,8 @@ namespace nob {
 
 		full_call_context_t _dft_call_ctx;
 
+		uintptr_t (*get_entity_addr)(int handle);
+
 		bool _find_addrs() {
 			auto finded = true;
 
@@ -75,6 +77,16 @@ namespace nob {
 
 			if (!game_state) {
 				log("nob::ntv::script_list: not found!");
+				finded = false;
+			}
+
+			get_entity_addr = program::code.match_rel_ptr({
+				// Reference from http://gtaforums.com/topic/903092-gta-5-get-entity-address/
+				0xE8, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xD8, 0x48, 0x85, 0xC0, 0x74, 0x2E, 0x48, 0x83, 0x3D
+			});
+
+			if (!get_entity_addr) {
+				log("nob::ntv::get_entity_addr: not found!");
 				finded = false;
 			}
 

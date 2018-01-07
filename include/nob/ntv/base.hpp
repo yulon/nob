@@ -474,5 +474,7 @@ namespace nob {
 					return _dft_call_ctx.result<R>();
 				}
 		};
+
+		extern uintptr_t (*get_entity_addr)(int handle);
 	} /* ntv */
 } /* nob */
