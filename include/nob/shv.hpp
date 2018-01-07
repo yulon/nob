@@ -10,8 +10,6 @@
 
 namespace nob {
 	namespace shv {
-		extern const bool valid;
-
 		/* textures */
 
 		// Create texture

@@ -90,20 +90,17 @@ namespace nob {
 
 		class global_table_t {
 			public:
-				global_table_t();
+				uint64_t **_segments;
 
 				operator bool() const {
-					return _page && *_page;
+					return _segments && *_segments;
 				}
 
 				uint64_t &operator[](size_t off) const {
 					assert(*this);
 
-					return _page[off / 0x40000 % 0x40][off % 0x40000];
+					return _segments[off / 0x40000 % 0x40][off % 0x40000];
 				}
-
-			private:
-				uint64_t **_page;
 		};
 
 		extern global_table_t global_table;
@@ -212,7 +209,7 @@ namespace nob {
 
 		struct call_context_t {
 			static constexpr size_t max_arg_count = 32;
-			static const func_t fix_res_fn;
+			static func_t fix_res_fn;
 
 			uintptr_t *result_ptr;
 			uint32_t arg_count;
@@ -345,7 +342,7 @@ namespace nob {
 					}
 				};
 
-				func_table_t();
+				uintptr_t _nodes;
 
 				func_t *find(uint64_t hash) const {
 					return program::version < 1290 ? _find<node_t>(hash) : _find<node_1290_t>(hash);
@@ -361,8 +358,6 @@ namespace nob {
 				}
 
 			private:
-				uintptr_t _nodes;
-
 				template <typename T>
 				func_t *_find(uint64_t hash) const {
 					if (!_nodes) {

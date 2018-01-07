@@ -44,7 +44,7 @@ namespace nob {
 			L"OpenVHook.dll"
 		}};
 
-		const bool valid = ([]()->bool {
+		bool _init() {
 			HMODULE dll;
 			for (size_t i = 0; i < _module_names.size(); ++i) {
 				dll = GetModuleHandleW(_module_names[i]);
@@ -98,6 +98,6 @@ namespace nob {
 			getGameVersion = (eGameVersion (*)())GetProcAddress(dll, "?getGameVersion@@YA?AW4eGameVersion@@XZ");
 
 			return true;
-		})();
+		}
 	} /* shv */
 } /* nob */

@@ -93,18 +93,26 @@ namespace nob {
 			}
 		}
 
-		void _exclusive_main() {
+		bool _exclusive_main() {
+			if (!ntv::func_table) {
+				return false;
+			}
+
 			static rua::hooked<ntv::func_t> wait_hkd;
 
 			ntv::func_t wait_fp;
 
 			for (wait_fp = ntv::SYSTEM::WAIT.target(); !wait_fp; wait_fp = ntv::SYSTEM::WAIT.target()) {
+				if (*ntv::game_state == ntv::game_state_t::playing) {
+					log("nob::this_script::_exclusive_main: nob::ntv::SYSTEM::WAIT not found!");
+					return false;
+				}
 				Sleep(500);
 			}
 
 			if (*reinterpret_cast<uint8_t *>(wait_fp) != 0x8B) {
 				log("nob::this_script::_exclusive_main: hooked by other mod!");
-				return;
+				return false;
 			}
 
 			if (!wait_hkd.hook(
@@ -123,7 +131,10 @@ namespace nob {
 				}
 			)) {
 				log("nob::this_script::_exclusive_main: hook failed!");
+				return false;
 			}
+
+			return true;
 		}
 	} /* this_script */
 
