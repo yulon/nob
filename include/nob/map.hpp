@@ -22,15 +22,15 @@ namespace nob {
 
 				marker(int ntv_hdl = 0) : _ntv_hdl(ntv_hdl) {}
 
-				int native_handle() {
+				int native_handle() const {
 					return _ntv_hdl;
 				}
 
-				operator int() {
+				operator int() const {
 					return native_handle();
 				}
 
-				operator bool() {
+				operator bool() const {
 					return _ntv_hdl && ntv::UI::DOES_BLIP_EXIST(_ntv_hdl);
 				}
 
@@ -38,7 +38,7 @@ namespace nob {
 					ntv::UI::SET_BLIP_SPRITE(_ntv_hdl, g);
 				}
 
-				int graphic() {
+				int graphic() const {
 					return ntv::UI::GET_BLIP_SPRITE(_ntv_hdl);
 				}
 
@@ -46,7 +46,7 @@ namespace nob {
 					ntv::UI::SET_BLIP_COORDS(_ntv_hdl, coords.x, coords.y, coords.z);
 				}
 
-				vector3 pos() {
+				vector3 pos() const {
 					auto v3 = ntv::UI::GET_BLIP_COORDS(_ntv_hdl);
 					return {v3.x, v3.y, v3.z};
 				}
@@ -70,7 +70,7 @@ namespace nob {
 					ntv::UI::SET_BLIP_COLOUR(_ntv_hdl, static_cast<int>(clr));
 				}
 
-				color_t color() {
+				color_t color() const {
 					return static_cast<color_t>(ntv::UI::GET_BLIP_COLOUR(_ntv_hdl));
 				}
 
@@ -78,11 +78,11 @@ namespace nob {
 					ntv::UI::SET_BLIP_AS_SHORT_RANGE(_ntv_hdl, !toggle);
 				}
 
-				bool is_keep_track() {
+				bool is_keep_track() const {
 					return !ntv::UI::IS_BLIP_SHORT_RANGE(_ntv_hdl);
 				}
 
-				bool is_on_minimap() {
+				bool is_on_minimap() const {
 					return ntv::UI::IS_BLIP_ON_MINIMAP(_ntv_hdl);
 				}
 
