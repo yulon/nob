@@ -15,7 +15,7 @@ namespace nob {
 
 		inline weapon_info_t weapon_info(const hasher &wpn) {
 			weapon_info_t info;
-			info.valid = ntv::WEAPON::GET_WEAPON_HUD_STATS(wpn.hash(), reinterpret_cast<int *>(&info));
+			info.valid = ntv::WEAPON::GET_WEAPON_HUD_STATS(wpn.hash(), reinterpret_cast<ntv::Any *>(&info));
 			return info;
 		}
 

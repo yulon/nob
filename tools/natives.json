@@ -5,7 +5,7 @@
 			"params": [
 				{
 					"type": "Player",
-					"name": "player"
+					"name": "playerid"
 				}
 			],
 			"results": "Ped",
@@ -16,7 +16,7 @@
 			"params": [
 				{
 					"type": "Player",
-					"name": "player"
+					"name": "Player"
 				}
 			],
 			"results": "Ped",
@@ -42,7 +42,7 @@
 			"params": [
 				{
 					"type": "Player",
-					"name": "player"
+					"name": "Player"
 				},
 				{
 					"type": "Ped",
@@ -65,7 +65,7 @@
 			"params": [
 				{
 					"type": "Player",
-					"name": "player"
+					"name": "Player"
 				},
 				{
 					"type": "int*",
@@ -86,7 +86,7 @@
 		"0x407C7F91DDB46C16": {
 			"name": "GET_NUMBER_OF_PLAYERS",
 			"params": [],
-			"results": "int",
+			"results": "Vehicle",
 			"jhash": "0x4C1B8867"
 		},
 		"0x37039302F4E0A008": {
@@ -134,7 +134,7 @@
 					"name": "player"
 				}
 			],
-			"results": "float",
+			"results": "Any",
 			"jhash": "0x1CF7D7DA"
 		},
 		"0x0C92BA89F1AF26F8": {
@@ -156,15 +156,15 @@
 					"name": "player"
 				},
 				{
-					"type": "Vector3*",
+					"type": "Player",
 					"name": "position"
 				},
 				{
-					"type": "BOOL",
+					"type": "Vehicle",
 					"name": "p2"
 				},
 				{
-					"type": "BOOL",
+					"type": "Ped*",
 					"name": "p3"
 				}
 			],
@@ -333,7 +333,7 @@
 				},
 				{
 					"type": "int",
-					"name": "possiblyFlags"
+					"name": "flags"
 				}
 			],
 			"results": "void",
@@ -1161,36 +1161,36 @@
 			"params": [
 				{
 					"type": "int",
-					"name": "achievement"
+					"name": "achId"
 				}
 			],
-			"results": "BOOL",
+			"results": "Any",
 			"jhash": "0x822BC992"
 		},
 		"0xC2AFFFDABBDC2C5C": {
-			"name": "",
+			"name": "_SET_ACHIEVEMENT_PROGRESSION",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "achId"
 				},
 				{
-					"type": "Any",
-					"name": "p1"
+					"type": "int",
+					"name": "progression"
 				}
 			],
 			"results": "BOOL",
 			"jhash": ""
 		},
 		"0x1C186837D0619335": {
-			"name": "",
+			"name": "_GET_ACHIEVEMENT_PROGRESSION",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "achId"
 				}
 			],
-			"results": "Cam",
+			"results": "int",
 			"jhash": ""
 		},
 		"0x867365E111A3B6EB": {
@@ -1334,7 +1334,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				}
 			],
@@ -1344,7 +1344,7 @@
 		"0xB9CF1F793A9F1BF1": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": ""
 		},
 		"0xF0B67A4DE6AB5F98": {
@@ -1995,7 +1995,7 @@
 					"name": "player"
 				},
 				{
-					"type": "float",
+					"type": "ScrHandle",
 					"name": "modifier"
 				}
 			],
@@ -2300,7 +2300,7 @@
 			"params": [
 				{
 					"type": "Player",
-					"name": "player"
+					"name": "control"
 				},
 				{
 					"type": "float",
@@ -2386,7 +2386,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "Ped",
 					"name": "p0"
 				}
 			],
@@ -2740,7 +2740,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "Player",
 					"name": "p0"
 				}
 			],
@@ -2764,7 +2764,7 @@
 			"name": "DOES_ENTITY_EXIST",
 			"params": [
 				{
-					"type": "Entity",
+					"type": "Object",
 					"name": "entity"
 				}
 			],
@@ -3044,7 +3044,7 @@
 			"name": "GET_ENTITY_FORWARD_VECTOR",
 			"params": [
 				{
-					"type": "Hash",
+					"type": "Entity",
 					"name": "entity"
 				}
 			],
@@ -5341,8 +5341,8 @@
 					"name": "alphaLevel"
 				},
 				{
-					"type": "BOOL",
-					"name": "skin"
+					"type": "Any",
+					"name": "p0"
 				}
 			],
 			"results": "void",
@@ -5806,7 +5806,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p7"
+					"name": "thisScriptCheck"
 				}
 			],
 			"results": "Ped",
@@ -5840,7 +5840,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p3"
+					"name": "thisScriptCheck"
 				}
 			],
 			"results": "Ped",
@@ -6058,7 +6058,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p5"
+					"name": "thisScriptCheck"
 				}
 			],
 			"results": "Ped",
@@ -7854,7 +7854,7 @@
 				},
 				{
 					"type": "int",
-					"name": "i"
+					"name": "p2"
 				}
 			],
 			"results": "Any",
@@ -7905,7 +7905,7 @@
 			"jhash": "0x63458C27"
 		},
 		"0x1E98817B311AE98A": {
-			"name": "_GET_PED_TIME_OF_DEATH",
+			"name": "",
 			"params": [
 				{
 					"type": "Ped",
@@ -9583,20 +9583,20 @@
 					"name": "ped"
 				},
 				{
-					"type": "Any",
-					"name": "p1"
+					"type": "Ped",
+					"name": "father"
 				},
 				{
-					"type": "Any",
-					"name": "p2"
-				},
-				{
-					"type": "float",
-					"name": "p3"
+					"type": "Ped",
+					"name": "mother"
 				},
 				{
 					"type": "float",
-					"name": "p4"
+					"name": "fathersSide"
+				},
+				{
+					"type": "float",
+					"name": "mothersSide"
 				}
 			],
 			"results": "void",
@@ -9951,8 +9951,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Hash",
+					"name": "modelHash"
 				},
 				{
 					"type": "Any",
@@ -10038,8 +10038,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Ped",
+					"name": "ped"
 				}
 			],
 			"results": "void",
@@ -10076,7 +10076,7 @@
 				},
 				{
 					"type": "int",
-					"name": "p1"
+					"name": "slot"
 				},
 				{
 					"type": "int",
@@ -12713,11 +12713,11 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				}
 			],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x8A3A3116"
 		},
 		"0x9D728C1E12BF5518": {
@@ -13400,8 +13400,8 @@
 			"name": "HAS_PED_RECEIVED_EVENT",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Ped",
+					"name": "ped"
 				},
 				{
 					"type": "Any",
@@ -14358,11 +14358,11 @@
 				},
 				{
 					"type": "int",
-					"name": "p1"
+					"name": "ikIndex"
 				},
 				{
-					"type": "Ped",
-					"name": "targetPed"
+					"type": "Entity",
+					"name": "entityLookAt"
 				},
 				{
 					"type": "int",
@@ -14370,15 +14370,15 @@
 				},
 				{
 					"type": "float",
-					"name": "x"
+					"name": "offsetX"
 				},
 				{
 					"type": "float",
-					"name": "y"
+					"name": "offsetY"
 				},
 				{
 					"type": "float",
-					"name": "z"
+					"name": "offsetZ"
 				},
 				{
 					"type": "Any",
@@ -14386,11 +14386,11 @@
 				},
 				{
 					"type": "int",
-					"name": "duration"
+					"name": "blendInDuration"
 				},
 				{
 					"type": "int",
-					"name": "duration1"
+					"name": "blendOutDuration"
 				}
 			],
 			"results": "void",
@@ -14400,8 +14400,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Ped",
+					"name": "ped"
 				}
 			],
 			"results": "void",
@@ -14702,7 +14702,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p6"
+					"name": "thisScriptCheck"
 				}
 			],
 			"results": "Vehicle",
@@ -14784,7 +14784,7 @@
 			"params": [
 				{
 					"type": "int",
-					"name": "vehicleGenerator"
+					"name": "v"
 				}
 			],
 			"results": "BOOL",
@@ -14880,7 +14880,7 @@
 			"name": "SET_SCRIPT_VEHICLE_GENERATOR",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "vehicleGenerator"
 				},
 				{
@@ -15151,7 +15151,7 @@
 			"jhash": "0xDD46CEBE"
 		},
 		"0xD4B8E3D1917BC86B": {
-			"name": "",
+			"name": "_SET_SOMETHING_MULTIPLIER_THIS_FRAME",
 			"params": [
 				{
 					"type": "BOOL",
@@ -15218,7 +15218,7 @@
 				},
 				{
 					"type": "int",
-					"name": "vehicleComponent"
+					"name": "doorIndex"
 				},
 				{
 					"type": "int",
@@ -15401,7 +15401,7 @@
 			"jhash": "0xA4E69134"
 		},
 		"0xEF49CF0270307CBE": {
-			"name": "",
+			"name": "_REQUEST_VEHICLE_PHONE_EXPLOSION",
 			"params": [],
 			"results": "void",
 			"jhash": "0x65255524"
@@ -15805,7 +15805,7 @@
 					"name": "vehicle"
 				},
 				{
-					"type": "BOOL",
+					"type": "Vehicle",
 					"name": "p1"
 				}
 			],
@@ -15966,15 +15966,15 @@
 					"name": "vehicle"
 				},
 				{
-					"type": "int",
-					"name": "wheelID"
+					"type": "Vehicle",
+					"name": "wheel_rf"
 				},
 				{
 					"type": "BOOL",
 					"name": "completely"
 				}
 			],
-			"results": "BOOL",
+			"results": "Vehicle",
 			"jhash": "0x48C80210"
 		},
 		"0xAB54A438726D25D5": {
@@ -16060,7 +16060,7 @@
 			"name": "_GET_VEHICLE_ATTACHED_TO_ENTITY",
 			"params": [
 				{
-					"type": "Object",
+					"type": "Vehicle",
 					"name": "object"
 				}
 			],
@@ -16102,7 +16102,7 @@
 			"params": [
 				{
 					"type": "Vehicle",
-					"name": "vehicle"
+					"name": "x"
 				}
 			],
 			"results": "void",
@@ -16706,7 +16706,7 @@
 			"params": [
 				{
 					"type": "Vehicle",
-					"name": "vehicle"
+					"name": "elegy"
 				}
 			],
 			"results": "int",
@@ -17975,11 +17975,11 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p2"
+					"name": "forceClose"
 				},
 				{
 					"type": "BOOL",
-					"name": "p3"
+					"name": "lock"
 				},
 				{
 					"type": "BOOL",
@@ -19057,7 +19057,7 @@
 				},
 				{
 					"type": "int",
-					"name": "livery"
+					"name": "liveryIndex"
 				}
 			],
 			"results": "void",
@@ -19068,7 +19068,7 @@
 			"params": [
 				{
 					"type": "Vehicle",
-					"name": "vehicle"
+					"name": "trailers2"
 				}
 			],
 			"results": "int",
@@ -19558,30 +19558,30 @@
 			"jhash": "0xF30C566F"
 		},
 		"0x30D779DE7C4F6DD3": {
-			"name": "",
+			"name": "_SET_DESIRED_VERTICAL_FLIGHT_PHASE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Vehicle",
+					"name": "vehicle"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "angleRatio"
 				}
 			],
 			"results": "void",
 			"jhash": "0xA7DF64D7"
 		},
 		"0x9AA47FFF660CB932": {
-			"name": "",
+			"name": "_SET_VERTICAL_FLIGHT_PHASE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Vehicle",
+					"name": "vehicle"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "angle"
 				}
 			],
 			"results": "void",
@@ -19762,7 +19762,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Vehicle",
+					"type": "char*",
 					"name": "vehicle"
 				},
 				{
@@ -19870,7 +19870,7 @@
 			"jhash": "0x7EF02883"
 		},
 		"0xBFBA3BA79CFF7EBF": {
-			"name": "",
+			"name": "_GET_VEHICLE_MODEL_HAND_BRAKE",
 			"params": [
 				{
 					"type": "Hash",
@@ -19903,7 +19903,7 @@
 			"jhash": "0x29CB3537"
 		},
 		"0x53409B5163D5B846": {
-			"name": "",
+			"name": "_GET_VEHICLE_MODEL_DOWN_FORCE",
 			"params": [
 				{
 					"type": "Hash",
@@ -19914,7 +19914,7 @@
 			"jhash": "0x37FBA7BC"
 		},
 		"0xC6AD107DDC9054CC": {
-			"name": "",
+			"name": "_GET_VEHICLE_MODEL_MAX_KNOTS",
 			"params": [
 				{
 					"type": "Hash",
@@ -19925,7 +19925,7 @@
 			"jhash": "0x95BB67EB"
 		},
 		"0x5AA3F878A178C4FC": {
-			"name": "",
+			"name": "_GET_VEHICLE_MODEL_MOVE_RESISTANCE",
 			"params": [
 				{
 					"type": "Hash",
@@ -19936,7 +19936,7 @@
 			"jhash": "0x87C5D271"
 		},
 		"0x00C09F246ABEDD82": {
-			"name": "",
+			"name": "_GET_VEHICLE_CLASS_MAX_SPEED",
 			"params": [
 				{
 					"type": "int",
@@ -19991,42 +19991,42 @@
 			"jhash": "0xD08CC1A5"
 		},
 		"0x2CE544C68FB812A0": {
-			"name": "",
+			"name": "_ADD_SPEED_ZONE_FOR_COORD",
 			"params": [
 				{
 					"type": "float",
-					"name": "p0"
+					"name": "x"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "y"
 				},
 				{
 					"type": "float",
-					"name": "p2"
+					"name": "z"
 				},
 				{
 					"type": "float",
-					"name": "p3"
+					"name": "radius"
 				},
 				{
 					"type": "float",
-					"name": "p4"
+					"name": "speed"
 				},
 				{
 					"type": "BOOL",
 					"name": "p5"
 				}
 			],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xD6685803"
 		},
 		"0x1033371FC8E842A7": {
-			"name": "",
+			"name": "_REMOVE_SPEED_ZONE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "speedzone"
 				}
 			],
 			"results": "BOOL",
@@ -20274,7 +20274,7 @@
 				},
 				{
 					"type": "int*",
-					"name": "p3"
+					"name": "pearlescentColor"
 				}
 			],
 			"results": "void",
@@ -20742,7 +20742,7 @@
 			"jhash": "0xE943B09C"
 		},
 		"0x1CF38D529D7441D9": {
-			"name": "_SET_VEHICLE_SUKA",
+			"name": "_SET_VEHICLE_ST",
 			"params": [
 				{
 					"type": "Vehicle",
@@ -21058,7 +21058,7 @@
 			"jhash": "0x08CD58F9"
 		},
 		"0xB893215D8D4C015B": {
-			"name": "_SET_PLANE_MIN_HEIGHT_ABOVE_GROUND",
+			"name": "_SET_PLANE_MIN_HEIGHT_ABOVE_TERRAIN",
 			"params": [
 				{
 					"type": "Vehicle",
@@ -21332,8 +21332,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Vehicle",
+					"name": "vehicle"
 				},
 				{
 					"type": "BOOL",
@@ -21691,7 +21691,7 @@
 					"name": "p0"
 				},
 				{
-					"type": "float",
+					"type": "Player",
 					"name": "p1"
 				}
 			],
@@ -22200,8 +22200,8 @@
 					"name": "vehicle"
 				},
 				{
-					"type": "BOOL",
-					"name": "p1"
+					"type": "Ped",
+					"name": "ped"
 				}
 			],
 			"results": "void",
@@ -22560,7 +22560,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "spawnCheck"
+					"name": "thisScriptCheck"
 				},
 				{
 					"type": "BOOL",
@@ -22595,7 +22595,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p5"
+					"name": "thisScriptCheck"
 				},
 				{
 					"type": "BOOL",
@@ -24047,7 +24047,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p7"
+					"name": "returnHandle"
 				},
 				{
 					"type": "BOOL",
@@ -24149,8 +24149,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Hash",
+					"name": "hash"
 				},
 				{
 					"type": "int",
@@ -24348,12 +24348,12 @@
 			"name": "SET_PICKUP_REGENERATION_TIME",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Pickup",
+					"name": "pickup"
 				},
 				{
-					"type": "Any",
-					"name": "p1"
+					"type": "int",
+					"name": "duration"
 				}
 			],
 			"results": "void",
@@ -25738,15 +25738,15 @@
 					"name": "ped"
 				},
 				{
-					"type": "Any*",
-					"name": "p1"
+					"type": "float*",
+					"name": "distRemaining"
 				},
 				{
-					"type": "Any*",
-					"name": "p2"
+					"type": "BOOL*",
+					"name": "isPathReady"
 				}
 			],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xD9281778"
 		},
 		"0x632E831F382A0FA8": {
@@ -26835,12 +26835,12 @@
 			"name": "TASK_GOTO_ENTITY_OFFSET_XY",
 			"params": [
 				{
-					"type": "int",
-					"name": "p0"
+					"type": "Ped",
+					"name": "ped"
 				},
 				{
-					"type": "Ped",
-					"name": "oed"
+					"type": "Entity",
+					"name": "entity"
 				},
 				{
 					"type": "int",
@@ -26848,23 +26848,23 @@
 				},
 				{
 					"type": "float",
-					"name": "p3"
+					"name": "xOffset"
 				},
 				{
 					"type": "float",
-					"name": "p4"
+					"name": "yOffset"
 				},
 				{
 					"type": "float",
-					"name": "p5"
+					"name": "zOffset"
 				},
 				{
 					"type": "float",
-					"name": "p6"
+					"name": "moveBlendRatio"
 				},
 				{
 					"type": "BOOL",
-					"name": "p7"
+					"name": "useNavmesh"
 				}
 			],
 			"results": "void",
@@ -27959,7 +27959,7 @@
 				},
 				{
 					"type": "float",
-					"name": "p5"
+					"name": "duration"
 				}
 			],
 			"results": "void",
@@ -30645,7 +30645,7 @@
 			"params": [
 				{
 					"type": "Ped",
-					"name": "p0"
+					"name": "ped"
 				},
 				{
 					"type": "char*",
@@ -30664,10 +30664,10 @@
 			"params": [
 				{
 					"type": "Ped",
-					"name": "p0"
+					"name": "ped"
 				},
 				{
-					"type": "Any*",
+					"type": "char*",
 					"name": "p1"
 				},
 				{
@@ -30682,8 +30682,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Ped",
+					"name": "ped"
 				},
 				{
 					"type": "char*",
@@ -30697,11 +30697,11 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Ped",
+					"name": "ped"
 				},
 				{
-					"type": "Any*",
+					"type": "char*",
 					"name": "p1"
 				}
 			],
@@ -31107,7 +31107,7 @@
 			"name": "SET_RANDOM_EVENT_FLAG",
 			"params": [
 				{
-					"type": "BOOL",
+					"type": "Any",
 					"name": "p0"
 				}
 			],
@@ -31130,11 +31130,11 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "char*",
 					"name": "p0"
 				},
 				{
-					"type": "Any",
+					"type": "char*",
 					"name": "p1"
 				}
 			],
@@ -31145,7 +31145,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "Any*",
 					"name": "p0"
 				}
 			],
@@ -31156,7 +31156,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "Any*",
 					"name": "p0"
 				}
 			],
@@ -31261,19 +31261,19 @@
 			"params": [
 				{
 					"type": "Any*",
-					"name": "p0"
-				},
-				{
-					"type": "Any*",
 					"name": "p1"
 				},
 				{
-					"type": "Any",
+					"type": "Any*",
 					"name": "p2"
 				},
 				{
-					"type": "BOOL",
+					"type": "Any",
 					"name": "p3"
+				},
+				{
+					"type": "BOOL",
+					"name": "p4"
 				}
 			],
 			"results": "BOOL",
@@ -31641,7 +31641,7 @@
 		"0x96695E368AD855F3": {
 			"name": "GET_RAIN_LEVEL",
 			"params": [],
-			"results": "Any",
+			"results": "Any*",
 			"jhash": "0xC9F67F28"
 		},
 		"0xC5868A966E5BE3AE": {
@@ -32646,8 +32646,8 @@
 					"name": "radius"
 				},
 				{
-					"type": "int",
-					"name": "flags"
+					"type": "BOOL",
+					"name": "isNetworkGame"
 				}
 			],
 			"results": "void",
@@ -33209,7 +33209,7 @@
 			"jhash": "0xCB7415AC"
 		},
 		"0xE3A7742E0B7A2F8B": {
-			"name": "_SHOOT_SINGLE_VEHICLE_BULLET_BETWEEN_COORDS",
+			"name": "_SHOOT_SINGLE_BULLET_BETWEEN_COORDS_PRESET_PARAMS",
 			"params": [
 				{
 					"type": "float",
@@ -33272,7 +33272,7 @@
 			"jhash": "0x52ACCB7B"
 		},
 		"0xBFE5756E7407064A": {
-			"name": "_SHOOT_SINGLE_AIRSTRIKE_BULLET_BETWEEN_COORDS",
+			"name": "_SHOOT_SINGLE_BULLET_BETWEEN_COORDS_WITH_EXTRA_PARAMS",
 			"params": [
 				{
 					"type": "float",
@@ -33455,7 +33455,7 @@
 		"0xD3D15555431AB793": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0xBAF17315"
 		},
 		"0xC488FF2356EA7791": {
@@ -33678,108 +33678,81 @@
 			"jhash": "0xD1AE2681"
 		},
 		"0x34318593248C8FB2": {
-			"name": "",
+			"name": "_IS_PROJECTILE_TYPE_IN_RADIUS",
 			"params": [
 				{
 					"type": "float",
-					"name": "p0"
+					"name": "x"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "y"
 				},
 				{
 					"type": "float",
-					"name": "p2"
-				},
-				{
-					"type": "Any",
-					"name": "p3"
-				},
-				{
-					"type": "float",
-					"name": "p4"
-				},
-				{
-					"type": "BOOL",
-					"name": "p5"
-				}
-			],
-			"results": "BOOL",
-			"jhash": "0xBE81F1E2"
-		},
-		"0x8D7A43EC6A5FEA45": {
-			"name": "",
-			"params": [
-				{
-					"type": "Any",
-					"name": "p0"
-				},
-				{
-					"type": "Any",
-					"name": "p1"
-				},
-				{
-					"type": "Any",
-					"name": "p2"
-				},
-				{
-					"type": "Any",
-					"name": "p3"
-				},
-				{
-					"type": "Any",
-					"name": "p4"
-				},
-				{
-					"type": "Any",
-					"name": "p5"
-				},
-				{
-					"type": "Any",
-					"name": "p6"
-				},
-				{
-					"type": "Any",
-					"name": "p7"
-				},
-				{
-					"type": "Any",
-					"name": "p8"
-				}
-			],
-			"results": "Any",
-			"jhash": "0x1A40454B"
-		},
-		"0xDFB4138EEFED7B81": {
-			"name": "",
-			"params": [
-				{
-					"type": "Ped",
-					"name": "ped"
+					"name": "z"
 				},
 				{
 					"type": "Hash",
-					"name": "weaponHash"
+					"name": "projHash"
 				},
 				{
 					"type": "float",
 					"name": "radius"
 				},
 				{
-					"type": "Entity*",
-					"name": "entity"
-				},
-				{
 					"type": "BOOL",
-					"name": "p4"
+					"name": "ownedByPlayer"
 				}
 			],
 			"results": "BOOL",
-			"jhash": "0x6BDE5CE4"
+			"jhash": "0xBE81F1E2"
 		},
-		"0x82FDE6A57EE4EE44": {
-			"name": "",
+		"0x8D7A43EC6A5FEA45": {
+			"name": "_GET_IS_PROJECTILE_TYPE_IN_AREA",
+			"params": [
+				{
+					"type": "float",
+					"name": "x1"
+				},
+				{
+					"type": "float",
+					"name": "y1"
+				},
+				{
+					"type": "float",
+					"name": "z1"
+				},
+				{
+					"type": "float",
+					"name": "x2"
+				},
+				{
+					"type": "float",
+					"name": "y2"
+				},
+				{
+					"type": "float",
+					"name": "z2"
+				},
+				{
+					"type": "Hash",
+					"name": "projHash"
+				},
+				{
+					"type": "Vector3*",
+					"name": "projPos"
+				},
+				{
+					"type": "BOOL",
+					"name": "ownedByPlayer"
+				}
+			],
+			"results": "BOOL",
+			"jhash": "0x1A40454B"
+		},
+		"0xDFB4138EEFED7B81": {
+			"name": "_GET_PROJECTILE_NEAR_PED_COORDS",
 			"params": [
 				{
 					"type": "Ped",
@@ -33787,26 +33760,53 @@
 				},
 				{
 					"type": "Hash",
-					"name": "weaponhash"
+					"name": "projHash"
 				},
 				{
 					"type": "float",
-					"name": "p2"
+					"name": "radius"
 				},
 				{
-					"type": "float",
-					"name": "p3"
-				},
-				{
-					"type": "float",
-					"name": "p4"
+					"type": "Vector3*",
+					"name": "projPos"
 				},
 				{
 					"type": "BOOL",
-					"name": "p5"
+					"name": "ownedByPlayer"
 				}
 			],
-			"results": "Any",
+			"results": "BOOL",
+			"jhash": "0x6BDE5CE4"
+		},
+		"0x82FDE6A57EE4EE44": {
+			"name": "_GET_PROJECTILE_NEAR_PED",
+			"params": [
+				{
+					"type": "Ped",
+					"name": "ped"
+				},
+				{
+					"type": "Hash",
+					"name": "projHash"
+				},
+				{
+					"type": "float",
+					"name": "radius"
+				},
+				{
+					"type": "Vector3*",
+					"name": "projPos"
+				},
+				{
+					"type": "Entity*",
+					"name": "projEnt"
+				},
+				{
+					"type": "BOOL",
+					"name": "ownedByPlayer"
+				}
+			],
+			"results": "BOOL",
 			"jhash": "0x507BC6F7"
 		},
 		"0x1A8B5F3C01E2B477": {
@@ -34312,13 +34312,13 @@
 		"0x996DD1E1E02F1008": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0x006F9BA2"
 		},
 		"0x6856EC3D35C81EA4": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": ""
 		},
 		"0xE6B7B0ACD4E4B75E": {
@@ -34470,7 +34470,7 @@
 					"name": "p0"
 				}
 			],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0x9EF0BC64"
 		},
 		"0x34C9EE5986258415": {
@@ -35491,7 +35491,7 @@
 					"name": "player"
 				}
 			],
-			"results": "Any",
+			"results": "void",
 			"jhash": "0x2EAFA1D1"
 		},
 		"0x11879CDD803D30F4": {
@@ -35524,7 +35524,7 @@
 					"name": "player"
 				}
 			],
-			"results": "Any",
+			"results": "void",
 			"jhash": "0x86745EF3"
 		},
 		"0x6FDDF453C0C756EC": {
@@ -36532,12 +36532,12 @@
 					"name": "soundId"
 				},
 				{
-					"type": "Any*",
-					"name": "p1"
+					"type": "char*",
+					"name": "variableName"
 				},
 				{
 					"type": "float",
-					"name": "p2"
+					"name": "value"
 				}
 			],
 			"results": "void",
@@ -37448,7 +37448,7 @@
 			"name": "SET_AMBIENT_ZONE_LIST_STATE",
 			"params": [
 				{
-					"type": "Any*",
+					"type": "char*",
 					"name": "p0"
 				},
 				{
@@ -37807,11 +37807,11 @@
 			"name": "SET_SIREN_WITH_NO_DRIVER",
 			"params": [
 				{
-					"type": "Vehicle",
+					"type": "Object*",
 					"name": "vehicle"
 				},
 				{
-					"type": "BOOL",
+					"type": "ScrHandle*",
 					"name": "toggle"
 				}
 			],
@@ -37890,7 +37890,7 @@
 			"jhash": "0xC6BC16F3"
 		},
 		"0x4F0C413926060B38": {
-			"name": "_SET_VEHICLE_AUDIO",
+			"name": "_FORCE_VEHICLE_ENGINE_AUDIO",
 			"params": [
 				{
 					"type": "Vehicle",
@@ -39318,7 +39318,7 @@
 		"0x5EDEF0CF8C1DAB3C": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0xDBD88708"
 		},
 		"0x41FAA8FB2ECE8720": {
@@ -39957,7 +39957,7 @@
 			"params": [
 				{
 					"type": "char*",
-					"name": "camName"
+					"name": "Gippo"
 				},
 				{
 					"type": "BOOL",
@@ -41672,7 +41672,7 @@
 					"name": "Value2"
 				}
 			],
-			"results": "Any",
+			"results": "void",
 			"jhash": "0x6381B963"
 		},
 		"0x103991D4A307D472": {
@@ -42172,37 +42172,37 @@
 			"jhash": "0x2F29F0D5"
 		},
 		"0xBCFC632DB7673BF0": {
-			"name": "",
+			"name": "_SET_FIRST_PERSON_CAM_PITCH_RANGE",
 			"params": [
 				{
 					"type": "float",
-					"name": "p0"
+					"name": "minAngle"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "maxAngle"
 				}
 			],
 			"results": "void",
 			"jhash": "0x76DAC96C"
 		},
 		"0x0AF7B437918103B3": {
-			"name": "",
+			"name": "_SET_FIRST_PERSON_CAM_NEAR_CLIP",
 			"params": [
 				{
 					"type": "float",
-					"name": "p0"
+					"name": "distance"
 				}
 			],
 			"results": "void",
 			"jhash": "0x0E21069D"
 		},
 		"0x42156508606DE65E": {
-			"name": "",
+			"name": "_SET_THIRD_PERSON_AIM_CAM_NEAR_CLIP",
 			"params": [
 				{
 					"type": "float",
-					"name": "p0"
+					"name": "distance"
 				}
 			],
 			"results": "void",
@@ -42275,19 +42275,19 @@
 			"jhash": "0x457AE195"
 		},
 		"0xDFC8CBC606FDB0FC": {
-			"name": "",
+			"name": "_GET_GAMEPLAY_CAM_FAR_CLIP",
 			"params": [],
 			"results": "float",
 			"jhash": "0x46CB3A49"
 		},
 		"0xA03502FC581F7D9B": {
-			"name": "",
+			"name": "_GET_GAMEPLAY_CAM_NEAR_DOF",
 			"params": [],
 			"results": "float",
 			"jhash": "0x19297A7A"
 		},
 		"0x9780F32BCAF72431": {
-			"name": "",
+			"name": "_GET_GAMEPLAY_CAM_FAR_DOF",
 			"params": [],
 			"results": "float",
 			"jhash": "0xF24777CA"
@@ -44092,7 +44092,7 @@
 					"name": "weaponHash"
 				},
 				{
-					"type": "int*",
+					"type": "Any*",
 					"name": "outData"
 				}
 			],
@@ -44272,11 +44272,11 @@
 			"name": "CREATE_ITEMSET",
 			"params": [
 				{
-					"type": "Vector3*",
+					"type": "Vehicle",
 					"name": "distri"
 				}
 			],
-			"results": "Any",
+			"results": "Vehicle",
 			"jhash": "0x0A113B2C"
 		},
 		"0xDE18220B1C183EDA": {
@@ -44335,8 +44335,8 @@
 			"name": "GET_ITEMSET_SIZE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "ScrHandle",
+					"name": "x"
 				}
 			],
 			"results": "Any",
@@ -44413,7 +44413,7 @@
 		"0xC4582015556D1C46": {
 			"name": "NETWORK_UPDATE_LOAD_SCENE",
 			"params": [],
-			"results": "Any",
+			"results": "Vector3*",
 			"jhash": "0xC76E023C"
 		},
 		"0x64E630FAF5F60F44": {
@@ -44822,7 +44822,7 @@
 			"params": [
 				{
 					"type": "char*",
-					"name": "fxName"
+					"name": "assetName"
 				}
 			],
 			"results": "void",
@@ -44833,7 +44833,7 @@
 			"params": [
 				{
 					"type": "char*",
-					"name": "fxName"
+					"name": "assetName"
 				}
 			],
 			"results": "BOOL",
@@ -44844,7 +44844,7 @@
 			"params": [
 				{
 					"type": "char*",
-					"name": "fxName"
+					"name": "assetName"
 				}
 			],
 			"results": "void",
@@ -45711,7 +45711,7 @@
 			"jhash": "0x7CAC6FA0"
 		},
 		"0xB5A4DB34FE89B88A": {
-			"name": "",
+			"name": "_LOAD_MISSION_CREATOR_DATA",
 			"params": [],
 			"results": "void",
 			"jhash": "0xE243B2AF"
@@ -45924,8 +45924,8 @@
 			"name": "GET_NUMBER_OF_EVENTS",
 			"params": [
 				{
-					"type": "BOOL",
-					"name": "p0"
+					"type": "int",
+					"name": "eventGroup"
 				}
 			],
 			"results": "int",
@@ -45935,12 +45935,12 @@
 			"name": "GET_EVENT_EXISTS",
 			"params": [
 				{
-					"type": "BOOL",
-					"name": "p0"
+					"type": "int",
+					"name": "eventGroup"
 				},
 				{
 					"type": "int",
-					"name": "p1"
+					"name": "eventIndex"
 				}
 			],
 			"results": "BOOL",
@@ -45950,12 +45950,12 @@
 			"name": "GET_EVENT_AT_INDEX",
 			"params": [
 				{
-					"type": "BOOL",
-					"name": "p0"
+					"type": "int",
+					"name": "eventGroup"
 				},
 				{
 					"type": "int",
-					"name": "eventNum"
+					"name": "eventIndex"
 				}
 			],
 			"results": "int",
@@ -45965,12 +45965,12 @@
 			"name": "GET_EVENT_DATA",
 			"params": [
 				{
-					"type": "BOOL",
-					"name": "p0"
+					"type": "int",
+					"name": "eventGroup"
 				},
 				{
 					"type": "int",
-					"name": "eventNum"
+					"name": "eventIndex"
 				},
 				{
 					"type": "int*",
@@ -45988,8 +45988,8 @@
 			"name": "TRIGGER_SCRIPT_EVENT",
 			"params": [
 				{
-					"type": "BOOL",
-					"name": "p0"
+					"type": "int",
+					"name": "eventGroup"
 				},
 				{
 					"type": "int*",
@@ -46039,7 +46039,7 @@
 	},
 	"UI": {
 		"0xABA17D7CE615ADBF": {
-			"name": "_SET_LOADING_PROMPT_TEXT_ENTRY",
+			"name": "_BEGIN_TEXT_COMMAND_BUSY_STRING",
 			"params": [
 				{
 					"type": "char*",
@@ -46050,7 +46050,7 @@
 			"jhash": "0xCB7C8994"
 		},
 		"0xBD12F8228410D9B4": {
-			"name": "_SHOW_LOADING_PROMPT",
+			"name": "_END_TEXT_COMMAND_BUSY_STRING",
 			"params": [
 				{
 					"type": "int",
@@ -46075,13 +46075,13 @@
 		"0xD422FCC5F239A915": {
 			"name": "_IS_LOADING_PROMPT_BEING_DISPLAYED",
 			"params": [],
-			"results": "BOOL",
+			"results": "char*",
 			"jhash": "0xB8B3A5D0"
 		},
 		"0xB2A592B04648A9CB": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "Pickup",
 			"jhash": ""
 		},
 		"0x9245E81072704B8A": {
@@ -46370,7 +46370,7 @@
 			"params": [
 				{
 					"type": "char*",
-					"name": "type"
+					"name": "text"
 				}
 			],
 			"results": "void",
@@ -46381,19 +46381,19 @@
 			"params": [
 				{
 					"type": "char*",
-					"name": "p0"
+					"name": "picName1"
 				},
 				{
 					"type": "int",
-					"name": "p1"
+					"name": "picName2"
+				},
+				{
+					"type": "BOOL",
+					"name": "flash"
 				},
 				{
 					"type": "int",
-					"name": "p2"
-				},
-				{
-					"type": "int",
-					"name": "p3"
+					"name": "iconType"
 				},
 				{
 					"type": "BOOL",
@@ -46401,11 +46401,11 @@
 				},
 				{
 					"type": "char*",
-					"name": "picName1"
+					"name": "sender"
 				},
 				{
 					"type": "char*",
-					"name": "picName2"
+					"name": "subject"
 				}
 			],
 			"results": "int",
@@ -47032,8 +47032,8 @@
 			"name": "_END_TEXT_COMMAND_GET_WIDTH",
 			"params": [
 				{
-					"type": "int",
-					"name": "font"
+					"type": "BOOL",
+					"name": "p0"
 				}
 			],
 			"results": "float",
@@ -47051,7 +47051,7 @@
 			"jhash": "0x94B82066"
 		},
 		"0x9040DFB09BE75706": {
-			"name": "_END_TEXT_COMMAND_GET_LINE_COUNT",
+			"name": "_GET_TEXT_SCREEN_LINE_COUNT",
 			"params": [
 				{
 					"type": "float",
@@ -47920,11 +47920,11 @@
 			"params": [
 				{
 					"type": "float",
-					"name": "p0"
+					"name": "value"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "maxValue"
 				}
 			],
 			"results": "void",
@@ -49304,7 +49304,7 @@
 				},
 				{
 					"type": "int",
-					"name": "z"
+					"name": "heading"
 				},
 				{
 					"type": "int",
@@ -49530,7 +49530,7 @@
 			"jhash": "0x1EFFB02A"
 		},
 		"0x0AFC4AF510774B47": {
-			"name": "",
+			"name": "_BLOCK_WEAPON_WHEEL_THIS_FRAME",
 			"params": [],
 			"results": "void",
 			"jhash": "0xB26FED2B"
@@ -49817,15 +49817,15 @@
 			"jhash": "0x68DCAE10"
 		},
 		"0xE45087D85F468BC2": {
-			"name": "",
+			"name": "_SET_MISSION_NAME_2",
 			"params": [
 				{
 					"type": "BOOL",
 					"name": "p0"
 				},
 				{
-					"type": "Any*",
-					"name": "p1"
+					"type": "char*",
+					"name": "name"
 				}
 			],
 			"results": "void",
@@ -50652,9 +50652,9 @@
 			"jhash": "0x939218AB"
 		},
 		"0x01A358D9128B7A86": {
-			"name": "",
+			"name": "_GET_ACTIVE_WEBSITE_ID",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xAB5B7C18"
 		},
 		"0x97D47996FC48CBAD": {
@@ -50731,7 +50731,7 @@
 			"jhash": "0xBE699BDE"
 		},
 		"0xDC38CC1E35B6A5D7": {
-			"name": "_SET_WARNING_MESSAGE_2",
+			"name": "SET_WARNING_MESSAGE_WITH_HEADER",
 			"params": [
 				{
 					"type": "char*",
@@ -51289,15 +51289,15 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any*",
+					"type": "int*",
 					"name": "p0"
 				},
 				{
-					"type": "Any*",
+					"type": "int*",
 					"name": "p1"
 				},
 				{
-					"type": "Any*",
+					"type": "int*",
 					"name": "p2"
 				}
 			],
@@ -51598,7 +51598,7 @@
 			"jhash": "0xFF06772A"
 		},
 		"0xD30C50DF888D58B5": {
-			"name": "_SET_PED_ENEMY_AI_BLIP",
+			"name": "_SET_PED_AI_BLIP",
 			"params": [
 				{
 					"type": "int",
@@ -51624,7 +51624,7 @@
 			"jhash": "0x3BE1257F"
 		},
 		"0xE52B8E7F85D39A08": {
-			"name": "",
+			"name": "_SET_AI_BLIP_TYPE",
 			"params": [
 				{
 					"type": "Ped",
@@ -51632,7 +51632,7 @@
 				},
 				{
 					"type": "int",
-					"name": "unk"
+					"name": "type"
 				}
 			],
 			"results": "void",
@@ -51654,7 +51654,7 @@
 			"jhash": "0x872C2CFB"
 		},
 		"0x0C4BBF625CA98C4E": {
-			"name": "",
+			"name": "_IS_AI_BLIP_ALWAYS_SHOWN",
 			"params": [
 				{
 					"type": "Ped",
@@ -51662,7 +51662,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p1"
+					"name": "flag"
 				}
 			],
 			"results": "void",
@@ -52223,7 +52223,7 @@
 			"params": [
 				{
 					"type": "BOOL",
-					"name": "p0"
+					"name": "toggle"
 				}
 			],
 			"results": "void",
@@ -52232,13 +52232,13 @@
 		"0x1DD2139A9A20DCE8": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0xBA9AD458"
 		},
 		"0x90A78ECAA4E78453": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xADBBA287"
 		},
 		"0x0A46AF8A78DC5E0A": {
@@ -52251,19 +52251,19 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any*",
+					"type": "char*",
 					"name": "p0"
 				},
 				{
-					"type": "Any",
+					"type": "Any*",
 					"name": "p1"
 				},
 				{
-					"type": "Any",
+					"type": "Any*",
 					"name": "p2"
 				},
 				{
-					"type": "Any",
+					"type": "BOOL",
 					"name": "p3"
 				}
 			],
@@ -52274,7 +52274,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any*",
+					"type": "Any",
 					"name": "p0"
 				}
 			],
@@ -52284,13 +52284,13 @@
 		"0x7FA5D82B8F58EC06": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x1F3CADB0"
 		},
 		"0x5B0316762AFD4A64": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xA9DC8558"
 		},
 		"0x346EF3ECAAAB149E": {
@@ -52302,13 +52302,13 @@
 		"0xA67C35C56EB1BD9D": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x47B0C137"
 		},
 		"0x0D6CA79EEEBD8CA3": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0x65376C9B"
 		},
 		"0xD801CC02177FA3F1": {
@@ -52336,20 +52336,20 @@
 					"name": "p0"
 				}
 			],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x3B15D33C"
 		},
 		"0x0C0C4E81E1AC60A0": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xEC5D0317"
 		},
 		"0x759650634F07B6B4": {
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				}
 			],
@@ -52360,11 +52360,11 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				}
 			],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xCFCDC518"
 		},
 		"0x6A12D88881435DCA": {
@@ -52395,13 +52395,13 @@
 			"jhash": "0x727AA63F"
 		},
 		"0xDC54A7AF8B3A14EF": {
-			"name": "",
+			"name": "_GET_MAXIMUM_NUMBER_OF_PHOTOS_2",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0x239272BD"
 		},
 		"0x473151EBC762C6DA": {
-			"name": "",
+			"name": "_GET_NUMBER_OF_PHOTOS",
 			"params": [],
 			"results": "int",
 			"jhash": "0x21DBF0C9"
@@ -52410,22 +52410,22 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "BOOL",
 					"name": "p0"
 				}
 			],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x199FABF0"
 		},
 		"0xF5BED327CEA362B1": {
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "BOOL",
 					"name": "p0"
 				}
 			],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0x596B900D"
 		},
 		"0x4AF92ACD3141D96C": {
@@ -52691,11 +52691,11 @@
 			"jhash": "0x93628786"
 		},
 		"0xDEADC0DEDEADC0DE": {
-			"name": "_UPDATE_ENTITY_SHIT_OR_SOMETHING",
+			"name": "_ENTITY_DESCRIPTION_TEXT",
 			"params": [
 				{
-					"type": "Object",
-					"name": "object"
+					"type": "Entity",
+					"name": "entity"
 				}
 			],
 			"results": "void",
@@ -53122,7 +53122,7 @@
 			"jhash": "0xF8FBCC25"
 		},
 		"0x61BB1D9B3A95D802": {
-			"name": "_SET_2D_LAYER",
+			"name": "_SET_UI_LAYER",
 			"params": [
 				{
 					"type": "int",
@@ -53188,11 +53188,11 @@
 					"name": "p1"
 				},
 				{
-					"type": "Any*",
+					"type": "float*",
 					"name": "p2"
 				},
 				{
-					"type": "Any*",
+					"type": "float*",
 					"name": "p3"
 				}
 			],
@@ -53624,14 +53624,14 @@
 		"0xE2C9439ED45DEA60": {
 			"name": "CREATE_TRACKED_POINT",
 			"params": [],
-			"results": "Object",
+			"results": "int",
 			"jhash": "0x3129C31A"
 		},
 		"0x164ECBB3CF750CB0": {
 			"name": "SET_TRACKED_POINT_INFO",
 			"params": [
 				{
-					"type": "Object",
+					"type": "int",
 					"name": "point"
 				},
 				{
@@ -53651,14 +53651,14 @@
 					"name": "radius"
 				}
 			],
-			"results": "Any",
+			"results": "void",
 			"jhash": "0x28689AA4"
 		},
 		"0xC45CCDAAC9221CA8": {
 			"name": "IS_TRACKED_POINT_VISIBLE",
 			"params": [
 				{
-					"type": "Object",
+					"type": "int",
 					"name": "point"
 				}
 			],
@@ -53669,7 +53669,7 @@
 			"name": "DESTROY_TRACKED_POINT",
 			"params": [
 				{
-					"type": "Object",
+					"type": "int",
 					"name": "point"
 				}
 			],
@@ -55774,7 +55774,7 @@
 					"name": "p19"
 				}
 			],
-			"results": "int",
+			"results": "Object",
 			"jhash": "0xEAD0C412"
 		},
 		"0x4F5212C7AD880DF8": {
@@ -55852,7 +55852,7 @@
 			"name": "REMOVE_DECAL",
 			"params": [
 				{
-					"type": "int",
+					"type": "Object",
 					"name": "decal"
 				}
 			],
@@ -55863,7 +55863,7 @@
 			"name": "IS_DECAL_ALIVE",
 			"params": [
 				{
-					"type": "int",
+					"type": "Object",
 					"name": "decal"
 				}
 			],
@@ -55923,19 +55923,19 @@
 			"jhash": "0x242C6A04"
 		},
 		"0x8A35C742130C6080": {
-			"name": "",
+			"name": "_ADD_DECAL_TO_MARKER",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "decalType"
 				},
 				{
-					"type": "Any*",
-					"name": "p1"
+					"type": "char*",
+					"name": "textureDict"
 				},
 				{
-					"type": "Any*",
-					"name": "p2"
+					"type": "char*",
+					"name": "textureName"
 				}
 			],
 			"results": "void",
@@ -55945,8 +55945,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "decalType"
 				}
 			],
 			"results": "void",
@@ -56622,7 +56622,7 @@
 				},
 				{
 					"type": "float",
-					"name": "p8"
+					"name": "sharpness"
 				},
 				{
 					"type": "float",
@@ -56852,7 +56852,7 @@
 			"jhash": "0x6EAF56DE"
 		},
 		"0x98C494FD5BDFBFD5": {
-			"name": "_PUSH_SCALEFORM_MOVIE_FUNCTION_FROM_HUD_COMPONENT",
+			"name": "_BEGIN_SCALEFORM_MOVIE_METHOD_HUD_COMPONENT",
 			"params": [
 				{
 					"type": "int",
@@ -56867,7 +56867,7 @@
 			"jhash": "0x5D66CE1E"
 		},
 		"0xF6E48914C7A8694E": {
-			"name": "_PUSH_SCALEFORM_MOVIE_FUNCTION",
+			"name": "BEGIN_SCALEFORM_MOVIE_METHOD",
 			"params": [
 				{
 					"type": "int",
@@ -56882,7 +56882,7 @@
 			"jhash": "0x215ABBE8"
 		},
 		"0xAB58C27C2E6123C6": {
-			"name": "_PUSH_SCALEFORM_MOVIE_FUNCTION_N",
+			"name": "_BEGIN_SCALEFORM_MOVIE_METHOD_N",
 			"params": [
 				{
 					"type": "char*",
@@ -56893,7 +56893,7 @@
 			"jhash": "0xF6015178"
 		},
 		"0xB9449845F73F5E9C": {
-			"name": "",
+			"name": "_BEGIN_SCALEFORM_MOVIE_METHOD_V",
 			"params": [
 				{
 					"type": "char*",
@@ -56904,34 +56904,34 @@
 			"jhash": "0x5E219B67"
 		},
 		"0xC6796A8FFA375E53": {
-			"name": "_POP_SCALEFORM_MOVIE_FUNCTION_VOID",
+			"name": "END_SCALEFORM_MOVIE_METHOD",
 			"params": [],
 			"results": "void",
 			"jhash": "0x02DBF2D7"
 		},
 		"0xC50AA39A577AF886": {
-			"name": "_POP_SCALEFORM_MOVIE_FUNCTION",
+			"name": "_END_SCALEFORM_MOVIE_METHOD_RETURN",
 			"params": [],
 			"results": "int",
 			"jhash": "0x2F38B526"
 		},
 		"0x768FF8961BA904D6": {
-			"name": "",
+			"name": "_GET_SCALEFORM_MOVIE_FUNCTION_RETURN_BOOL",
 			"params": [
 				{
-					"type": "Any",
-					"name": "funcData"
+					"type": "int",
+					"name": "method_return"
 				}
 			],
 			"results": "BOOL",
 			"jhash": "0x5CD7C3C0"
 		},
 		"0x2DE7EFA66B906036": {
-			"name": "",
+			"name": "_GET_SCALEFORM_MOVIE_FUNCTION_RETURN_INT",
 			"params": [
 				{
-					"type": "Any",
-					"name": "funcData"
+					"type": "int",
+					"name": "method_return"
 				}
 			],
 			"results": "int",
@@ -56942,14 +56942,14 @@
 			"params": [
 				{
 					"type": "int",
-					"name": "scaleform"
+					"name": "method_return"
 				}
 			],
 			"results": "char*",
 			"jhash": "0x516862EB"
 		},
 		"0xC3D0841A0CC546A6": {
-			"name": "_PUSH_SCALEFORM_MOVIE_FUNCTION_PARAMETER_INT",
+			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_INT",
 			"params": [
 				{
 					"type": "int",
@@ -56960,7 +56960,7 @@
 			"jhash": "0x716777CB"
 		},
 		"0xD69736AAE04DB51A": {
-			"name": "_PUSH_SCALEFORM_MOVIE_FUNCTION_PARAMETER_FLOAT",
+			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_FLOAT",
 			"params": [
 				{
 					"type": "float",
@@ -56971,7 +56971,7 @@
 			"jhash": "0x9A01FFDA"
 		},
 		"0xC58424BA936EB458": {
-			"name": "_PUSH_SCALEFORM_MOVIE_FUNCTION_PARAMETER_BOOL",
+			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL",
 			"params": [
 				{
 					"type": "BOOL",
@@ -57005,7 +57005,7 @@
 			"jhash": "0x2E80DB52"
 		},
 		"0xBA7148484BD90365": {
-			"name": "_PUSH_SCALEFORM_MOVIE_FUNCTION_PARAMETER_STRING",
+			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING",
 			"params": [
 				{
 					"type": "char*",
@@ -57016,7 +57016,7 @@
 			"jhash": "0x4DAAD55B"
 		},
 		"0xE83A3E3557A56640": {
-			"name": "",
+			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME",
 			"params": [
 				{
 					"type": "char*",
@@ -57030,7 +57030,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				}
 			],
@@ -57041,7 +57041,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				}
 			],
@@ -57170,19 +57170,19 @@
 			"jhash": "0x8129EF89"
 		},
 		"0xF7B38B8305F1FE8B": {
-			"name": "",
+			"name": "_LOAD_TV_CHANNEL_SEQUENCE",
 			"params": [
 				{
 					"type": "int",
-					"name": "p0"
+					"name": "TV_Channel"
 				},
 				{
 					"type": "char*",
-					"name": "p1"
+					"name": "VideoSequence"
 				},
 				{
 					"type": "BOOL",
-					"name": "p2"
+					"name": "Restart"
 				}
 			],
 			"results": "void",
@@ -57280,7 +57280,7 @@
 			"jhash": "0x2E7D9B98"
 		},
 		"0x98C4FE6EC34154CA": {
-			"name": "",
+			"name": "_DRAW_SHOWROOM",
 			"params": [
 				{
 					"type": "char*",
@@ -57486,7 +57486,7 @@
 			"name": "_GET_SCREEN_EFFECT_IS_ACTIVE",
 			"params": [
 				{
-					"type": "char*",
+					"type": "BOOL",
 					"name": "effectName"
 				}
 			],
@@ -59711,7 +59711,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "char*",
 					"name": "p0"
 				},
 				{
@@ -59850,15 +59850,15 @@
 			"jhash": "0x2180AE13"
 		},
 		"0x428EAF89E24F6C36": {
-			"name": "",
+			"name": "_LEADERBOARDS_DEATHS",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Hash",
+					"name": "statName"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "value"
 				}
 			],
 			"results": "void",
@@ -60206,7 +60206,7 @@
 			"params": [
 				{
 					"type": "int",
-					"name": "phoneType"
+					"name": "p3"
 				}
 			],
 			"results": "void",
@@ -60260,7 +60260,7 @@
 					"name": "rotation"
 				},
 				{
-					"type": "Any",
+					"type": "Vehicle",
 					"name": "p1"
 				}
 			],
@@ -60510,18 +60510,18 @@
 		"0x846AA8E7D55EE5B6": {
 			"name": "APP_DATA_VALID",
 			"params": [],
-			"results": "BOOL",
+			"results": "int",
 			"jhash": "0x72BDE002"
 		},
 		"0xD3A58A12C77D9D4B": {
 			"name": "APP_GET_INT",
 			"params": [
 				{
-					"type": "char*",
+					"type": "ScrHandle",
 					"name": "property"
 				}
 			],
-			"results": "int",
+			"results": "int*",
 			"jhash": "0x2942AAD2"
 		},
 		"0x1514FB24C02C2322": {
@@ -61811,7 +61811,7 @@
 				},
 				{
 					"type": "float*",
-					"name": "p5"
+					"name": "vehicle"
 				},
 				{
 					"type": "float*",
@@ -62640,7 +62640,7 @@
 					"name": "control"
 				},
 				{
-					"type": "BOOL",
+					"type": "Player",
 					"name": "p2"
 				}
 			],
@@ -62950,8 +62950,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Blip",
+					"name": "x"
 				}
 			],
 			"results": "void",
@@ -64747,12 +64747,12 @@
 					"name": "p11"
 				},
 				{
-					"type": "Any*",
-					"name": "p12"
+					"type": "char*",
+					"name": "boneName1"
 				},
 				{
-					"type": "Any*",
-					"name": "p13"
+					"type": "char*",
+					"name": "boneName2"
 				}
 			],
 			"results": "void",
@@ -65097,11 +65097,11 @@
 					"name": "rope"
 				},
 				{
-					"type": "BOOL",
+					"type": "float",
 					"name": "length"
 				}
 			],
-			"results": "Any",
+			"results": "void",
 			"jhash": "0xC8A423A3"
 		},
 		"0xE37F721824571784": {
@@ -65324,7 +65324,7 @@
 					"name": "z"
 				},
 				{
-					"type": "float*",
+					"type": "float",
 					"name": "height"
 				}
 			],
@@ -65448,8 +65448,8 @@
 					"name": "p3"
 				},
 				{
-					"type": "Any*",
-					"name": "p4"
+					"type": "float*",
+					"name": "height"
 				}
 			],
 			"results": "BOOL",
@@ -65483,23 +65483,23 @@
 			"params": [
 				{
 					"type": "float",
-					"name": "x"
+					"name": "xLow"
 				},
 				{
 					"type": "float",
-					"name": "y"
+					"name": "yLow"
 				},
 				{
 					"type": "float",
-					"name": "z"
+					"name": "xHigh"
 				},
 				{
 					"type": "float",
-					"name": "radius"
+					"name": "yHigh"
 				},
 				{
 					"type": "float",
-					"name": "unk"
+					"name": "height"
 				}
 			],
 			"results": "int",
@@ -65574,7 +65574,7 @@
 				},
 				{
 					"type": "Entity",
-					"name": "entity"
+					"name": "ent"
 				},
 				{
 					"type": "int",
@@ -65965,7 +65965,7 @@
 			"jhash": "0x3FB40673"
 		},
 		"0x8D11E61A4ABF49CC": {
-			"name": "",
+			"name": "_NETWORK_IS_PSN_AVAILABLE",
 			"params": [],
 			"results": "BOOL",
 			"jhash": ""
@@ -66100,7 +66100,7 @@
 		"0x76BF03FADBF154F5": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "Any*",
 			"jhash": ""
 		},
 		"0x9614B71F8ADB982B": {
@@ -66159,7 +66159,7 @@
 		"0x9747292807126EDA": {
 			"name": "NETWORK_IS_MULTIPLAYER_DISABLED",
 			"params": [],
-			"results": "BOOL",
+			"results": "ScrHandle",
 			"jhash": "0x05518C0F"
 		},
 		"0x7E782A910C362C25": {
@@ -66395,7 +66395,7 @@
 			"jhash": ""
 		},
 		"0x49EC8030F5015F8B": {
-			"name": "",
+			"name": "_NETWORK_SCTV_SLOTS",
 			"params": [
 				{
 					"type": "int",
@@ -66952,7 +66952,7 @@
 			"jhash": "0xE566C7DA"
 		},
 		"0xABD5E88B8A2D3DB2": {
-			"name": "",
+			"name": "_NETWORK_VOICE_CONNECT_TO_PLAYER",
 			"params": [
 				{
 					"type": "Any*",
@@ -68254,9 +68254,9 @@
 			"jhash": "0xA51DC214"
 		},
 		"0x172F75B6EE2233BA": {
-			"name": "",
+			"name": "_NETWORK_PLAYER_IS_UNK",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x1720ABA6"
 		},
 		"0x19D8DA0E5A68045A": {
@@ -68389,7 +68389,7 @@
 				},
 				{
 					"type": "int",
-					"name": "numVars"
+					"name": "sizeofVars"
 				}
 			],
 			"results": "void",
@@ -68556,8 +68556,8 @@
 					"name": "scriptName"
 				},
 				{
-					"type": "Any",
-					"name": "p1"
+					"type": "Player",
+					"name": "player"
 				},
 				{
 					"type": "BOOL",
@@ -68593,7 +68593,7 @@
 		"0x638A3A81733086DB": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xDB8B5D71"
 		},
 		"0x1AD5B71586B94820": {
@@ -69300,7 +69300,7 @@
 					"name": "player"
 				},
 				{
-					"type": "int*",
+					"type": "char*",
 					"name": "userID"
 				}
 			],
@@ -69437,13 +69437,13 @@
 					"name": "p0"
 				}
 			],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x5C85FF81"
 		},
 		"0x6EA101606F6E4D81": {
 			"name": "NETWORK_IS_ADDING_FRIEND",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0xBB7EC8C4"
 		},
 		"0x8E02D73914064223": {
@@ -70046,7 +70046,7 @@
 			"name": "NETWORK_SET_RICH_PRESENCE",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				},
 				{
@@ -70066,15 +70066,15 @@
 			"jhash": "0x932A6CED"
 		},
 		"0x3E200C2BCF4164EB": {
-			"name": "",
+			"name": "_NETWORK_SET_RICH_PRESENCE_2",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				},
 				{
-					"type": "Any",
-					"name": "p1"
+					"type": "char*",
+					"name": "gxtLabel"
 				}
 			],
 			"results": "void",
@@ -70596,7 +70596,7 @@
 			"jhash": "0x00AE4E17"
 		},
 		"0xA1607996431332DF": {
-			"name": "",
+			"name": "_NETWORK_CAN_NETWORK_ID_BE_SEEN",
 			"params": [
 				{
 					"type": "int",
@@ -71286,11 +71286,11 @@
 			"jhash": "0x2C30912D"
 		},
 		"0x6274C4712850841E": {
-			"name": "_SET_NETWORK_VEHICLE_NON_CONTACT",
+			"name": "_SET_NETWORK_OBJECT_NON_CONTACT",
 			"params": [
 				{
-					"type": "Vehicle",
-					"name": "vehicle"
+					"type": "Object",
+					"name": "object"
 				},
 				{
 					"type": "BOOL",
@@ -71552,7 +71552,7 @@
 					"name": "p0"
 				},
 				{
-					"type": "Any",
+					"type": "Any*",
 					"name": "p1"
 				}
 			],
@@ -72091,7 +72091,7 @@
 			"params": [
 				{
 					"type": "Hash",
-					"name": "tunbaleContext"
+					"name": "tunableContext"
 				},
 				{
 					"type": "Hash",
@@ -72357,7 +72357,7 @@
 			"jhash": ""
 		},
 		"0x99B72C7ABDE5C910": {
-			"name": "",
+			"name": "_NETWORK_COPY_PED_BLEND_DATA",
 			"params": [
 				{
 					"type": "Ped",
@@ -73219,11 +73219,11 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				},
 				{
-					"type": "Any",
+					"type": "Any*",
 					"name": "p1"
 				}
 			],
@@ -73686,57 +73686,57 @@
 			"jhash": "0xB4668B23"
 		},
 		"0x098AB65B9ED9A9EC": {
-			"name": "",
+			"name": "_FACEBOOK_SET_HEIST_COMPLETE",
 			"params": [
 				{
-					"type": "Any*",
-					"name": "p0"
+					"type": "char*",
+					"name": "heistName"
 				},
 				{
-					"type": "Any",
-					"name": "p1"
+					"type": "int",
+					"name": "cashEarned"
 				},
 				{
-					"type": "Any",
-					"name": "p2"
+					"type": "int",
+					"name": "xpEarned"
 				}
 			],
 			"results": "BOOL",
 			"jhash": "0x30B51753"
 		},
 		"0xDC48473142545431": {
-			"name": "",
+			"name": "_FACEBOOK_SET_CREATE_CHARACTER_COMPLETE",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x02DAD93F"
 		},
 		"0x0AE1F1653B554AB9": {
-			"name": "",
+			"name": "_FACEBOOK_SET_MILESTONE_COMPLETE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "milestoneId"
 				}
 			],
 			"results": "BOOL",
 			"jhash": "0x2D947814"
 		},
 		"0x62B9FEC9A11F10EF": {
-			"name": "",
+			"name": "_FACEBOOK_IS_SENDING_DATA",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x37A28C26"
 		},
 		"0xA75E2B6733DA5142": {
-			"name": "",
+			"name": "_FACEBOOK_DO_UNK_CHECK",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x11E8B5CD"
 		},
 		"0x43865688AE10F0D7": {
-			"name": "",
+			"name": "_FACEBOOK_IS_AVAILABLE",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x429AEAB3"
 		},
 		"0x16160DA74A8E74A2": {
@@ -73901,7 +73901,7 @@
 		"0x422D396F80A96547": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0xC6EA802E"
 		},
 		"0xA699957E60D80214": {
@@ -73919,15 +73919,15 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p0"
 				},
 				{
-					"type": "Any*",
+					"type": "int*",
 					"name": "p1"
 				},
 				{
-					"type": "Any*",
+					"type": "Vector3*",
 					"name": "p2"
 				}
 			],
@@ -75539,7 +75539,7 @@
 					"name": "p0"
 				}
 			],
-			"results": "BOOL",
+			"results": "float*",
 			"jhash": "0xB96C7ABE"
 		}
 	},
@@ -76070,7 +76070,7 @@
 					"name": "dlcWeapCompIndex"
 				},
 				{
-					"type": "int*",
+					"type": "Any*",
 					"name": "ComponentDataPtr"
 				}
 			],
@@ -76081,7 +76081,7 @@
 			"name": "_IS_DLC_DATA_EMPTY",
 			"params": [
 				{
-					"type": "int",
+					"type": "Any*",
 					"name": "dlcData"
 				}
 			],
@@ -76092,7 +76092,7 @@
 			"name": "IS_DLC_VEHICLE_MOD",
 			"params": [
 				{
-					"type": "int",
+					"type": "Any",
 					"name": "modData"
 				}
 			],
@@ -76144,7 +76144,7 @@
 		"0x8D30F648014A92B5": {
 			"name": "",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0xF69B729C"
 		},
 		"0x10D0A8F259E93EC9": {
@@ -76169,7 +76169,7 @@
 			"jhash": "0x6087C10C"
 		},
 		"0xD7C10C4A637992C9": {
-			"name": "_LOAD_SP_DLC_MAPS",
+			"name": "",
 			"params": [],
 			"results": "void",
 			"jhash": ""
@@ -76186,7 +76186,7 @@
 			"name": "WAIT",
 			"params": [
 				{
-					"type": "int",
+					"type": "int*",
 					"name": "ms"
 				}
 			],
@@ -76847,7 +76847,7 @@
 			"params": [
 				{
 					"type": "int*",
-					"name": "p0"
+					"name": "networkHandle"
 				}
 			],
 			"results": "void",
@@ -76884,7 +76884,7 @@
 			"params": [
 				{
 					"type": "char*",
-					"name": "p0"
+					"name": "playerName"
 				}
 			],
 			"results": "BOOL",
@@ -77429,7 +77429,7 @@
 		"0x198D161F458ECC7F": {
 			"name": "_SC_GET_NICKNAME",
 			"params": [],
-			"results": "char*",
+			"results": "Entity",
 			"jhash": ""
 		},
 		"0x225798743970412B": {
@@ -77696,11 +77696,11 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
+					"type": "char*",
 					"name": "p0"
 				},
 				{
-					"type": "Any",
+					"type": "BOOL",
 					"name": "p1"
 				}
 			],
@@ -77931,15 +77931,15 @@
 					"name": "p0"
 				},
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p1"
 				},
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p2"
 				},
 				{
-					"type": "Any",
+					"type": "int",
 					"name": "p3"
 				}
 			],
@@ -77992,8 +77992,8 @@
 			"name": "_NETWORK_SHOP_CHECKOUT_START",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "transactionID"
 				}
 			],
 			"results": "BOOL",
@@ -78004,38 +78004,38 @@
 			"params": [
 				{
 					"type": "int*",
-					"name": "value"
+					"name": "transactionID"
 				},
 				{
-					"type": "Any",
+					"type": "Hash",
 					"name": "p1"
 				},
 				{
-					"type": "Any",
-					"name": "p2"
+					"type": "Hash",
+					"name": "transactionHash"
 				},
 				{
-					"type": "Any",
-					"name": "p3"
+					"type": "int",
+					"name": "amount"
 				},
 				{
-					"type": "Any",
+					"type": "Hash",
 					"name": "p4"
 				},
 				{
 					"type": "int",
-					"name": "p5"
+					"name": "mode"
 				}
 			],
 			"results": "BOOL",
 			"jhash": ""
 		},
 		"0xE2A99A9B524BEFFF": {
-			"name": "_NETWORK_SHOP_END_SERVICE",
+			"name": "_NETWORK_SHOP_TERMINATE_SERVICE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "transactionID"
 				}
 			],
 			"results": "BOOL",
