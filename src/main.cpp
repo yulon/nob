@@ -51,6 +51,7 @@ namespace nob {
 				return;
 			}
 
+			this_script::mode = this_script::mode_t::exclusive;
 			_NOB_CALL_INIT_FN(this_script::_exclusive_main);
 		}).detach();
 	}
