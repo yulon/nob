@@ -225,24 +225,7 @@ namespace nob {
 			static constexpr float speed_run = 1.2f;
 			static constexpr float speed_sprint = 3.0f;
 
-			void go_to(const vector3 &target, float speed = speed_sprint) {
-				if (ntv::PED::GET_PED_PARACHUTE_STATE(_ntv_hdl) == 2) {
-					ntv::AI::TASK_PARACHUTE_TO_TARGET(_ntv_hdl, target.x, target.y, target.z);
-					return;
-				}
-
-				ntv::AI::TASK_GO_STRAIGHT_TO_COORD(
-					_ntv_hdl,
-					target.x, target.y, target.z,
-					speed,
-					-1, 0, 0
-				);
-				if (speed == speed_run) {
-					ntv::AI::SET_PED_DESIRED_MOVE_BLEND_RATIO(_ntv_hdl, 2.0f);
-				} else {
-					ntv::AI::SET_PED_DESIRED_MOVE_BLEND_RATIO(_ntv_hdl, speed);
-				}
-			}
+			void go_to(const vector3 &target, float speed = speed_sprint);
 
 			void go(float speed = speed_sprint) {
 				go_to(pos({0, 10, 0}), speed);
@@ -562,28 +545,13 @@ namespace nob {
 				#endif
 			}
 
-			void aim(const vector3 &coords) {
-				if (is_in_vehicle()) {
-					auto wpn_grp = arm::weapon_group(current_weapon());
-					if (!wpn_grp || wpn_grp == "GROUP_UNARMED") {
-						ntv::AI::TASK_VEHICLE_AIM_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z);
-					}
-					return;
-				}
-				ntv::AI::TASK_AIM_GUN_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, -1, false, false);
-			}
+			void aim(const vector3 &coords);
 
-			void shoot(const vector3 &coords) {
-				if (is_in_vehicle()) {
-					/*if (!arm::weapon_group(current_weapon())) {
-						ntv::VEHICLE::SET_VEHICLE_SHOOT_AT_TARGET(_ntv_hdl, ntv::PED::GET_VEHICLE_PED_IS_IN(_ntv_hdl, false), coords.x, coords.y, coords.z);
-						return;
-					}*/
-					ntv::AI::TASK_VEHICLE_SHOOT_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, 1.0f);
-					return;
-				}
-				ntv::AI::TASK_SHOOT_AT_COORD(_ntv_hdl, coords.x, coords.y, coords.z, -1, hash("FIRING_PATTERN_FULL_AUTO"));
-			}
+			void stop_aim();
+
+			void shoot();
+
+			void auto_shoot();
 
 			////////////////////////////////////////////////////////////////////
 
