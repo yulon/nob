@@ -27,7 +27,7 @@ namespace nob {
 	#ifdef NDEBUG
 		#define _NOB_CALL_INIT_FN(_f) \
 			if (!_f()) { \
-				MessageBoxW(0, rua(log.str()), L"ERRORS", MB_OK); \
+				MessageBoxW(0, rua::u8_to_u16(log.str()).c_str(), L"ERRORS", MB_OK | MB_ICONERROR); \
 				exit(1); \
 				return; \
 			}
