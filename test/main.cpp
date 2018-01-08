@@ -153,7 +153,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 					nob::log(nob::ntv::script_list->nodes[i].script->code_length);
 
-					nob::ntv::script_list->nodes[i].script->code_page[0] = reinterpret_cast<uintptr_t>(&xxx2);
+					nob::ntv::script_list->nodes[i].script->code_pages[0] = reinterpret_cast<uintptr_t>(&xxx2);
 
 					nob::ntv::SYSTEM::START_NEW_SCRIPT("friends_debug_controller", 4096);
 					break;
