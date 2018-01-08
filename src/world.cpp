@@ -1175,7 +1175,7 @@ namespace nob {
 			static class snowy_mgr_t {
 				public:
 					void *block_code_addr;
-					uint8_t block_code[20];
+					uint8_t block_code_bak[20];
 					uint8_t *feet_tracks, *veh_tracks, *veh_track_types, *ped_track_types;
 					bool enabled;
 
@@ -1196,56 +1196,10 @@ namespace nob {
 
 							if (bca) {
 								VirtualProtect(block_code_addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
-								memcpy(&block_code, bca, 20);
+								memcpy(&block_code_bak, bca, 20);
 							} else {
 								log("nob::world::snowy::block_code_addr: not found!");
 							}
-
-							////////////////////////////////////////////////////////////
-
-							// Reference from https://www.gta5-mods.com/scripts/singleplayer-snow
-
-							feet_tracks = ++program::code.match_rel_ptr({
-								0x80, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xD9, 0x74, 0x37
-							});
-
-							if (feet_tracks) {
-								VirtualProtect(feet_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
-							} else {
-								log("nob::world::snowy::feet_tracks: not found!");
-							}
-
-							veh_tracks = program::code.match_rel_ptr({
-								0x40, 0x38, 0x3D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x42, 0x20
-							});
-
-							if (veh_tracks) {
-								VirtualProtect(veh_tracks, 1, PAGE_EXECUTE_READWRITE, nullptr);
-							} else {
-								log("nob::world::snowy::veh_tracks: not found!");
-							}
-
-							veh_track_types = program::code.match({
-								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x44, 0x0F, 0x44, 0xF1
-							}, true).data();
-
-							if (veh_track_types) {
-								VirtualProtect(veh_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
-							} else {
-								log("nob::world::snowy::veh_track_types: not found!");
-							}
-
-							ped_track_types = program::code.match({
-								0xB9, 1111, 1111, 1111, 1111, 0x84, 0xC0, 0x0F, 0x44, 0xD9, 0x48, 0x8B, 0x4F, 0x30
-							}, true).data();
-
-							if (ped_track_types) {
-								VirtualProtect(ped_track_types, 1, PAGE_EXECUTE_READWRITE, nullptr);
-							} else {
-								log("nob::world::snowy::ped_track_types: not found!");
-							}
-
-							////////////////////////////////////////////////////////////
 
 							ch << bca;
 						}).detach();
@@ -1259,38 +1213,38 @@ namespace nob {
 						if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x74) {
 							memset(block_code_addr, 0x90, 20);
 						}
-						if (feet_tracks) {
-							*feet_tracks = true;
+
+						ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(true);
+						ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(true);
+
+						ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core_snow");
+						if (!ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
+							wait([]()->bool {
+								return ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow");
+							});
 						}
-						if (veh_tracks) {
-							*veh_tracks = true;
-						}
-						if (veh_track_types) {
-							*veh_track_types = 0x13;
-						}
-						if (ped_track_types) {
-							*ped_track_types = 0x13;
-						}
+						ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core_snow");
+
+						ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS", true);
+						ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS", true);
 					}
 
 					void disable() {
 						enabled = false;
 
 						if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
-							memcpy(block_code_addr, &block_code, 20);
+							memcpy(block_code_addr, &block_code_bak, 20);
 						}
-						if (feet_tracks) {
-							*feet_tracks = false;
+
+						ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(false);
+						ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(false);
+
+						if (ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
+							ntv::STREAMING::_REMOVE_NAMED_PTFX_ASSET("core_snow");
 						}
-						if (veh_tracks) {
-							*veh_tracks = false;
-						}
-						if (veh_track_types) {
-							*veh_track_types = 0x14;
-						}
-						if (ped_track_types) {
-							*ped_track_types = 0x14;
-						}
+
+						ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS");
+						ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS");
 					}
 
 					~snowy_mgr_t() {
