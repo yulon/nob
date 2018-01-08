@@ -6,6 +6,7 @@
 #include "hash.hpp"
 #include "arm.hpp"
 #include "script.hpp"
+#include "loader.hpp"
 #include "log.hpp"
 
 namespace nob {
@@ -115,7 +116,7 @@ namespace nob {
 				ntv::ENTITY::SET_ENTITY_INVINCIBLE(_ntv_hdl, toggle);
 			}
 
-			model_info model_info() const {
+			model get_model() const {
 				return static_cast<hash_t>(ntv::ENTITY::GET_ENTITY_MODEL(_ntv_hdl));
 			}
 
@@ -159,8 +160,8 @@ namespace nob {
 
 			character(entity e) : entity(e) {}
 
-			character(model m, const vector3 &coords, bool player_body = false) :
-				entity(ntv::PED::CREATE_PED(4, m, coords.x, coords.y, coords.z, 0.0f, false, true))
+			character(const model &m, const vector3 &coords, bool player_body = false) :
+				entity(ntv::PED::CREATE_PED(4, loader<model>(m), coords.x, coords.y, coords.z, 0.0f, false, true))
 			{
 				if (player_body) {
 					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(_ntv_hdl, true);
@@ -669,8 +670,8 @@ namespace nob {
 
 			vehicle(entity e) : entity(e) {}
 
-			vehicle(model m, const vector3 &coords, float heading = 0.0f) :
-				entity(ntv::VEHICLE::CREATE_VEHICLE(m, coords.x, coords.y, coords.z, heading, false, true))
+			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
+				entity(ntv::VEHICLE::CREATE_VEHICLE(loader<model>(m), coords.x, coords.y, coords.z, heading, false, true))
 			{
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_ntv_hdl, 0);
 			}
@@ -831,7 +832,7 @@ namespace nob {
 				train
 			};
 
-			static klass_t klass(const nob::model_info &mi) {
+			static klass_t klass(const model &mi) {
 				if (!mi.is_vehicle()) {
 					return klass_t::none;
 				}
@@ -897,7 +898,7 @@ namespace nob {
 
 	// These data from ScriptHookV/NativeTrainer
 
-	static constexpr std::array<model_info, 696> characters {{
+	static constexpr std::array<model, 696> characters {{
 		"player_zero", "player_one", "player_two", "a_c_boar", "a_c_chimp", "a_c_cow", "a_c_coyote", "a_c_deer", "a_c_fish", "a_c_hen",
 		"a_c_cat_01", "a_c_chickenhawk", "a_c_cormorant", "a_c_crow", "a_c_dolphin", "a_c_humpback", "a_c_killerwhale", "a_c_pigeon", "a_c_seagull", "a_c_sharkhammer",
 		"a_c_pig", "a_c_rat", "a_c_rhesus", "a_c_chop", "a_c_husky", "a_c_mtlion", "a_c_retriever", "a_c_sharktiger", "a_c_shepherd", "s_m_m_movalien_01",
@@ -1043,7 +1044,7 @@ namespace nob {
 		"BENNY", "G", "VAGSPEAK", "VAGFUN", "BOATSTAFF", "FEMBOATSTAFF"
 	}};
 
-	static constexpr std::array<model_info, 400> vehicles {{
+	static constexpr std::array<model, 400> vehicles {{
 		"NINEF", "NINEF2", "BLISTA", "ASEA", "ASEA2", "BOATTRAILER", "BUS", "ARMYTANKER", "ARMYTRAILER", "ARMYTRAILER2",
 		"SUNTRAP", "COACH", "AIRBUS", "ASTEROPE", "AIRTUG", "AMBULANCE", "BARRACKS", "BARRACKS2", "BALLER", "BALLER2",
 		"BJXL", "BANSHEE", "BENSON", "BFINJECTION", "BIFF", "BLAZER", "BLAZER2", "BLAZER3", "BISON", "BISON2",
@@ -1086,5 +1087,5 @@ namespace nob {
 		"SUPERVOLITO", "SUPERVOLITO2", "TORO2", "TROPIC2", "VALKYRIE2", "VERLIERER2", "TAMPA", "BANSHEE2", "SULTANRS", "BTYPE3"
 	}};
 
-	extern std::vector<model_info> banned_vehicles;
+	extern std::vector<model> banned_vehicles;
 } /* nob */

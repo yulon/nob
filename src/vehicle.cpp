@@ -8,7 +8,7 @@
 #include <queue>
 
 namespace nob {
-	std::vector<model_info> banned_vehicles;
+	std::vector<model> banned_vehicles;
 
 	static initer _initer([]() {
 		banned_vehicles.resize(0);

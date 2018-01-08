@@ -14,4 +14,5 @@
 #include "nob/i18n.hpp"
 #include "nob/program.hpp"
 #include "nob/window.hpp"
+#include "nob/loader.hpp"
 #include "nob/log.hpp"

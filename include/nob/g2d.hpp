@@ -54,54 +54,37 @@ namespace nob {
 
 		class texture_dict {
 			public:
-				texture_dict() : _loader(0) {}
+				texture_dict() = default;
 
 				texture_dict(std::nullptr_t) : texture_dict() {}
 
-				texture_dict(const char *name) : _name(name), _loader(0) {}
+				texture_dict(const char *name) : _name(name) {}
 
 				texture_dict(const std::string &name) : texture_dict(name.c_str()) {}
 
-				texture_dict(const texture_dict &src) : _name(src._name), _loader(0) {};
-
-				texture_dict &operator=(const texture_dict &src) {
-					free();
-					_name = src._name;
-					return *this;
-				};
-
-				texture_dict(texture_dict &&src) : _name(std::move(src._name)), _loader(src._loader) {
-					if (src._loader) {
-						src._loader = 0;
-					}
+				const std::string &name() const {
+					return _name;
 				}
 
-				texture_dict &operator=(texture_dict &&src) {
-					free();
-					_name = std::move(src._name);
-					if (src._loader) {
-						_loader = src._loader;
-						src._loader = 0;
-					}
-					return *this;
+				using native_handle_t = const char *;
+
+				native_handle_t native_handle() const {
+					return _name.c_str();
 				}
 
-				~texture_dict() {
-					free();
+				operator bool() const {
+					return _name.length();
 				}
 
 				bool is_loaded() const {
-					assert(_name.length());
+					assert(*this);
 
 					return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(_name.c_str());
 				}
 
-				const char *load() {
-					assert(_name.length());
+				const texture_dict &load() const {
+					assert(*this);
 
-					if (is_loaded()) {
-						return _name.c_str();
-					}
 					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name.c_str(), false);
 					if (!is_loaded()) {
 						auto n = _name.c_str();
@@ -109,40 +92,19 @@ namespace nob {
 							return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(n);
 						});
 					}
-					_loader = this_script::first_frame_count;
-					return _name.c_str();
+					return *this;
 				}
 
-				void free() {
-					if (_loader) {
-						if (!in_task()) {
-							return;
-						}
-
-						if (
-							*ntv::game_state == ntv::game_state_t::playing &&
-							_loader == this_script::first_frame_count &&
-							is_loaded()
-						) {
-							ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(_name.c_str());
-						}
-						_loader = 0;
-					}
+				void free() const {
+					ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(_name.c_str());
 				}
 
-				void detach() {
-					if (_loader) {
-						_loader = 0;
-					}
-				}
-
-				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
-					ntv::GRAPHICS::DRAW_SPRITE(load(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
+				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) const {
+					ntv::GRAPHICS::DRAW_SPRITE(_name.c_str(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
 				}
 
 			private:
 				std::string _name;
-				size_t _loader;
 		};
 	} /* g2d */
 } /* nob */
