@@ -175,7 +175,7 @@ namespace nob {
 
 		class menu {
 			public:
-				menu(const std::string &title, const list &li) : _tit(title) {
+				menu(const std::string &title, const list &li) : _tit(title), _cm_td("CommonMenu") {
 					_list_stack.push(li);
 				}
 
@@ -205,6 +205,7 @@ namespace nob {
 				std::stack<list> _list_stack;
 				task _tsk;
 				keyboard::listener _kl;
+				g2d::texture_dict _cm_td;
 		};
 
 		void disable_interaction_menu(bool toggle = true);

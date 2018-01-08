@@ -30,28 +30,65 @@ namespace nob {
 			}
 
 			bool is_loaded() const {
+				assert(hash());
+
 				return ntv::STREAMING::HAS_MODEL_LOADED(hash());
 			}
 
 			bool is_vehicle() const {
+				assert(hash());
+
 				return ntv::STREAMING::IS_MODEL_A_VEHICLE(hash());
 			}
 	};
 
 	class model : public model_info {
 		public:
-			using model_info::model_info;
+			constexpr model(hash_t h = 0) : model_info(h), _loader(0) {}
 
-			constexpr model(const model_info &mi) : model_info(mi) {}
+			constexpr model(const char *c_str) : model_info(c_str), _loader(0) {}
+
+			model(const std::string &str) : model_info(str.c_str()), _loader(0) {}
+
+			constexpr model(const model_info &mi) : model_info(mi), _loader(0) {}
+
+			constexpr model(const model &m) :
+				model_info(static_cast<const model_info &>(m)),
+				_loader(0)
+			{}
+
+			model &operator=(const model &m) {
+				free();
+				static_cast<model_info &>(*this) = static_cast<const model_info &>(m);
+				return *this;
+			}
+
+			model(model &&m) :
+				model_info(static_cast<const model_info &>(m)),
+				_loader(m._loader)
+			{
+				if (m._loader) {
+					m._loader = 0;
+				}
+			}
+
+			model &operator=(model &&m) {
+				free();
+				static_cast<model_info &>(*this) = static_cast<const model_info &>(m);
+				if (m._loader) {
+					_loader = m._loader;
+					m._loader = 0;
+				}
+				return *this;
+			}
 
 			~model() {
 				free();
 			}
 
-			operator hash_t() const {
-				if (!*this) {
-					return 0;
-				}
+			hash_t load() {
+				assert(hash());
+
 				if (is_loaded()) {
 					return hash();
 				}
@@ -62,13 +99,38 @@ namespace nob {
 						return ntv::STREAMING::HAS_MODEL_LOADED(h);
 					});
 				}
+				_loader = this_script::first_frame_count;
 				return hash();
 			}
 
-			void free() const {
-				if (hash() && is_loaded()) {
-					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(hash());
+			operator hash_t() {
+				return load();
+			}
+
+			void free() {
+				if (_loader) {
+					if (!in_task()) {
+						return;
+					}
+
+					if (
+						*ntv::game_state == ntv::game_state_t::playing &&
+						_loader == this_script::first_frame_count &&
+						is_loaded()
+					) {
+						ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(hash());
+					}
+					_loader = 0;
 				}
 			}
+
+			void detach() {
+				if (_loader) {
+					_loader = 0;
+				}
+			}
+
+		private:
+			size_t _loader;
 	};
 } /* nob */

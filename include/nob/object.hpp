@@ -159,7 +159,7 @@ namespace nob {
 
 			character(entity e) : entity(e) {}
 
-			character(const model &m, const vector3 &coords, bool player_body = false) :
+			character(model m, const vector3 &coords, bool player_body = false) :
 				entity(ntv::PED::CREATE_PED(4, m, coords.x, coords.y, coords.z, 0.0f, false, true))
 			{
 				if (player_body) {
@@ -669,7 +669,7 @@ namespace nob {
 
 			vehicle(entity e) : entity(e) {}
 
-			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
+			vehicle(model m, const vector3 &coords, float heading = 0.0f) :
 				entity(ntv::VEHICLE::CREATE_VEHICLE(m, coords.x, coords.y, coords.z, heading, false, true))
 			{
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_ntv_hdl, 0);
