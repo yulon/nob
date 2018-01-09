@@ -119,21 +119,13 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				});
 			}
 		}),
-		action("Other -1", []() {
-			auto pb = nob::player::body();
-			auto pos = pb.pos({0, 0, 0});
-			auto p = nob::ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(nob::model(0x73268708), pos.x, pos.y, pos.z, false, true, true);
-			nob::ntv::ENTITY::SET_ENTITY_COLLISION(p, false, false);
-			nob::ntv::ENTITY::ATTACH_ENTITY_TO_ENTITY(p, pb, nob::ntv::PED::GET_PED_BONE_INDEX(pb, 0xE0FD), 3.7, 0, 0, 0, 90.0f, 0, false, false, false, true, 0, true);
-			nob::wait(10000);
-			nob::ntv::ENTITY::DELETE_ENTITY(&p);
+		action("Clear Tasks", []() {
+			nob::ntv::AI::CLEAR_PED_TASKS(nob::player::body());
+		}),
+		action("Clear Tasks Force", []() {
+			nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(nob::player::body());
 		}),
 		action("Other 0", []() {
-			auto pb = nob::player::body();
-			pb.add_parachute_pack();
-			pb.move(pb.pos({0, 0, 1000}));
-		}),
-		action("Other", []() {
 			static rua::hooked<nob::ntv::func_t> hkd;
 			nob::log(hkd.hook(
 				nob::ntv::AI::TASK_PLAY_ANIM_ADVANCED.target(),
@@ -142,8 +134,29 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					hkd(cc);
 				}
 			));
+		}),
+		action("Other", []() {
+			auto pb = nob::player::body();
+			auto pos = pb.pos({0, 5, 2});
+			nob::ntv::AI::TASK_AIM_GUN_AT_COORD(pb, pos.x, pos.y, pos.z, -1, false, false);
+			nob::wait(5000);
+			nob::ntv::AI::TASK_LOOK_AT_COORD(pb, pos.x, pos.y, pos.z, -1, 0, 2);
+/*
+			if (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
+				nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
+				nob::wait([]()->bool {
+					return nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core");
+				});
+			}
+nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
+			nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("fire_script_petrol_trail_glow", pos.x, pos.y, pos.z, 0.f, 0.f, 0, 1, 0, 0, 0, 0);
 
-/*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
+			nob::ntv::FIRE::ADD_OWNED_EXPLOSION(
+				pb, pos.x, pos.y, pos.z, (int)nob::ntv::eExplosionType::Flare,
+				0, true, false, 0
+			);
+
+			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->nodes[i].hash == nob::hash("friends_debug_controller")) {
 					nob::log("!!!!!!!!!!!!!!!!!!");
 
@@ -167,7 +180,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					break;
 				}
 			}
-			auto pb = nob::player::body();
+
 			nob::ntv::PED::_0x39D55A620FCB6A3A(
 				pb,
 				0,
