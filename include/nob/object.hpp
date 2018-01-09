@@ -360,7 +360,7 @@ namespace nob {
 			void movement(const movement_t &);
 
 			void add_weapon(const hasher &wpn) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash(), 0, false, false);
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn, 0, false, false);
 			}
 
 			void rm_weapon(const hasher &wpn) {
@@ -401,15 +401,15 @@ namespace nob {
 				if (is_in_vehicle()) {
 					ntv::WEAPON::SET_CURRENT_PED_VEHICLE_WEAPON(_ntv_hdl, wpn.hash());
 					if (!is_current_weapon(wpn) && arm::weapon_group(wpn).hash() != 0) {
-						ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash(), 0, false, true);
+						ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn, 0, false, true);
 					}
 					return;
 				}
 				if (!has_weapon_in_pack(wpn)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn.hash(), 0, false, true);
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, wpn, 0, false, true);
 					return;
 				}
-				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, wpn.hash(), true);
+				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_ntv_hdl, wpn, true);
 			}
 
 			hasher current_weapon() {
@@ -435,7 +435,7 @@ namespace nob {
 			}
 
 			bool has_weapon_in_pack(const hasher &wpn) {
-				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, wpn.hash(), false);
+				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_ntv_hdl, wpn, false);
 			}
 
 			bool has_weapon(const hasher &wpn) {
@@ -443,7 +443,7 @@ namespace nob {
 			}
 
 			void ammo(const hasher &type, int total) {
-				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, type.hash(), total);
+				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_ntv_hdl, type, total);
 			}
 
 			int ammo(const hasher &type) {
@@ -464,13 +464,13 @@ namespace nob {
 
 			int weapon_max_ammo(const hasher &wpn) {
 				int total;
-				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, wpn.hash(), &total);
+				ntv::WEAPON::GET_MAX_AMMO(_ntv_hdl, wpn, &total);
 				return total;
 			}
 
 			void thrown_weapon(const hasher &thr_wpn, int total) {
 				if (!has_weapon(thr_wpn)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash(), total, false, false);
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn, total, false, false);
 					return;
 				}
 				ammo(weapon_ammo_type(thr_wpn), total);
@@ -481,7 +481,7 @@ namespace nob {
 			}
 
 			void add_thrown_weapon(const hasher &thr_wpn, int count) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn.hash(), count, false, false);
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_ntv_hdl, thr_wpn, count, false, false);
 			}
 
 			void print_weapon_info() {

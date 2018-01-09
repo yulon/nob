@@ -135,7 +135,7 @@ namespace nob {
 		extern const std::array<door, 487> doors;
 
 		inline void lock_door(const door &dr, bool toggle = true) {
-			ntv::OBJECT::_DOOR_CONTROL(dr.type.hash(), dr.coords.x, dr.coords.y, dr.coords.z, toggle, 0.0f, 0.0f, -1.0f);
+			ntv::OBJECT::_DOOR_CONTROL(dr.type, dr.coords.x, dr.coords.y, dr.coords.z, toggle, 0.0f, 0.0f, -1.0f);
 		}
 
 		inline void lock_all_doors(bool toggle = true) {

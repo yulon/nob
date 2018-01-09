@@ -53,6 +53,10 @@ namespace nob {
 				return _h;
 			}
 
+			operator hash_t() const {
+				return _h;
+			}
+
 		private:
 			hash_t _h;
 			const char *_str;
