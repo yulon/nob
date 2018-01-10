@@ -636,10 +636,6 @@ namespace nob {
 
 	class vehicle : public entity {
 		public:
-			static void unlock_banned_vehicles();
-
-			////////////////////////////////////////////////////////////////////
-
 			using entity::entity;
 
 			vehicle(entity e) : entity(e) {}
@@ -1018,7 +1014,7 @@ namespace nob {
 		"BENNY", "G", "VAGSPEAK", "VAGFUN", "BOATSTAFF", "FEMBOATSTAFF"
 	}};
 
-	static constexpr std::array<model, 400> vehicles {{
+	static constexpr std::array<model, 400> base_vehicles {{
 		"NINEF", "NINEF2", "BLISTA", "ASEA", "ASEA2", "BOATTRAILER", "BUS", "ARMYTANKER", "ARMYTRAILER", "ARMYTRAILER2",
 		"SUNTRAP", "COACH", "AIRBUS", "ASTEROPE", "AIRTUG", "AMBULANCE", "BARRACKS", "BARRACKS2", "BALLER", "BALLER2",
 		"BJXL", "BANSHEE", "BENSON", "BFINJECTION", "BIFF", "BLAZER", "BLAZER2", "BLAZER3", "BISON", "BISON2",
@@ -1061,5 +1057,9 @@ namespace nob {
 		"SUPERVOLITO", "SUPERVOLITO2", "TORO2", "TROPIC2", "VALKYRIE2", "VERLIERER2", "TAMPA", "BANSHEE2", "SULTANRS", "BTYPE3"
 	}};
 
-	extern std::vector<model> banned_vehicles;
+	const std::vector<model> &dlc_vehicles();
+
+	void unlock_banned_vehicles();
+
+	const std::vector<model> &banned_vehicles();
 } /* nob */

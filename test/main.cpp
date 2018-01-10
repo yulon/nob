@@ -15,8 +15,9 @@ nob::task print_pos([]() {
 	nob::g2d::text(0, 0.93, 1, ss.str(), 0.6, 255, 255, 255, 255, 1, true);
 });
 
-nob::initer disable_ntv_ia_menu([]() {
+static nob::initer init([]() {
 	nob::ui::disable_interaction_menu();
+	nob::unlock_banned_vehicles();
 });
 
 using namespace nob::ui;
@@ -36,11 +37,8 @@ void add_vehs(list &li, const C &c) {
 nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	list("Vehicle", {
 		list("Spawn", [](list li) {
-			add_vehs(li, nob::vehicles);
-
-			nob::vehicle::unlock_banned_vehicles();
-			add_vehs(li, nob::banned_vehicles);
-
+			add_vehs(li, nob::base_vehicles);
+			add_vehs(li, nob::banned_vehicles());
 			li->on_show = nullptr;
 		})
 	}),
@@ -325,8 +323,8 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 
 			nob::ui::message(
 				"CHAR_MARTIN",
-				"馬丁",
-				"~r~你們休想取代我！"
+				"Martin",
+				"~r~I'm a legend!"
 			);
 
 			ia_menu.toggle();
