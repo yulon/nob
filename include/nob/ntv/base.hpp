@@ -88,17 +88,24 @@ namespace nob {
 
 		// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 
+		static uint64_t _bad_g;
+
 		class global_table_t {
 			public:
 				uint64_t **_segments;
 
 				operator bool() const {
-					return _segments && *_segments;
+					return _segments;
 				}
 
-				uint64_t &operator[](size_t off) const {
-					assert(*this);
-
+				uint64_t &operator[](size_t off) {
+					if (!*this) {
+						return _bad_g;
+					}
+					if (!*_segments) {
+						log("nob::ntv::global_table_t::_segments: not allocated!");
+						return _bad_g;
+					}
 					return _segments[off / 0x40000 % 0x40][off % 0x40000];
 				}
 		};
@@ -125,6 +132,10 @@ namespace nob {
 
 			bool is_valid() const {
 				return code_length;
+			}
+
+			operator bool() const {
+				return is_valid();
 			}
 
 			size_t code_pages_count() const {
@@ -174,14 +185,15 @@ namespace nob {
 			}
 
 			node_t *find(const char *name) const {
-				assert(*this);
-
-				auto h = hash(name);
-				for (size_t i = 0; i < size; i++) {
-					if (nodes[i].hash == h) {
-						return &nodes[i];
+				if (*this) {
+					auto h = hash(name);
+					for (size_t i = 0; i < size; i++) {
+						if (nodes[i].hash == h) {
+							return &nodes[i];
+						}
 					}
 				}
+				log("nob::ntv::script_list_t::find(", name, "): not found!");
 				return nullptr;
 			}
 		};
@@ -350,7 +362,11 @@ namespace nob {
 
 				func_t operator[](uint64_t hash) const {
 					auto fp = find(hash);
-					return fp ? *fp : nullptr;
+					if (fp) {
+						return *fp;
+					}
+					log("nob::ntv::func_table_t[", std::hex, hash, std::dec, "]: is null!");
+					return nullptr;
 				}
 
 				operator bool() const {
@@ -370,6 +386,7 @@ namespace nob {
 							}
 						}
 					}
+					log("nob::ntv::func_table_t::_find(", std::hex, hash, std::dec, "): not found!");
 					return nullptr;
 				}
 		};
@@ -399,7 +416,6 @@ namespace nob {
 					#endif
 
 					if (!target()) {
-						log("nob::ntv::lazy_func_t[", std::hex, _1st_h, ",", _h, "]: not found!");
 						return;
 					}
 
@@ -409,26 +425,26 @@ namespace nob {
 				}
 
 				func_t target() {
-					if (!_f) {
-						if (!_h) {
-							if (!_1st_h || !cur_fhtt_ptr) {
-								return nullptr;
-							}
-							auto it = cur_fhtt_ptr->find(_1st_h);
-							if (it == cur_fhtt_ptr->end()) {
-								return nullptr;
-							}
-							if (!it->second) {
-								return nullptr;
-							}
-							_h = it->second;
-						}
+					if (_f) {
+						return _f;
+					}
+					if (_h) {
 						_f = func_table[_h];
-						if (!_f) {
-							return nullptr;
+						if (_f) {
+							return _f;
+						}
+					} else if (_1st_h && cur_fhtt_ptr) {
+						auto it = cur_fhtt_ptr->find(_1st_h);
+						if (it != cur_fhtt_ptr->end() && it->second) {
+							_h = it->second;
+							_f = func_table[_h];
+							if (_f) {
+								return _f;
+							}
 						}
 					}
-					return _f;
+					log("nob::ntv::lazy_func_t(", std::hex, _1st_h, "->", _h, std::dec, "): not found!");
+					return nullptr;
 				}
 
 			protected:

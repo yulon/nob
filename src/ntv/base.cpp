@@ -29,7 +29,7 @@ namespace nob {
 			});
 
 			if (!global_table._segments) {
-				log("nob::ntv::global_table_t::_segments: not found!");
+				log("nob::ntv::global_table::_segments: not found!");
 				finded = false;
 			}
 
@@ -55,7 +55,7 @@ namespace nob {
 				});
 
 			if (!func_table._nodes) {
-				log("nob::ntv::func_table_t::_nodes: not found!");
+				log("nob::ntv::func_table::_nodes: not found!");
 				finded = false;
 			}
 

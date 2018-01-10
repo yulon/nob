@@ -98,16 +98,27 @@ namespace nob {
 				return false;
 			}
 
+			if (ntv::game_state) {
+				auto gs = static_cast<uint8_t>(*ntv::game_state);
+				while (gs && gs < 5) {
+					Sleep(500);
+				}
+			}
+
 			static rua::hooked<ntv::func_t> wait_hkd;
 
 			ntv::func_t wait_fp;
 
 			for (wait_fp = ntv::SYSTEM::WAIT.target(); !wait_fp; wait_fp = ntv::SYSTEM::WAIT.target()) {
+				Sleep(500);
 				if (*ntv::game_state == ntv::game_state_t::playing) {
+					wait_fp = ntv::SYSTEM::WAIT.target();
+					if (wait_fp) {
+						break;
+					}
 					log("nob::this_script::_exclusive_main: nob::ntv::SYSTEM::WAIT not found!");
 					return false;
 				}
-				Sleep(500);
 			}
 
 			if (*reinterpret_cast<uint8_t *>(wait_fp) != 0x8B) {
