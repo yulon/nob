@@ -99,7 +99,7 @@ namespace nob {
 			}
 
 			if (ntv::game_state) {
-				auto gs = static_cast<uint8_t>(*ntv::game_state);
+				auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
 				while (gs && gs < 5) {
 					Sleep(500);
 				}
