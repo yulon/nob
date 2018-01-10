@@ -38,7 +38,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	list("Vehicle", {
 		list("Spawn", [](list li) {
 			add_vehs(li, nob::base_vehicles);
-			add_vehs(li, nob::banned_vehicles());
+			add_vehs(li, nob::dlc_vehicles());
 			li->on_show = nullptr;
 		})
 	}),
@@ -134,12 +134,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			));
 		}),
 		action("Other", []() {
-			auto pb = nob::player::body();
+/*			auto pb = nob::player::body();
 			auto pos = pb.pos({0, 5, 2});
-			nob::ntv::AI::TASK_AIM_GUN_AT_COORD(pb, pos.x, pos.y, pos.z, -1, false, false);
-			nob::wait(5000);
-			nob::ntv::AI::TASK_LOOK_AT_COORD(pb, pos.x, pos.y, pos.z, -1, 0, 2);
-/*
+
 			if (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
 				nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
 				nob::wait([]()->bool {

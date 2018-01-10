@@ -14,12 +14,28 @@ namespace nob {
 
 	static ntv::script_list_t::node_t *_shop_ctrllr_n = nullptr;
 
-	size_t _ban_vehs_g = SIZE_MAX, _ban_vehs_li_find_base;
+	size_t _ban_vehs_g, _ban_vehs_li_find_base;
+	bool _finded_ban_vehs = false, _finding_ban_vehs = false;
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
-	bool _find_ban_vehs_g() {
-		if (_ban_vehs_g != SIZE_MAX) {
+	bool _find_ban_vehs() {
+		if (_finded_ban_vehs) {
 			return true;
+		}
+
+		if (_finding_ban_vehs) {
+			wait([]()->bool {
+				return !_finding_ban_vehs;
+			});
+			return _finded_ban_vehs;
+		}
+
+		_finding_ban_vehs = true;
+
+		if (!ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller")) {
+			wait([]()->bool {
+				return ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller");
+			});
 		}
 
 		if (!_shop_ctrllr_n) {
@@ -29,14 +45,13 @@ namespace nob {
 			}
 		}
 
-		if (!_shop_ctrllr_n->script || !*_shop_ctrllr_n->script) {
-			log("nob::_find_ban_vehs_g: 'shop_controller.ysc' not loaded!");
-			return false;
-		}
+		//ntv::wait_for_valid(_shop_ctrllr_n->script);
+		//ntv::wait_for_valid(*_shop_ctrllr_n->script);
 
+		chan<bool> f_ch;
 		chan<size_t> g_ch;
 
-		std::thread([g_ch]() mutable {
+		std::thread([f_ch, g_ch]() mutable {
 			auto &_shop_ctrllr = *_shop_ctrllr_n->script;
 			for (size_t i = 0; i < _shop_ctrllr.code_pages_count(); ++i) {
 				auto addr = rua::bin_ref(
@@ -58,6 +73,7 @@ namespace nob {
 											<< (*(uint32_t *)_shop_ctrllr.code_addr(func_off + k + 1) & 0xFFFFFF)
 											<< code_off - j
 										;
+										f_ch << true;
 										return;
 									}
 								}
@@ -70,33 +86,38 @@ namespace nob {
 				break;
 			}
 			g_ch << SIZE_MAX << SIZE_MAX;
+			f_ch << false;
 		}).detach();
 
 		g_ch >> _ban_vehs_g >> _ban_vehs_li_find_base;
 
-		if (_ban_vehs_g == SIZE_MAX) {
-			return false;
-		}
+		f_ch >> _finded_ban_vehs;
 
-		return true;
+		_finding_ban_vehs = false;
+
+		return _finded_ban_vehs;
 	}
 
 	void unlock_banned_vehicles() {
-		if (_find_ban_vehs_g()) {
+		if (_find_ban_vehs()) {
 			ntv::global_table[_ban_vehs_g] = 1;
 		}
 	}
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 	const std::vector<model> &banned_vehicles() {
-		if (_ban_vehs.size() || !_find_ban_vehs_g()) {
+		if (_ban_vehs.size() || !_find_ban_vehs()) {
 			return _ban_vehs;
 		}
 
-		if (!_shop_ctrllr_n->script || !*_shop_ctrllr_n->script) {
-			log("nob::banned_vehicles: 'shop_controller.ysc' not loaded!");
-			return _ban_vehs;
+		if (!ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller")) {
+			wait([]()->bool {
+				return ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller");
+			});
 		}
+
+		//ntv::wait_for_valid(_shop_ctrllr_n->script);
+		//ntv::wait_for_valid(*_shop_ctrllr_n->script);
 
 		chan<std::vector<model>> vehs_ch;
 
