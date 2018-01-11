@@ -12,7 +12,7 @@
 namespace nob {
 	std::vector<model> _ban_vehs;
 
-	static ntv::script_list_t::node_t *_shop_ctrllr_n = nullptr;
+	static ntv::script_list_t::script_t *_shop_ctrllr = nullptr;
 
 	size_t _ban_vehs_g, _ban_vehs_li_find_base;
 	bool _finded_ban_vehs = false, _finding_ban_vehs = false;
@@ -38,9 +38,9 @@ namespace nob {
 			});
 		}
 
-		if (!_shop_ctrllr_n) {
-			_shop_ctrllr_n = ntv::script_list->find("shop_controller");
-			if (!_shop_ctrllr_n) {
+		if (!_shop_ctrllr) {
+			_shop_ctrllr = ntv::script_list->find("shop_controller");
+			if (!_shop_ctrllr) {
 				return false;
 			}
 		}
@@ -48,25 +48,25 @@ namespace nob {
 		chan<size_t> ch;
 
 		std::thread([ch]() mutable {
-			auto &_shop_ctrllr = *_shop_ctrllr_n->script;
-			for (size_t i = 0; i < _shop_ctrllr.code_pages_count(); ++i) {
+			auto &sc_inf = *_shop_ctrllr->info;
+			for (size_t i = 0; i < sc_inf.code_pages_count(); ++i) {
 				auto addr = rua::bin_ref(
-					_shop_ctrllr.code_pages[i],
-					_shop_ctrllr.code_page_length(i)
+					sc_inf.code_pages[i],
+					sc_inf.code_page_length(i)
 				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).data();
 				if (!addr) {
 					continue;
 				}
-				size_t code_off = _shop_ctrllr.code_off(i, addr);
+				size_t code_off = sc_inf.code_off(i, addr);
 				for (size_t j = 0; j < 2000; j++) {
-					if (*(uint32_t *)_shop_ctrllr.code_addr(code_off - j) == 0x0008012D) {
-						size_t func_off = *(uint32_t *)_shop_ctrllr.code_addr(code_off - j + 6) & 0xFFFFFF;
+					if (*(uint32_t *)sc_inf.code_addr(code_off - j) == 0x0008012D) {
+						size_t func_off = *(uint32_t *)sc_inf.code_addr(code_off - j + 6) & 0xFFFFFF;
 						for (size_t k = 0x5; k < 0x40; k++) {
-							if ((*(uint32_t *)_shop_ctrllr.code_addr(func_off + k) & 0xFFFFFF) == 0x01002E) {
+							if ((*(uint32_t *)sc_inf.code_addr(func_off + k) & 0xFFFFFF) == 0x01002E) {
 								for (k = k + 1; k < 30; k++) {
-									if (*(uint8_t *)_shop_ctrllr.code_addr(func_off + k) == 0x5F) {
+									if (*(uint8_t *)sc_inf.code_addr(func_off + k) == 0x5F) {
 										ch
-											<< (*(uint32_t *)_shop_ctrllr.code_addr(func_off + k + 1) & 0xFFFFFF)
+											<< (*(uint32_t *)sc_inf.code_addr(func_off + k + 1) & 0xFFFFFF)
 											<< code_off - j
 											<< true
 										;
@@ -112,19 +112,19 @@ namespace nob {
 		chan<std::vector<model>> vehs_ch;
 
 		std::thread([vehs_ch]() mutable {
-			auto &_shop_ctrllr = *_shop_ctrllr_n->script;
+			auto &sc_inf = *_shop_ctrllr->info;
 			std::vector<model> vehs;
 			for (size_t i = 14; i < 400; i++) {
-				if (*(uint8_t *)_shop_ctrllr.code_addr(_ban_vehs_li_find_base + i) == 0x62) {
+				if (*(uint8_t *)sc_inf.code_addr(_ban_vehs_li_find_base + i) == 0x62) {
 					size_t switch_off = _ban_vehs_li_find_base + i;
-					auto cur_addr = (uint64_t)_shop_ctrllr.code_addr(switch_off + 2);
+					auto cur_addr = (uint64_t)sc_inf.code_addr(switch_off + 2);
 					size_t start_off = switch_off + 2;
 					size_t cases = *(uint8_t *)(cur_addr - 1);
 					for (size_t i = 0; i < cases; i++) {
 						cur_addr += 6;
 						start_off += 6;
 						size_t jump_off = *(uint16_t *)(cur_addr - 2);
-						int64_t case_off = (int64_t)_shop_ctrllr.code_addr(start_off + jump_off);
+						int64_t case_off = (int64_t)sc_inf.code_addr(start_off + jump_off);
 						uint8_t code = *(uint8_t *)case_off;
 						hash_t hash;
 						if (code == 0x28) { //push int

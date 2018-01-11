@@ -112,84 +112,80 @@ namespace nob {
 
 		extern global_table_t global_table;
 
-		struct script_t {
-			uintptr_t _unk1[2];
-			uintptr_t *code_pages;
-			alignas(uintptr_t) uint32_t code_length;
-			alignas(uintptr_t) uint32_t local_count;
-			alignas(uintptr_t) uint32_t native_count;
-			uintptr_t *local_pages;
-			uintptr_t _unk2;
-			uintptr_t *native_pages;
-			uintptr_t _unk3[2];
-			alignas(uintptr_t) uint32_t name_hash;
-			const char *name;
-			const char **str_pool_pages;
-			alignas(uintptr_t) uint32_t str_pool_length;
-			uintptr_t _unk4;
-
-			static constexpr size_t max_page_length = 0x4000;
-
-			bool is_valid() const {
-				return code_length;
-			}
-
-			operator bool() const {
-				return is_valid();
-			}
-
-			size_t code_pages_count() const {
-				return (code_length - 1) / max_page_length + 1;
-			}
-
-			size_t code_page_length(size_t page_ix) const {
-				return (page_ix == code_pages_count() - 1) ? code_length % max_page_length : max_page_length;
-			}
-
-			size_t code_off(size_t page_ix, uintptr_t addr) const {
-				return addr - code_pages[page_ix] + page_ix * max_page_length;
-			}
-
-			size_t code_off(uintptr_t addr) const {
-				for (size_t i = 0; i < code_pages_count(); ++i) {
-					auto diff = addr - code_pages[i];
-					if (diff < max_page_length) {
-						return diff + i * max_page_length;
-					}
-				}
-				return 0;
-			}
-
-			uintptr_t code_addr(size_t off) const {
-				return code_pages[off / max_page_length] + off % max_page_length;
-			}
-
-			const char *str_addr(size_t off) const {
-				return &str_pool_pages[off / max_page_length][off % max_page_length];
-			}
-		};
-
 		struct script_list_t {
-			struct node_t {
-				script_t *script;
-				int _unk;
+			struct script_t {
+				struct info_t {
+					uintptr_t _unk1[2];
+					uintptr_t *code_pages;
+					alignas(uintptr_t) uint32_t code_length;
+					alignas(uintptr_t) uint32_t local_count;
+					alignas(uintptr_t) uint32_t native_count;
+					uintptr_t *local_pages;
+					uintptr_t _unk2;
+					uintptr_t *native_pages;
+					uintptr_t _unk3[2];
+					alignas(uintptr_t) uint32_t name_hash;
+					const char *name;
+					const char **str_pool_pages;
+					alignas(uintptr_t) uint32_t str_pool_length;
+					uintptr_t _unk4;
+
+					static constexpr size_t max_page_length = 0x4000;
+
+					size_t code_pages_count() const {
+						return (code_length - 1) / max_page_length + 1;
+					}
+
+					size_t code_page_length(size_t page_ix) const {
+						return (page_ix == code_pages_count() - 1) ? code_length % max_page_length : max_page_length;
+					}
+
+					size_t code_off(size_t page_ix, uintptr_t addr) const {
+						return addr - code_pages[page_ix] + page_ix * max_page_length;
+					}
+
+					size_t code_off(uintptr_t addr) const {
+						for (size_t i = 0; i < code_pages_count(); ++i) {
+							auto diff = addr - code_pages[i];
+							if (diff < max_page_length) {
+								return diff + i * max_page_length;
+							}
+						}
+						return 0;
+					}
+
+					uintptr_t code_addr(size_t off) const {
+						return code_pages[off / max_page_length] + off % max_page_length;
+					}
+
+					const char *str_addr(size_t off) const {
+						return &str_pool_pages[off / max_page_length][off % max_page_length];
+					}
+				};
+
+				info_t *info;
+				uint32_t _unk;
 				uint32_t hash;
+
+				operator bool() const {
+					return info && info->code_length;
+				}
 			};
 
-			node_t *nodes;
-			uint8_t _unk[16];
+			script_t *scripts;
+			uintptr_t _unk[2];
 			uint32_t size;
 
 			operator bool() const {
-				return nodes;
+				return scripts;
 			}
 
-			node_t *find(const char *name) const {
+			script_t *find(const char *name) const {
 				if (*this) {
 					auto h = hash(name);
 					for (size_t i = 0; i < size; i++) {
-						if (nodes[i].hash == h) {
-							return &nodes[i];
+						if (scripts[i].hash == h) {
+							return &scripts[i];
 						}
 					}
 				}
