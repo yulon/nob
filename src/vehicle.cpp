@@ -45,13 +45,9 @@ namespace nob {
 			}
 		}
 
-		//ntv::wait_for_valid(_shop_ctrllr_n->script);
-		//ntv::wait_for_valid(*_shop_ctrllr_n->script);
+		chan<size_t> ch;
 
-		chan<bool> f_ch;
-		chan<size_t> g_ch;
-
-		std::thread([f_ch, g_ch]() mutable {
+		std::thread([ch]() mutable {
 			auto &_shop_ctrllr = *_shop_ctrllr_n->script;
 			for (size_t i = 0; i < _shop_ctrllr.code_pages_count(); ++i) {
 				auto addr = rua::bin_ref(
@@ -69,11 +65,11 @@ namespace nob {
 							if ((*(uint32_t *)_shop_ctrllr.code_addr(func_off + k) & 0xFFFFFF) == 0x01002E) {
 								for (k = k + 1; k < 30; k++) {
 									if (*(uint8_t *)_shop_ctrllr.code_addr(func_off + k) == 0x5F) {
-										g_ch
+										ch
 											<< (*(uint32_t *)_shop_ctrllr.code_addr(func_off + k + 1) & 0xFFFFFF)
 											<< code_off - j
+											<< true
 										;
-										f_ch << true;
 										return;
 									}
 								}
@@ -85,13 +81,10 @@ namespace nob {
 				}
 				break;
 			}
-			g_ch << SIZE_MAX << SIZE_MAX;
-			f_ch << false;
+			ch << SIZE_MAX << SIZE_MAX << false;
 		}).detach();
 
-		g_ch >> _ban_vehs_g >> _ban_vehs_li_find_base;
-
-		f_ch >> _finded_ban_vehs;
+		ch >> _ban_vehs_g >> _ban_vehs_li_find_base >> _finded_ban_vehs;
 
 		_finding_ban_vehs = false;
 
@@ -115,9 +108,6 @@ namespace nob {
 				return ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller");
 			});
 		}
-
-		//ntv::wait_for_valid(_shop_ctrllr_n->script);
-		//ntv::wait_for_valid(*_shop_ctrllr_n->script);
 
 		chan<std::vector<model>> vehs_ch;
 
