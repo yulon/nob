@@ -51,12 +51,6 @@ namespace nob {
 				assert(*this);
 
 				ntv::STREAMING::REQUEST_MODEL(hash());
-				if (!is_loaded()) {
-					auto h = hash();
-					wait([h]()->bool {
-						return ntv::STREAMING::HAS_MODEL_LOADED(h);
-					});
-				}
 				return *this;
 			}
 

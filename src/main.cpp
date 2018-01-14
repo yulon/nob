@@ -45,6 +45,11 @@ namespace nob {
 
 			_NOB_CALL_INIT_FN(ntv::_find_addrs);
 
+			tasks.init();
+			tasks.add_back([]() {
+				tasks.exit();
+			});
+
 			if (shv::_init()) {
 				this_script::mode = this_script::mode_t::shv;
 				shv::scriptRegister(hinstDLL, this_script::_shv_main);

@@ -139,7 +139,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			if (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
 				nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
-				nob::wait([]()->bool {
+				nob::sleep([]()->bool {
 					return nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core");
 				});
 			}
@@ -161,7 +161,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 					if (!nob::ntv::SCRIPT::HAS_SCRIPT_LOADED("friends_debug_controller")) {
 						nob::ntv::SCRIPT::REQUEST_SCRIPT("friends_debug_controller");
 						while (!nob::ntv::SCRIPT::HAS_SCRIPT_LOADED("friends_debug_controller")) {
-							nob::wait_next_frame();
+							nob::yield();
 						}
 					}
 
@@ -192,7 +192,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			nob::task([pb]() {
 				nob::ntv::Vector3 v3;
 				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
-					//nob::wait_next_frame();
+					//nob::yield();
 					nob::log(&v3, ": ", v3.x, ", ", v3.y, ", ", v3.z);
 					//nob::log(v3._paddingx, ", ", v3._paddingy, ", ", v3._paddingz, "=======================");
 				}
@@ -201,7 +201,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			auto d = "skydive@parachute@chute";
 			nob::ntv::STREAMING::REQUEST_ANIM_DICT(d);
 			if (!nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d)) {
-				nob::wait([d]()->bool {
+				nob::sleep([d]()->bool {
 					return nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d);
 				});
 			}
@@ -216,7 +216,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 
 			auto n = "p_parachute_s_idlefast";
 			nob::ntv::AI::TASK_PLAY_ANIM(pb, d, n, 8.0f, 0.0f, -1, 9, 0, 0, 0, 0);
-			nob::wait(5000);
+			nob::sleep(5000);
 			nob::ntv::AI::STOP_ANIM_TASK(pb, d, n, 0);//*/
 			//auto veh = pb.current_vehicle();
 			///*
@@ -225,7 +225,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			//auto pos = pb.pos({0, 20, 0});
 			//nob::ntv::GRAPHICS::DRAW_LIGHT_WITH_RANGE(pos.x, pos.y, pos.z, 255, 0, 0, 10, 10);
 			//nob::player::disable_automatic_respawn();
-			//nob::wait(10000);
+			//nob::sleep(10000);
 			//pb.resurrect();
 			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
 
@@ -271,7 +271,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			//nob::ntv::VEHICLE::SET_VEHICLE_IS_STOLEN(veh, true);
 			//nob::ntv::VEHICLE::SET_VEHICLE_DOORS_LOCKED(veh, 1);
 
-			//nob::wait(1000);
+			//nob::sleep(1000);
 
 			//chr.switch_weapon("WEAPON_MICROSMG");
 			//chr.ammo_no_consumption();

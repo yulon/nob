@@ -24,18 +24,16 @@ namespace nob {
 		}
 
 		if (_finding_ban_vehs) {
-			wait([]()->bool {
-				return !_finding_ban_vehs;
-			});
+			do {
+				yield();
+			} while (_finding_ban_vehs);
 			return _finded_ban_vehs;
 		}
 
 		_finding_ban_vehs = true;
 
-		if (!ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller")) {
-			wait([]()->bool {
-				return ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller");
-			});
+		while (!ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller")) {
+			yield();
 		}
 
 		if (!_shop_ctrllr) {
@@ -103,10 +101,8 @@ namespace nob {
 			return _ban_vehs;
 		}
 
-		if (!ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller")) {
-			wait([]()->bool {
-				return ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller");
-			});
+		while (!ntv::SCRIPT::HAS_SCRIPT_LOADED("shop_controller")) {
+			yield();
 		}
 
 		chan<std::vector<model>> vehs_ch;

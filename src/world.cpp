@@ -1218,10 +1218,8 @@ namespace nob {
 						ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(true);
 
 						ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core_snow");
-						if (!ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
-							wait([]()->bool {
-								return ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow");
-							});
+						while (!ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
+							yield();
 						}
 						ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core_snow");
 

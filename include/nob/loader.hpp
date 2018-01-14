@@ -53,6 +53,9 @@ namespace nob {
 					return _res;
 				}
 				_res.load();
+				while (!_res.is_loaded()) {
+					yield();
+				}
 				_owned = this_script::first_frame_count;
 				return _res;
 			}

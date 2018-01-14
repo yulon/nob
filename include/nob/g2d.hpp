@@ -86,12 +86,6 @@ namespace nob {
 					assert(*this);
 
 					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name.c_str(), false);
-					if (!is_loaded()) {
-						auto n = _name.c_str();
-						wait([n]()->bool {
-							return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(n);
-						});
-					}
 					return *this;
 				}
 

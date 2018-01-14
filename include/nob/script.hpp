@@ -17,40 +17,61 @@ namespace nob {
 		};
 
 		extern mode_t mode;
-		extern std::thread::id thread_id;
+		extern std::thread::id id;
 		extern std::atomic<size_t> first_frame_count;
 	} /* this_script */
 
-	void wait(size_t ms);
-	inline void wait_next_frame() { wait(0); }
-	void wait(const std::function<bool()> &cond);
-	inline void wait_cond(const std::function<bool()> &cond) { wait(cond); }
+	extern rua::co_pool tasks;
+
+	static constexpr size_t duration_forever = rua::co_pool::duration_forever;
+	static constexpr size_t duration_disposable = rua::co_pool::duration_disposable;
 
 	class task {
 		public:
 			task(std::nullptr_t np = nullptr) : _cp_tsk(np) {}
 
-			task(const std::function<void()> &handler, size_t duration_of_life = -1);
+			task(const std::function<void()> &handler, size_t duration = duration_forever) :
+				_cp_tsk(tasks.add(handler, duration))
+			{}
 
-			operator bool() const;
+			operator bool() const {
+				return tasks.has(_cp_tsk);
+			}
 
-			void del();
+			void del() {
+				tasks.erase(_cp_tsk);
+				_cp_tsk.reset();
+			}
 
-			void reset_dol(size_t duration_of_life = -1);
+			void reset_dol(size_t duration = -1) {
+				tasks.reset_dol(_cp_tsk, duration);
+			}
 
 		private:
 			rua::co_pool::task _cp_tsk;
 	};
 
-	inline void go(const std::function<void()> &handler) {
-		task(handler, 0);
+	inline task go(const std::function<void()> &handler) {
+		return task(handler, duration_disposable);
 	}
 
-	bool in_task();
+	inline void sleep(size_t duration) {
+		tasks.sleep(duration);
+	}
+
+	inline void yield() { sleep(duration_disposable); }
+
+	inline bool in_task() {
+		return tasks.this_caller_in_task();
+	}
 
 	namespace this_task {
-		void del();
-		void reset_dol(int duration_of_life = -1);
+		inline void del() {
+			tasks.erase();
+		}
+		inline void reset_dol(size_t duration_of_life) {
+			tasks.reset_dol(duration_of_life);
+		}
 	}
 
 	class initer {
@@ -62,11 +83,7 @@ namespace nob {
 	template <typename T>
 	class chan : public rua::chan<T> {
 		public:
-			chan() : rua::chan<T>({{
-				in_task,
-				wait_next_frame,
-				static_cast<void (*)(const std::function<bool()> &)>(wait)
-			}}) {}
+			chan() : rua::chan<T>({ tasks.get_scheduler() }) {}
 	};
 
 	void terminate_unimportant_scripts();

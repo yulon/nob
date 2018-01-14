@@ -16,7 +16,7 @@ namespace nob {
 			if (load_scene) {
 				while (height == 0.0f) {
 					ntv::STREAMING::LOAD_SCENE(coords.x, coords.y, coords.z);
-					wait(1000);
+					sleep(1000);
 					ntv::GAMEPLAY::GET_GROUND_Z_FOR_3D_COORD(coords.x, coords.y, coords.z, &height, 0);
 				}
 			}

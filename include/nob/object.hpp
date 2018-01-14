@@ -610,7 +610,7 @@ namespace nob {
 			int st = ntv::STREAMING::GET_IDEAL_PLAYER_SWITCH_TYPE(old_chr_coords.x, old_chr_coords.y, old_chr_coords.z, chr_coords.x, chr_coords.y, chr_coords.z);
 			ntv::STREAMING::START_PLAYER_SWITCH(old_chr, chr, 0, st);
 
-			wait(1000);
+			sleep(1000);
 
 			if (ntv::ENTITY::DOES_ENTITY_EXIST(chr) && !ntv::ENTITY::IS_ENTITY_DEAD(chr)) {
 				change_body(chr);

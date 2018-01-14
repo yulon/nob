@@ -277,10 +277,8 @@ namespace nob {
 			_bnr_tsk = task([text]() {
 				if (!_bnr_sf) {
 					_bnr_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("MP_BIG_MESSAGE_FREEMODE");
-					if (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
-						wait([]()->bool {
-							return ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf);
-						});
+					while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
+						yield();
 					}
 
 					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "SHOW_MISSION_PASSED_MESSAGE");

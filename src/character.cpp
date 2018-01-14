@@ -136,7 +136,7 @@ namespace nob {
 
 		if (!ntv::WEAPON::HAS_WEAPON_ASSET_LOADED(h)) {
 			ntv::WEAPON::REQUEST_WEAPON_ASSET(h, 31, 0);
-			wait([h]()->bool {
+			sleep([h]()->bool {
 				return ntv::STREAMING::HAS_MODEL_LOADED(h);
 			});
 		}

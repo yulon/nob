@@ -13,45 +13,7 @@
 #include <cstring>
 
 namespace nob {
-	rua::co_pool _cp;
-
-	bool in_task() {
-		return _cp.this_caller_in_task();
-	}
-
-	task::task(const std::function<void()> &handler, size_t duration_of_life) :
-		_cp_tsk(_cp.add(handler, duration_of_life))
-	{}
-
-	void task::del() {
-		_cp.erase(_cp_tsk);
-		_cp_tsk.reset();
-	}
-
-	void task::reset_dol(size_t duration_of_life) {
-		_cp.reset_dol(_cp_tsk, duration_of_life);
-	}
-
-	namespace this_task {
-		void del() {
-			_cp.erase();
-		}
-		void reset_dol(size_t duration_of_life) {
-			_cp.reset_dol(duration_of_life);
-		}
-	}
-
-	void wait(size_t ms) {
-		_cp.sleep(ms);
-	}
-
-	void wait(const std::function<bool()> &cond) {
-		_cp.wait(cond);
-	}
-
-	task::operator bool() const {
-		return _cp.has(_cp_tsk);
-	}
+	rua::co_pool tasks;
 
 	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
 
@@ -70,7 +32,7 @@ namespace nob {
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
 			first_frame_count = ntv::GAMEPLAY::GET_FRAME_COUNT();
-			_cp.init();
+			tasks.init();
 
 			for (auto rit = _initers->rbegin(); rit != _initers->rend(); ++rit) {
 				go(*rit);
@@ -80,7 +42,7 @@ namespace nob {
 		void _shv_main() {
 			_init();
 			for (;;) {
-				_cp.handle();
+				tasks.handle();
 				shv::WAIT(0);
 			}
 		}
@@ -88,7 +50,7 @@ namespace nob {
 		void _ysc_main() {
 			_init();
 			for (;;) {
-				_cp.handle();
+				tasks.handle();
 				ntv::SYSTEM::WAIT(0);
 			}
 		}
@@ -136,7 +98,7 @@ namespace nob {
 							_init();
 						}
 						last_fc = cur_fc;
-						_cp.handle();
+						tasks.handle();
 					}
 					wait_hkd(cc);
 				}
