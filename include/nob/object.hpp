@@ -209,21 +209,13 @@ namespace nob {
 				}
 			}
 
-			void still() {
-				ntv::AI::TASK_STAND_STILL(_h, -1);
-			}
+			void still();
 
-			void jump() {
-				ntv::AI::TASK_JUMP(_h, false, false, false);
-			}
+			void jump();
 
-			void climb() {
-				ntv::AI::TASK_CLIMB(_h, false);
-			}
+			void climb();
 
-			void climb_ladder() {
-				ntv::AI::TASK_CLIMB_LADDER(_h, 0);
-			}
+			void climb_ladder();
 
 			static constexpr float speed_walk = 1.0f;
 			static constexpr float speed_run = 1.2f;
@@ -235,9 +227,7 @@ namespace nob {
 				go_to(pos({0, 10, 0}), speed);
 			}
 
-			void skydive() {
-				ntv::AI::TASK_SKY_DIVE(_h);
-			}
+			void skydive();
 
 			void add_parachute_pack() {
 				if (!has_weapon_in_pack(nob::hash("GADGET_PARACHUTE"))) {
@@ -245,12 +235,11 @@ namespace nob {
 				}
 			}
 
-			void open_parachute() {
-				add_parachute_pack();
-				ntv::PED::FORCE_PED_TO_OPEN_PARACHUTE(_h);
-			}
+			void open_parachute();
 
-			void show_fake_parachute(bool toggle = true);
+			void open_fake_parachute();
+
+			void stop_motion_command();
 
 			inline void into_vehicle(vehicle veh, int seat);
 
@@ -549,9 +538,9 @@ namespace nob {
 				#endif
 			}
 
-			void look(const vector3 &coords);
+			void look();
 
-			void clear_look() {
+			void stop_look() {
 				ntv::AI::TASK_CLEAR_LOOK_AT(_h);
 			}
 
