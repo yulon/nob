@@ -78,14 +78,108 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		})
 	}),
 	list("Player", {
-		flag("Invincible", [](bool val) {
+		action("Print Postion", []() {
+			auto pos = nob::player::body().pos();
+			nob::log("{ ", pos.x, ", ", pos.y, ", ", pos.z, " }");
+		}),
+		flag("Direct Move", [](bool val) {
+			static nob::keyboard::listener kl;
+			static nob::task tsks[6];
+
 			auto pb = nob::player::body();
-			pb.invincible(val);
-			/*auto addr = nob::shv::getScriptHandleBaseAddress(pb);
-			if (addr) {
-				nob::log(addr);
-				*(DWORD *)(addr + 0x188) |= (1 << 9);
-			}*/
+			if (val) {
+				nob::ntv::ENTITY::FREEZE_ENTITY_POSITION(pb, true);
+				kl = nob::keyboard::listener([](int code, bool down)->bool {
+					static float m = 1.0f;
+					static auto cmd = [](bool down, size_t ti, nob::vector3 (*offset)()) {
+						if (down) {
+							if (!tsks[ti]) {
+								tsks[ti] = nob::task([offset]() {
+									auto pb = nob::player::body();
+									auto pos = pb.pos(offset());
+									nob::player::body().move(pos);
+								});
+							}
+						} else if (tsks[ti]) {
+							tsks[ti].del();
+						}
+					};
+					switch (code) {
+						case 'W': {
+							cmd(down, 0, []()->nob::vector3 {
+								return {0, m, 0};
+							});
+							return false;
+						}
+						case 'S': {
+							cmd(down, 1, []()->nob::vector3 {
+								return {0, -m, 0};
+							});
+							return false;
+						}
+						case 'A': {
+							cmd(down, 2, []()->nob::vector3 {
+								return {-m, 0, 0};
+							});
+							return false;
+						}
+						case 'D': {
+							cmd(down, 3, []()->nob::vector3 {
+								return {m, 0, 0};
+							});
+							return false;
+						}
+						case VK_SPACE: {
+							cmd(down, 4, []()->nob::vector3 {
+								return {0, 0, 5.0f};
+							});
+							return false;
+						}
+						case 'F': {
+							cmd(down, 5, []()->nob::vector3 {
+								return {0, 0, -3.0f};
+							});
+							return false;
+						}
+						case VK_SHIFT: {
+							if (down) {
+								m = 20.0f;
+							} else {
+								m = 1.0f;
+							}
+							return false;
+						}
+						default:
+							return true;
+					}
+				});
+			} else {
+				kl.del();
+				for (size_t i = 0; i < 6; ++i) {
+					if (tsks[i]) {
+						tsks[i].del();
+					}
+				}
+				nob::ntv::ENTITY::FREEZE_ENTITY_POSITION(pb, false);
+			}
+		}),
+		flag("Invincible", [](bool val) {
+			static nob::task tsk;
+			if (val) {
+				tsk = nob::task([]() mutable {
+					auto pb = nob::player::body();
+					pb.invincible(true);
+					/*auto addr = nob::shv::getScriptHandleBaseAddress(pb);
+					if (addr) {
+						nob::log(addr);
+						*(DWORD *)(addr + 0x188) |= (1 << 9);
+					}*/
+					nob::sleep(5000);
+				});
+			} else {
+				tsk.del();
+				nob::player::body().invincible(false);
+			}
 		}),
 		flag("Auto Get Parachute in Plane", [](bool val) {
 			nob::player::auto_get_parachute_in_plane(val);
@@ -123,7 +217,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Clear Tasks Force", []() {
 			nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(nob::player::body());
 		}),
-		action("Other 0", []() {
+		action("Hook Function", []() {
 			static rua::hooked<nob::ntv::func_t> hkd;
 			nob::log(hkd.hook(
 				nob::ntv::AI::TASK_PLAY_ANIM_ADVANCED.target(),
@@ -134,8 +228,28 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			));
 		}),
 		action("Other", []() {
-/*			auto pb = nob::player::body();
-			auto pos = pb.pos({0, 5, 2});
+			auto pb = nob::player::body();
+			auto chr = nob::character("mp_m_freemode_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
+			nob::task([pb, chr]() mutable {
+				auto v3 = nob::ntv::ENTITY::GET_ENTITY_FORWARD_VECTOR(pb);
+				chr.move({v3.x, v3.y, v3.z});
+			});
+
+/*			//auto pos = pb.pos({0, 50, 200});
+			nob::ntv::PATHFIND::LOAD_ALL_PATH_NODES(true);
+			for (size_t i = 0; i < 500; ++i) {
+				nob::ntv::Vector3 pos;
+				int id;
+				nob::ntv::PATHFIND::GET_RANDOM_VEHICLE_NODE(0, 1932.64f, 0, 6101.1f, false, false, false, &pos, &id);
+				auto mkr = nob::map::marker({pos.x, pos.y, pos.z});
+				mkr.graphic(357);
+				mkr.keep_track(false);
+			}
+
+			nob::ntv::PED::SET_PED_TO_RAGDOLL(pb, -1, -1, 0, false, false, false);
+			nob::sleep(5000);
+			nob::ntv::PED::RESET_PED_RAGDOLL_TIMER(pb);
+			nob::ntv::PED::SET_PED_TO_RAGDOLL(pb, 0, -1, 0, false, false, false);
 
 			if (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
 				nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");

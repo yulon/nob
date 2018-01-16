@@ -8,6 +8,8 @@
 
 namespace nob {
 	namespace map {
+		// N 8033.74, S -4168.46, YC 1932.64, YR 6101.1
+
 		inline void clear_black_fog() {
 			ntv::UI::_SET_MINIMAP_REVEALED(true);
 		}
