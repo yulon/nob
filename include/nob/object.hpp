@@ -174,6 +174,7 @@ namespace nob {
 					ntv::PED::SET_PED_DIES_INSTANTLY_IN_WATER(_h, false);
 					ntv::PED::_SET_PED_RAGDOLL_BLOCKING_FLAGS(_h, 1); // Blocks ragdolling when shot.
 					ntv::WEAPON::SET_PED_DROPS_WEAPONS_WHEN_DEAD(_h, false);
+					ntv::PED::SET_PED_CAN_RAGDOLL_FROM_PLAYER_IMPACT(_h, false);
 				}
 				ntv::PED::SET_PED_CONFIG_FLAG(_h, 281, true); // PED_FLAG_NO_WRITHE
 			}
@@ -283,7 +284,9 @@ namespace nob {
 				skydiving,
 				parachuting,
 				climbing,
-				climbing_ladder
+				climbing_ladder,
+				covering,
+				paralysing
 			};
 
 			motion_state_t motion_state() const {
@@ -311,12 +314,26 @@ namespace nob {
 					return motion_state_t::jumping;
 				}
 
-				if (ntv::AI::GET_IS_TASK_ACTIVE(_h, 1)) {
+				if (ntv::AI::GET_IS_TASK_ACTIVE(_h, 1)) { // CTaskClimbLadder
 					return motion_state_t::climbing_ladder;
 				}
 
 				if (ntv::PED::IS_PED_CLIMBING(_h)) {
 					return motion_state_t::climbing;
+				}
+
+				if (ntv::PED::IS_PED_IN_COVER(_h, 0)) {
+					return motion_state_t::covering;
+				}
+
+				if (
+					ntv::PED::IS_PED_RAGDOLL(_h) ||
+					ntv::PED::IS_PED_RUNNING_RAGDOLL_TASK(_h) ||
+					ntv::AI::GET_IS_TASK_ACTIVE(_h, 125) || // CTaskHitWall
+					ntv::AI::GET_IS_TASK_ACTIVE(_h, 387) || // CTaskAnimatedHitByExplosion
+					ntv::AI::GET_IS_TASK_ACTIVE(_h, 95) // CTaskCarReactToVehicleCollisionGetOut
+				) {
+					return motion_state_t::paralysing;
 				}
 
 				if (ntv::AI::IS_PED_STILL(_h)) {
@@ -551,6 +568,10 @@ namespace nob {
 			void shoot(bool toggle = true);
 
 			void shoot_once();
+
+			void cover();
+
+			void paralysis();
 
 			////////////////////////////////////////////////////////////////////
 

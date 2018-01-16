@@ -38,12 +38,16 @@ namespace nob {
 				data.going = false;
 				break;
 			case character::motion_state_t::climbing_ladder:
+			case character::motion_state_t::covering:
+			case character::motion_state_t::paralysing:
 				ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(h);
 				break;
 			case character::motion_state_t::parachuting:
 				if (data.fk_chute) {
 					data.fk_chute.del();
 					data.fk_chute = 0;
+				} else {
+					ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(h);
 				}
 				break;
 			default:
@@ -90,6 +94,20 @@ namespace nob {
 			return;
 		}
 		ntv::AI::TASK_CLIMB_LADDER(_h, 0);
+	}
+
+	void character::cover() {
+		if (!_is_new_mds(_h, character::motion_state_t::covering)) {
+			return;
+		}
+		ntv::AI::TASK_STAY_IN_COVER(_h);
+	}
+
+	void character::paralysis() {
+		if (!_is_new_mds(_h, character::motion_state_t::paralysing)) {
+			return;
+		}
+		ntv::PED::SET_PED_TO_RAGDOLL(_h, -1, -1, 0, false, false, false);
 	}
 
 	void character::skydive() {
@@ -322,6 +340,9 @@ namespace nob {
 				break;
 			case motion_state_t::parachuting:
 				open_fake_parachute();
+				break;
+			case motion_state_t::covering:
+				cover();
 				break;
 			default:
 				break;
