@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ntv.hpp"
+#include "vector.hpp"
+#include "object.hpp"
 
 #include <array>
 
@@ -123,5 +125,32 @@ namespace nob {
 		inline void stop_all_filters() {
 			ntv::GRAPHICS::_STOP_ALL_SCREEN_EFFECTS();
 		}
-	} /* vision */
+
+		inline vector3 forward_world_pos(float distance = 10.0f) {
+			return vector3(ntv::CAM::GET_GAMEPLAY_CAM_COORD()).offset(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), distance);
+		}
+
+		struct world_info_t {
+			vector3 pos;
+			entity obj;
+		};
+
+		inline world_info_t center_point_world_info() {
+			vector3 cam_pos = ntv::CAM::GET_GAMEPLAY_CAM_COORD();
+			vector3 fwd = vector3(cam_pos).offset(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), 10.0f);
+			auto ray = ntv::WORLDPROBE::_START_SHAPE_TEST_RAY(cam_pos.x, cam_pos.y, cam_pos.z, fwd.x, fwd.y, fwd.z, -1, player::body(), 7);
+			bool hit;
+			ntv::Vector3 pos;
+			ntv::Vector3 surface_normal;
+			ntv::Entity obj = 0;
+			ntv::WORLDPROBE::GET_SHAPE_TEST_RESULT(ray, &hit, &pos, &surface_normal, &obj);
+			return {pos, obj};
+		}
+
+		inline vector2 coords_from_world_pos(const vector3 &wp) {
+			vector2 sc;
+			ntv::GRAPHICS::GET_SCREEN_COORD_FROM_WORLD_COORD(wp.x, wp.y, wp.z, &sc.x, &sc.y);
+			return sc;
+		}
+	} /* screen */
 } /* nob */

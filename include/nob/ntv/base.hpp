@@ -71,9 +71,12 @@ namespace nob {
 		typedef int Sphere;
 		typedef int ScrHandle;
 
-		struct Vector3 {
-			alignas(uintptr_t) float x, y, z;
-		};
+		#ifndef _NOB_NTV_VEC3
+			#define _NOB_NTV_VEC3
+			struct Vector3 {
+				alignas(uintptr_t) float x, y, z;
+			};
+		#endif
 
 		////////////////////////////////////////////////////////////////////////
 
