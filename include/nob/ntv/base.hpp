@@ -1,9 +1,10 @@
 #pragma once
 
 #include "../hash.hpp"
-#include "../program.hpp"
 #include "../log.hpp"
 #include "fhtt.hpp"
+
+#include <rua/unsafe_ptr.hpp>
 
 #ifdef NOB_USING_SHV_CALL
 	#include "../shv.hpp"
@@ -293,71 +294,9 @@ namespace nob {
 
 		class func_table_t {
 			public:
-				struct node_t {
-					node_t *nxt;
-					func_t funcs[7];
-					uint32_t len;
-					uint64_t hashes[7];
-
-					node_t *next() const {
-						return nxt;
-					}
-
-					uint32_t length() const {
-						return len;
-					}
-
-					uint64_t hash(uint8_t ix) const {
-						return hashes[ix];
-					}
-				};
-
-				struct node_1290_t {
-					uint64_t nxt1;
-					uint64_t nxt2;
-					func_t funcs[7];
-					uint32_t len1;
-					uint32_t len2;
-					uint64_t hashes;
-
-					node_1290_t *next() const {
-						uintptr_t result;
-						auto v5 = reinterpret_cast<uintptr_t>(&nxt1);
-						uint64_t v12 = 2;
-						auto v13 = v5 ^ nxt2;
-						auto v14 = (char *)&result - v5;
-						do {
-							*(uint32_t*)&v14[v5] = v13 ^ *(uint32_t*)v5;
-							v5 += 4;
-							--v12;
-						} while (v12);
-						return reinterpret_cast<node_1290_t *>(result);
-					}
-
-					uint32_t length() const {
-						return ((uintptr_t)&len1) ^ len1 ^ len2;
-					}
-
-					uint64_t hash(uint8_t ix) const {
-						uintptr_t n_addr = 16 * ix + reinterpret_cast<uintptr_t>(&nxt1) + 0x54;
-						uint64_t v8 = 2;
-						uint64_t n_result;
-						auto v11 = (char *)&n_result - n_addr;
-						auto v10 = n_addr ^ *(uint32_t *)(n_addr + 8);
-						do {
-							*(uint32_t *)&v11[n_addr] = v10 ^ *(uint32_t *)(n_addr);
-							n_addr += 4;
-							--v8;
-						} while (v8);
-						return n_result;
-					}
-				};
-
 				uintptr_t _nodes;
 
-				func_t *find(uint64_t hash) const {
-					return program::version < 1290 ? _find<node_t>(hash) : _find<node_1290_t>(hash);
-				}
+				func_t *find(uint64_t hash) const;
 
 				func_t operator[](uint64_t hash) const {
 					auto fp = find(hash);
@@ -370,23 +309,6 @@ namespace nob {
 
 				operator bool() const {
 					return _nodes;
-				}
-
-			private:
-				template <typename T>
-				func_t *_find(uint64_t hash) const {
-					if (!_nodes) {
-						return nullptr;
-					}
-					for (auto n = reinterpret_cast<T **>(_nodes)[hash & 0xFF]; n; n = n->next()) {
-						for (uint8_t i = 0; i < n->length(); ++i) {
-							if (n->hash(i) == hash) {
-								return &n->funcs[i];
-							}
-						}
-					}
-					log("nob::ntv::func_table_t::_find(", std::hex, hash, std::dec, "): not found!");
-					return nullptr;
 				}
 		};
 

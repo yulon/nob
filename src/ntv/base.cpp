@@ -5,6 +5,90 @@
 
 namespace nob {
 	namespace ntv {
+		template <typename T>
+		func_t *_fn_tab_find(uintptr_t nodes, uint64_t hash) {
+			if (!nodes) {
+				return nullptr;
+			}
+			for (auto n = reinterpret_cast<T **>(nodes)[hash % 0x100]; n; n = n->next()) {
+				for (uint8_t i = 0; i < n->length(); ++i) {
+					if (n->hash(i) == hash) {
+						return &n->funcs[i];
+					}
+				}
+			}
+			log("nob::ntv::func_table_t::find(", std::hex, hash, std::dec, "): not found!");
+			return nullptr;
+		}
+
+		func_t *func_table_t::find(uint64_t hash) const {
+			struct node_t {
+				node_t *nxt;
+				func_t funcs[7];
+				uint32_t len;
+				uint64_t hashes[7];
+
+				node_t *next() const {
+					return nxt;
+				}
+
+				uint32_t length() const {
+					return len;
+				}
+
+				uint64_t hash(uint8_t ix) const {
+					return hashes[ix];
+				}
+			};
+
+			struct node_1290_t {
+				uint64_t nxt1;
+				uint64_t nxt2;
+				func_t funcs[7];
+				uint32_t len1;
+				uint32_t len2;
+				uint64_t hashes;
+
+				node_1290_t *next() const {
+					volatile uintptr_t result;
+					volatile auto v5 = reinterpret_cast<uintptr_t>(&nxt1);
+					volatile uint64_t c = 2;
+					volatile auto v13 = v5 ^ nxt2;
+					volatile auto v14 = (char *)&result - v5;
+					do {
+						*(uint32_t*)&v14[v5] = v13 ^ *(uint32_t*)v5;
+						v5 += 4;
+						--c;
+					} while (c);
+					return reinterpret_cast<node_1290_t *>(result);
+				}
+
+				uint32_t length() const {
+					return ((uintptr_t)&len1) ^ len1 ^ len2;
+				}
+
+				uint64_t hash(uint8_t ix) const {
+					volatile uintptr_t n_addr = 16 * ix + reinterpret_cast<uintptr_t>(&nxt1) + 0x54;
+					volatile uint64_t c = 2;
+					volatile uint64_t n_result;
+					volatile auto v11 = (char *)&n_result - n_addr;
+					volatile auto v10 = n_addr ^ *(uint32_t *)(n_addr + 8);
+					do {
+						*(uint32_t *)&v11[n_addr] = v10 ^ *(uint32_t *)(n_addr);
+						n_addr += 4;
+						--c;
+					} while (c);
+					return n_result;
+				}
+			};
+
+			return
+				program::version < 1290 ?
+				_fn_tab_find<node_t>(_nodes, hash) :
+				_fn_tab_find<node_1290_t>(_nodes, hash)
+			;
+		}
+
 		global_table_t global_table;
 
 		script_list_t *script_list;
