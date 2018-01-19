@@ -3,17 +3,54 @@
 #include "ntv.hpp"
 #include "hash.hpp"
 #include "script.hpp"
+#include "gc.hpp"
 
 #include <array>
 #include <string>
 #include <vector>
 
 namespace nob {
-	class model : public hasher {
+	class model : private hasher {
 		public:
-			using hasher::hasher;
+			constexpr model() : hasher(), _loaded(0) {}
 
-			constexpr model(const hasher &hr) : hasher(hr.hash()) {}
+			constexpr model(std::nullptr_t) : hasher(), _loaded(0) {}
+
+			constexpr model(hash_t h) : hasher(h), _loaded(0) {}
+
+			constexpr model(const char *c_str) : hasher(c_str), _loaded(0) {}
+
+			model(const std::string &str) : hasher(str), _loaded(0) {}
+
+			constexpr model(const hasher &hr) : hasher(hr), _loaded(0) {}
+
+			constexpr model(const model &src) : hasher(static_cast<const hasher &>(src)), _loaded(0) {}
+
+			model &operator=(const model &src) {
+				free();
+				static_cast<hasher &>(*this) = static_cast<const hasher &>(src);
+				return *this;
+			}
+
+			constexpr model(model &&src) : hasher(static_cast<const hasher &>(src)), _loaded(src._loaded) {
+				if (src._loaded == this_script::gameplay_id) {
+					src._loaded = 0;
+				}
+			}
+
+			model &operator=(model &&src) {
+				free();
+				static_cast<hasher &>(*this) = static_cast<const hasher &>(src);
+				if (src._loaded == this_script::gameplay_id) {
+					_loaded = src._loaded;
+					src._loaded = 0;
+				}
+				return *this;
+			}
+
+			~model() {
+				free();
+			}
 
 			using native_handle_t = hash_t;
 
@@ -28,8 +65,6 @@ namespace nob {
 			operator bool() const {
 				return hash() && ntv::STREAMING::IS_MODEL_IN_CDIMAGE(hash()) && ntv::STREAMING::IS_MODEL_VALID(hash());
 			}
-
-			std::string src_str() const = delete;
 
 			std::string name() const {
 				return hasher::src_str();
@@ -47,15 +82,45 @@ namespace nob {
 				return ntv::STREAMING::IS_MODEL_A_VEHICLE(hash());
 			}
 
-			const model &load() const {
+			const model &load() {
 				assert(*this);
 
-				ntv::STREAMING::REQUEST_MODEL(hash());
+				start:
+
+				if (is_loaded()) {
+					if (_loaded != this_script::gameplay_id && gc::try_ref_inc(*this)) {
+						_loaded = this_script::gameplay_id;
+					}
+					return *this;
+				}
+
+				_loaded = this_script::gameplay_id;
+
+				auto h = hash();
+				ntv::STREAMING::REQUEST_MODEL(h);
+
+				while (!is_loaded()) {
+					yield();
+					if (_loaded != this_script::gameplay_id) {
+						goto start;
+					}
+				}
+
+				gc::track(*this, [h]() {
+					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(h);
+				});
+
 				return *this;
 			}
 
-			void free() const {
-				ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(hash());
+			void free() {
+				if (_loaded == this_script::gameplay_id) {
+					gc::try_ref_dec(*this);
+					_loaded = 0;
+				}
 			}
+
+		private:
+			size_t _loaded;
 	};
 } /* nob */

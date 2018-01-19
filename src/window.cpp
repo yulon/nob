@@ -50,7 +50,7 @@ namespace nob {
 			return CallWindowProcW(_old_proc, hWnd, uMsg, wParam, lParam);
 		}
 
-		void _hook_proc() {
+		initer _hook_proc([]() {
 			if (_old_proc) {
 				return;
 			}
@@ -58,15 +58,13 @@ namespace nob {
 				return;
 			}
 			_old_proc = (WNDPROC)SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)&_proc);
-		}
+		});
 
-		initer _initer(_hook_proc);
-
-		void _unhook_proc() {
+		exiter _unhook_proc([]() {
 			if (!_old_proc) {
 				return;
 			}
 			SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)_old_proc);
-		}
+		});
 	} /* window */
 } /* nob */

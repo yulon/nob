@@ -2,6 +2,7 @@
 
 #include "ntv.hpp"
 #include "script.hpp"
+#include "gc.hpp"
 
 #include <string>
 #include <cassert>
@@ -54,13 +55,37 @@ namespace nob {
 
 		class texture_dict {
 			public:
-				texture_dict() = default;
+				texture_dict() : _name(""), _loaded(0) {}
 
 				texture_dict(std::nullptr_t) : texture_dict() {}
 
-				texture_dict(const char *name) : _name(name) {}
+				texture_dict(const char *name) : _name(name), _loaded(0) {}
 
-				texture_dict(const std::string &name) : texture_dict(name.c_str()) {}
+				texture_dict(std::string name) : _name(std::move(name)), _loaded(0) {}
+
+				texture_dict(const texture_dict &src) : _name(src._name), _loaded(0) {}
+
+				texture_dict &operator=(const texture_dict &src) {
+					free();
+					_name = src._name;
+					return *this;
+				}
+
+				texture_dict(texture_dict &&src) : _name(std::move(src._name)), _loaded(src._loaded) {
+					if (src._loaded == this_script::gameplay_id) {
+						src._loaded = 0;
+					}
+				}
+
+				texture_dict &operator=(texture_dict &&src) {
+					free();
+					_name = std::move(src._name);
+					if (src._loaded == this_script::gameplay_id) {
+						_loaded = src._loaded;
+						src._loaded = 0;
+					}
+					return *this;
+				}
 
 				const std::string &name() const {
 					return _name;
@@ -82,23 +107,57 @@ namespace nob {
 					return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(_name.c_str());
 				}
 
-				const texture_dict &load() const {
+				const texture_dict &load() {
 					assert(*this);
 
+					start:
+
+					if (is_loaded()) {
+						if (_loaded != this_script::gameplay_id && gc::try_ref_inc(*this)) {
+							_loaded = this_script::gameplay_id;
+						}
+						return *this;
+					}
+
+					_loaded = this_script::gameplay_id;
+
 					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name.c_str(), false);
+
+					while (!is_loaded()) {
+						yield();
+						if (_loaded != this_script::gameplay_id) {
+							goto start;
+						}
+					}
+
+					auto n = _name;
+					gc::track(*this, [n]() {
+						ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(n.c_str());
+					});
+
 					return *this;
 				}
 
-				void free() const {
-					ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(_name.c_str());
+				void free() {
+					if (_loaded == this_script::gameplay_id) {
+						gc::try_ref_dec(*this);
+						_loaded = 0;
+					}
 				}
 
 				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) const {
-					ntv::GRAPHICS::DRAW_SPRITE(_name.c_str(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
+					assert(is_loaded());
+
+					ntv::GRAPHICS::DRAW_SPRITE(native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
+				}
+
+				void draw_s(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
+					ntv::GRAPHICS::DRAW_SPRITE(load().native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
 				}
 
 			private:
 				std::string _name;
+				size_t _loaded;
 		};
 	} /* g2d */
 } /* nob */

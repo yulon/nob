@@ -25,9 +25,15 @@ namespace nob {
 		return hash(str.c_str());
 	}
 
+	static inline constexpr hash_t hash(hash_t h) {
+		return h;
+	}
+
 	class hasher {
 		public:
-			constexpr hasher(hash_t h = 0) : _h(h), _str(nullptr) {}
+			constexpr hasher() : _h(0), _str(nullptr) {}
+			constexpr hasher(std::nullptr_t) : hasher() {}
+			constexpr hasher(hash_t h) : _h(h), _str(nullptr) {}
 			constexpr hasher(const char *c_str) : _h(nob::hash(c_str)), _str(c_str) {}
 			hasher(const std::string &str) : hasher(str.c_str()) {}
 
@@ -53,18 +59,17 @@ namespace nob {
 				return _h;
 			}
 
-			operator hash_t() const {
-				return _h;
-			}
-
 		private:
 			hash_t _h;
 			const char *_str;
 	};
+}
 
-	class cpp_hash {
+namespace std {
+	template <>
+	class hash<nob::hasher> {
 		public:
-			constexpr size_t operator()(const hasher &hr) {
+			constexpr size_t operator()(const nob::hasher &hr) {
 				return static_cast<size_t>(hr.hash());
 			}
 	};

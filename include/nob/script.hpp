@@ -18,20 +18,20 @@ namespace nob {
 
 		extern mode_t mode;
 		extern std::thread::id id;
-		extern std::atomic<size_t> first_frame_count;
+		extern std::atomic<size_t> gameplay_id;
+		extern std::atomic<bool> exiting;
 	} /* this_script */
 
 	extern rua::co_pool tasks;
 
-	static constexpr size_t duration_forever = rua::co_pool::duration_forever;
-	static constexpr size_t duration_disposable = rua::co_pool::duration_disposable;
+	using duration = rua::co_pool::duration;
 
 	class task {
 		public:
 			task(std::nullptr_t np = nullptr) : _cp_tsk(np) {}
 
-			task(const std::function<void()> &handler, size_t duration = duration_forever) :
-				_cp_tsk(tasks.add(handler, duration))
+			task(const std::function<void()> &handler, duration timeout = duration::forever) :
+				_cp_tsk(tasks.add(handler, timeout))
 			{}
 
 			operator bool() const {
@@ -43,8 +43,8 @@ namespace nob {
 				_cp_tsk.reset();
 			}
 
-			void reset_dol(size_t duration = -1) {
-				tasks.reset_dol(_cp_tsk, duration);
+			void reset_dol(duration timeout = duration::disposable) {
+				tasks.reset_dol(_cp_tsk, timeout);
 			}
 
 		private:
@@ -52,14 +52,8 @@ namespace nob {
 	};
 
 	inline task go(const std::function<void()> &handler) {
-		return task(handler, duration_disposable);
+		return task(handler, duration::disposable);
 	}
-
-	inline void sleep(size_t duration) {
-		tasks.sleep(duration);
-	}
-
-	inline void yield() { sleep(duration_disposable); }
 
 	inline bool in_task() {
 		return tasks.this_caller_in_task();
@@ -69,15 +63,56 @@ namespace nob {
 		inline void del() {
 			tasks.erase();
 		}
-		inline void reset_dol(size_t duration_of_life) {
-			tasks.reset_dol(duration_of_life);
+
+		inline void reset_dol(duration timeout) {
+			tasks.reset_dol(timeout);
+		}
+
+		inline void sleep(duration timeout) {
+			tasks.sleep(timeout);
+		}
+
+		inline void yield() {
+			tasks.yield();
 		}
 	}
 
+	inline void sleep(duration timeout) {
+		this_task::sleep(timeout);
+	}
+
+	inline void yield() {
+		this_task::yield();
+	}
+
+	// used to non-game resources initialization.
+	// can't use sleep/yield.
 	class initer {
 		public:
-			initer(const std::function<void()> &);
-			initer(const std::function<void(initer)> &);
+			initer(std::function<void()>);
+	};
+
+	// used to destroy game resources during a halfway exit.
+	// can't use sleep/yield.
+	class exiter {
+		public:
+			exiter(std::function<void()>);
+	};
+
+	class first_task {
+		public:
+			first_task(const std::function<void()> &handler) {
+				initer([handler]() {
+					go(handler);
+				});
+			}
+	};
+
+	class once_task {
+		public:
+			once_task(std::function<void()> handler) {
+				go(std::move(handler));
+			}
 	};
 
 	template <typename T>

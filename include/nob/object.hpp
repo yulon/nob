@@ -6,7 +6,7 @@
 #include "hash.hpp"
 #include "arm.hpp"
 #include "script.hpp"
-#include "loader.hpp"
+#include "gc.hpp"
 #include "log.hpp"
 
 namespace nob {
@@ -14,9 +14,18 @@ namespace nob {
 		public:
 			entity(int native_handle = 0) : _h(native_handle) {}
 
-			entity(const model &m, const vector3 &coords, bool dynamic = true) :
-				entity(ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(loader<model>(m), coords.x, coords.y, coords.z, false, true, dynamic))
-			{}
+			entity(model m, const vector3 &coords, bool dynamic = true) :
+				entity(ntv::OBJECT::CREATE_OBJECT_NO_OFFSET(m.load(), coords.x, coords.y, coords.z, false, false, dynamic))
+			{
+				if (!_h) {
+					return;
+				}
+
+				auto h = _h;
+				gc::track(*this, [h]() mutable {
+					ntv::ENTITY::DELETE_ENTITY(&h);
+				});
+			}
 
 			int native_handle() const {
 				return _h;
@@ -27,10 +36,12 @@ namespace nob {
 			}
 
 			void del() {
+				gc::untrack(*this);
 				ntv::ENTITY::DELETE_ENTITY(&_h);
 			}
 
 			void free() {
+				gc::untrack(*this);
 				ntv::ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&_h);
 			}
 
@@ -132,7 +143,7 @@ namespace nob {
 				return ntv::ENTITY::IS_ENTITY_A_VEHICLE(_h);
 			}
 
-			bool is_stuff() const {
+			bool is_trivial() const {
 				return ntv::ENTITY::IS_ENTITY_AN_OBJECT(_h);
 			}
 
@@ -154,6 +165,9 @@ namespace nob {
 
 		protected:
 			int _h;
+
+			void _gc_mk() const;
+			void _gc_unmk() const;
 	};
 
 	class vehicle;
@@ -164,9 +178,18 @@ namespace nob {
 
 			character(entity e) : entity(e) {}
 
-			character(const model &m, const vector3 &coords, bool player_body = false) :
-				entity(ntv::PED::CREATE_PED(4, loader<model>(m), coords.x, coords.y, coords.z, 0.0f, false, true))
+			character(model m, const vector3 &coords, bool player_body = false) :
+				entity(ntv::PED::CREATE_PED(4, m.load(), coords.x, coords.y, coords.z, 0.0f, false, false))
 			{
+				if (!_h) {
+					return;
+				}
+
+				auto h = _h;
+				gc::track(*this, [h]() mutable {
+					ntv::PED::DELETE_PED(&h);
+				});
+
 				if (player_body) {
 					ntv::PED::SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(_h, true);
 					ntv::PED::SET_PED_FLEE_ATTRIBUTES(_h, 0, 0);
@@ -370,7 +393,7 @@ namespace nob {
 			void movement(const movement_t &);
 
 			void add_weapon(const hasher &wpn) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn, 0, false, false);
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn.hash(), 0, false, false);
 			}
 
 			void rm_weapon(const hasher &wpn) {
@@ -386,7 +409,7 @@ namespace nob {
 					auto wpn_grp = arm::weapon_group(wpn);
 
 					if (wpn_grp == "GROUP_THROWN") {
-						thrown_weapon(wpn, weapon_max_ammo(wpn));
+						thrown_weapon(wpn.hash(), weapon_max_ammo(wpn));
 						continue;
 					}
 
@@ -411,15 +434,15 @@ namespace nob {
 				if (is_in_vehicle()) {
 					ntv::WEAPON::SET_CURRENT_PED_VEHICLE_WEAPON(_h, wpn.hash());
 					if (!is_current_weapon(wpn) && arm::weapon_group(wpn).hash() != 0) {
-						ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn, 0, false, true);
+						ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn.hash(), 0, false, true);
 					}
 					return;
 				}
 				if (!has_weapon_in_pack(wpn)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn, 0, false, true);
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn.hash(), 0, false, true);
 					return;
 				}
-				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_h, wpn, true);
+				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_h, wpn.hash(), true);
 			}
 
 			hasher current_weapon() {
@@ -445,7 +468,7 @@ namespace nob {
 			}
 
 			bool has_weapon_in_pack(const hasher &wpn) {
-				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_h, wpn, false);
+				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_h, wpn.hash(), false);
 			}
 
 			bool has_weapon(const hasher &wpn) {
@@ -474,7 +497,7 @@ namespace nob {
 
 			int weapon_max_ammo(const hasher &wpn) {
 				int total;
-				ntv::WEAPON::GET_MAX_AMMO(_h, wpn, &total);
+				ntv::WEAPON::GET_MAX_AMMO(_h, wpn.hash(), &total);
 				return total;
 			}
 
@@ -580,21 +603,35 @@ namespace nob {
 					group(const std::string &name) : _n(name), _h(0) {}
 
 					~group() {
+						del();
+					}
+
+					void del() {
 						if (_h) {
+							if (!in_task()) {
+								return;
+							}
 							ntv::PED::REMOVE_RELATIONSHIP_GROUP(_h);
 							_h = 0;
 						}
 					}
 
-					void add(character chr) {
-						if (!_h) {
-							ntv::PED::ADD_RELATIONSHIP_GROUP(_n.c_str(), &_h);
-						}
-						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr, _h);
+					operator hash_t() const {
+						return _h;
 					}
+
+					void add(character chr);
 
 					void rm(character chr) {
 						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr, ntv::PED::GET_PED_RELATIONSHIP_GROUP_DEFAULT_HASH(chr));
+					}
+
+					void cant_be_damaged(entity e, bool toggle = true) {
+						ntv::ENTITY::SET_ENTITY_CAN_BE_DAMAGED_BY_RELATIONSHIP_GROUP(e, !toggle, _h);
+					}
+
+					void hate(const group &target) {
+						ntv::PED::SET_RELATIONSHIP_BETWEEN_GROUPS(2, _h, target);
 					}
 
 				private:
@@ -654,17 +691,30 @@ namespace nob {
 
 			vehicle(entity e) : entity(e) {}
 
-			vehicle(const model &m, const vector3 &coords, float heading = 0.0f) :
-				entity(ntv::VEHICLE::CREATE_VEHICLE(loader<model>(m), coords.x, coords.y, coords.z, heading, false, true))
+			vehicle(model m, const vector3 &coords, float heading = 0.0f) :
+				entity(ntv::VEHICLE::CREATE_VEHICLE(m.load(), coords.x, coords.y, coords.z, heading, false, false))
 			{
+				if (!_h) {
+					return;
+				}
+
+				auto h = _h;
+				gc::track(*this, [h]() mutable {
+					ntv::VEHICLE::DELETE_VEHICLE(&h);
+				});
+
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_h, 0);
 			}
 
 			void del() {
+				gc::untrack(*this);
+
 				ntv::VEHICLE::DELETE_VEHICLE(&_h);
 			}
 
-			void rm() {
+			void free() {
+				gc::untrack(*this);
+
 				ntv::ENTITY::SET_VEHICLE_AS_NO_LONGER_NEEDED(&_h);
 			}
 
@@ -687,8 +737,8 @@ namespace nob {
 			}
 
 			void set_best_mods() {
-				for (int i = 0; i < mod_type_sum; i++) {
-					if (i == 15 || i == 23 || i == 24 || i == 48) {
+				for (int i = 1; i < mod_type_sum; ++i) {
+					if (i == 14 || i == 15 || i == 23 || i == 24 || i == 48) {
 						continue;
 					}
 
@@ -854,9 +904,8 @@ namespace nob {
 
 	class plane : public vehicle {
 		public:
+			//using entity::entity;
 			using vehicle::vehicle;
-
-			plane(vehicle veh) : vehicle(veh) {}
 
 			enum class landing_gear_state : int {
 				deployed = 0,
@@ -882,7 +931,7 @@ namespace nob {
 
 	// These data from ScriptHookV/NativeTrainer
 
-	static constexpr std::array<model, 696> characters {{
+	static constexpr std::array<hasher, 696> characters {{
 		"player_zero", "player_one", "player_two", "a_c_boar", "a_c_chimp", "a_c_cow", "a_c_coyote", "a_c_deer", "a_c_fish", "a_c_hen",
 		"a_c_cat_01", "a_c_chickenhawk", "a_c_cormorant", "a_c_crow", "a_c_dolphin", "a_c_humpback", "a_c_killerwhale", "a_c_pigeon", "a_c_seagull", "a_c_sharkhammer",
 		"a_c_pig", "a_c_rat", "a_c_rhesus", "a_c_chop", "a_c_husky", "a_c_mtlion", "a_c_retriever", "a_c_sharktiger", "a_c_shepherd", "s_m_m_movalien_01",
@@ -1028,7 +1077,7 @@ namespace nob {
 		"BENNY", "G", "VAGSPEAK", "VAGFUN", "BOATSTAFF", "FEMBOATSTAFF"
 	}};
 
-	static constexpr std::array<model, 304> base_vehicles {{
+	static constexpr std::array<hasher, 304> base_vehicles {{
 		"NINEF", "NINEF2", "BLISTA", "ASEA", "ASEA2", "BOATTRAILER", "BUS", "ARMYTANKER", "ARMYTRAILER", "ARMYTRAILER2",
 		"SUNTRAP", "COACH", "AIRBUS", "ASTEROPE", "AIRTUG", "AMBULANCE", "BARRACKS", "BARRACKS2", "BALLER", "BALLER2",
 		"BJXL", "BANSHEE", "BENSON", "BFINJECTION", "BIFF", "BLAZER", "BLAZER2", "BLAZER3", "BISON", "BISON2",
@@ -1062,9 +1111,9 @@ namespace nob {
 		"TROPIC2", "VALKYRIE2", "VERLIERER2", "BTYPE3"
 	}};
 
-	const std::vector<model> &dlc_vehicles();
+	const std::vector<hasher> &dlc_vehicles();
 
 	void unlock_banned_vehicles();
 
-	const std::vector<model> &banned_vehicles();
+	const std::vector<hasher> &banned_vehicles();
 } /* nob */

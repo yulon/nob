@@ -10,7 +10,7 @@
 #include <queue>
 
 namespace nob {
-	std::vector<model> _ban_vehs;
+	std::vector<hasher> _ban_vehs;
 
 	static ntv::script_list_t::script_t *_shop_ctrllr = nullptr;
 
@@ -96,7 +96,7 @@ namespace nob {
 	}
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
-	const std::vector<model> &banned_vehicles() {
+	const std::vector<hasher> &banned_vehicles() {
 		if (_ban_vehs.size() || !_find_ban_vehs()) {
 			return _ban_vehs;
 		}
@@ -105,11 +105,11 @@ namespace nob {
 			yield();
 		}
 
-		chan<std::vector<model>> vehs_ch;
+		chan<std::vector<hasher>> vehs_ch;
 
 		std::thread([vehs_ch]() mutable {
 			auto &sc_inf = *_shop_ctrllr->info;
-			std::vector<model> vehs;
+			std::vector<hasher> vehs;
 			for (size_t i = 14; i < 400; i++) {
 				if (*(uint8_t *)sc_inf.code_addr(_ban_vehs_li_find_base + i) == 0x62) {
 					size_t switch_off = _ban_vehs_li_find_base + i;
@@ -143,9 +143,9 @@ namespace nob {
 		return _ban_vehs;
 	}
 
-	std::vector<model> _dlc_vehs;
+	std::vector<hasher> _dlc_vehs;
 
-	const std::vector<model> &dlc_vehicles() {
+	const std::vector<hasher> &dlc_vehicles() {
 		if (_dlc_vehs.size()) {
 			return _dlc_vehs;
 		}

@@ -7,9 +7,9 @@ namespace nob {
 	namespace keyboard {
 		class listener {
 			public:
-				listener() : _null(true) {}
+				listener();
 
-				listener(const std::function<bool(int code, bool down)> &);
+				listener(std::function<bool(int code, bool down)>);
 
 				listener(listener &&);
 
@@ -23,7 +23,6 @@ namespace nob {
 
 			private:
 				std::list<std::function<bool(int, bool)>>::iterator _it;
-				bool _null;
 		};
 
 		bool is_down(int code);

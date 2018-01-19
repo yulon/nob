@@ -15,7 +15,7 @@ nob::task print_pos([]() {
 	nob::g2d::text(0, 0.93, 1, ss.str(), 0.6, 255, 255, 255, 255, 1, true);
 });
 
-static nob::initer init([]() {
+nob::first_task init([]() {
 	nob::ui::disable_interaction_menu();
 	nob::unlock_banned_vehicles();
 });
@@ -24,9 +24,9 @@ using namespace nob::ui;
 
 template<typename C>
 void add_vehs(list &li, const C &c) {
-	for (auto &mi : c) {
-		li->items.emplace_back(action(nob::i18n::get(mi.name()), mi.name(), [&mi]() {
-			auto veh = nob::vehicle(mi, nob::player::body().pos({0, 5, 0}));
+	for (nob::model m : c) {
+		li->items.emplace_back(action(nob::i18n::get(m.name()), m.name(), [m]() {
+			auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
 			veh.place_on_ground();
 			veh.set_best_mods();
 			veh.invincible();
@@ -228,13 +228,13 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			));
 		}),
 		action("Other", []() {
+			static nob::character::group g1("nob_g1");
+			static nob::character::group g2("nob_g2");
 			auto pb = nob::player::body();
+			g1.add(pb);
 			auto chr = nob::character("mp_m_freemode_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
-			nob::task([pb, chr]() mutable {
-				auto v3 = nob::ntv::ENTITY::GET_ENTITY_FORWARD_VECTOR(pb);
-				chr.move({v3.x, v3.y, v3.z});
-			});
-
+			g2.add(chr);
+			g1.hate(g2);
 /*			//auto pos = pb.pos({0, 50, 200});
 			nob::ntv::PATHFIND::LOAD_ALL_PATH_NODES(true);
 			for (size_t i = 0; i < 500; ++i) {
@@ -342,71 +342,6 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			//nob::sleep(10000);
 			//pb.resurrect();
 			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
-
-
-			/*
-			static rua::hook<nob::ntv::func_t> hkk;
-
-			auto sf = nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD.target();
-			if (sf) {
-				nob::log("hook");
-				hkk.assign(sf, [](nob::ntv::call_context_t &cc) {
-					auto begin = *cc.result_ptr;
-					hkk.orig_fn(std::ref(cc));
-					if (!cc.result<bool>()) {
-						return;
-					}
-					nob::log("=======================");
-					nob::log(begin);
-					//begin.print();
-					//nob::log("-----------------------");
-					nob::log(*cc.result_ptr);
-					//cc.print();
-					nob::log("=======================");
-				});
-			}//*/
-
-			/*static nob::character::group g("_xxxxxxxxddd");
-
-			auto veh = nob::vehicle("TAXI", nob::player::body().pos({0, 10, 0}));
-
-			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
-			chr.into_vehicle(veh, -1);
-			//auto chr2 = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
-			//chr2.into_vehicle(veh, 7);
-
-
-
-			g.add(pb);
-			g.add(chr);
-			//g.add(chr2);
-
-			nob::ntv::VEHICLE::SET_VEHICLE_ALLOW_NO_PASSENGERS_LOCKON(veh, false);*/
-			//nob::ntv::VEHICLE::SET_VEHICLE_IS_STOLEN(veh, true);
-			//nob::ntv::VEHICLE::SET_VEHICLE_DOORS_LOCKED(veh, 1);
-
-			//nob::sleep(1000);
-
-			//chr.switch_weapon("WEAPON_MICROSMG");
-			//chr.ammo_no_consumption();
-			//chr.shoot(pos);
-
-			//nob::ntv::AI::TASK_AIM_GUN_AT_COORD(chr, pos.x, pos.y, pos.z, -1, true, true);
-			//nob::ntv::AI::TASK_VEHICLE_AIM_AT_COORD(chr, pos.x, pos.y, pos.z);
-
-			//auto cods = nob::world::load_ilp(nob::world::ilp::stab_city_on_fire);
-			//nob::ntv::PLAYER::START_PLAYER_TELEPORT(nob::player::native_handle(), cods.x, cods.y, cods.z, 0, true, true, true);
-
-			//nob::world::load_all_ilps();
-			//nob::world::lock_all_doors(false);
-
-			//nob::ntv::PED::SET_PED_CAN_RAGDOLL(pb_nh, true);
-			//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, 2);
-			//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, 4);
-
-			//for (size_t i = 1; i <= 26; ++i) {
-				//nob::ntv::PED::_RESET_PED_RAGDOLL_BLOCKING_FLAGS(pb_nh, i);
-			//}
 		})
 	}),
 	list("World", {

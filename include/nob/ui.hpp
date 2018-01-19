@@ -5,7 +5,6 @@
 #include "vector.hpp"
 #include "script.hpp"
 #include "keyboard.hpp"
-#include "loader.hpp"
 
 #include <rua/obj.hpp>
 
@@ -176,7 +175,7 @@ namespace nob {
 
 		class menu {
 			public:
-				menu(const std::string &title, const list &li) : _tit(title), _cm_td_ldr("CommonMenu") {
+				menu(const std::string &title, const list &li) : _tit(title), _cm_td("CommonMenu") {
 					_list_stack.push(li);
 				}
 
@@ -206,7 +205,7 @@ namespace nob {
 				std::stack<list> _list_stack;
 				task _tsk;
 				keyboard::listener _kl;
-				loader<g2d::texture_dict> _cm_td_ldr;
+				g2d::texture_dict _cm_td;
 		};
 
 		void disable_interaction_menu(bool toggle = true);
@@ -251,10 +250,10 @@ namespace nob {
 			ntv::UI::END_TEXT_COMMAND_DISPLAY_HELP(0, 0, 1, -1);
 		}
 
-		inline void info(const std::string &content, float duration = 1.0f) {
+		inline void info(const std::string &content, float dur = 1.0f) {
 			task([content]() {
 				info_this_frame(content);
-			}, duration * 15000);
+			}, dur * 15000);
 		};
 
 		void banner(const std::string &text);

@@ -11,37 +11,63 @@
 #include <vector>
 #include <memory>
 #include <cstring>
+#include <cassert>
 
 namespace nob {
 	rua::co_pool tasks;
 
 	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
 
-	initer::initer(const std::function<void()> &handler) {
+	initer::initer(std::function<void()> handler) {
 		if (!_initers) {
 			_initers.reset(new std::vector<std::function<void()>>);
 		}
-		_initers->push_back(handler);
+		_initers->push_back(std::move(handler));
+	}
+
+	std::unique_ptr<std::vector<std::function<void()>>> _exiters(nullptr);
+
+	exiter::exiter(std::function<void()> handler) {
+		if (!_exiters) {
+			_exiters.reset(new std::vector<std::function<void()>>);
+		}
+		_exiters->push_back(std::move(handler));
 	}
 
 	namespace this_script {
 		mode_t mode = mode_t::invalid;
 		std::thread::id thread_id;
-		std::atomic<size_t> first_frame_count(0);
+		std::atomic<size_t> gameplay_id(0);
+		std::atomic<bool> exiting(false);
+		std::atomic<bool> _exited(false);
 
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
-			first_frame_count = ntv::GAMEPLAY::GET_FRAME_COUNT();
-			tasks.init();
+			gameplay_id = ntv::GAMEPLAY::GET_FRAME_COUNT();
+			tasks.bind_this_thread();
 
-			for (auto rit = _initers->rbegin(); rit != _initers->rend(); ++rit) {
-				go(*rit);
+			for (auto &initer : *_initers) {
+				initer();
 			}
+		}
+
+		static inline void _exit() {
+			if (_exited) {
+				return;
+			}
+			for (auto rit = _exiters->rbegin(); rit != _exiters->rend(); ++rit) {
+				(*rit)();
+			}
+			_exited = true;
 		}
 
 		void _shv_main() {
 			_init();
 			for (;;) {
+				if (exiting) {
+					_exit();
+					return;
+				}
 				tasks.handle();
 				shv::WAIT(0);
 			}
@@ -50,6 +76,11 @@ namespace nob {
 		void _ysc_main() {
 			_init();
 			for (;;) {
+				if (exiting) {
+					_exit();
+					ntv::SCRIPT::TERMINATE_THIS_THREAD();
+					return;
+				}
 				tasks.handle();
 				ntv::SYSTEM::WAIT(0);
 			}
@@ -97,7 +128,15 @@ namespace nob {
 						if (cur_fc - last_fc > 1) {
 							_init();
 						}
+
 						last_fc = cur_fc;
+
+						if (exiting) {
+							_exit();
+							wait_hkd(cc);
+							return;
+						}
+
 						tasks.handle();
 					}
 					wait_hkd(cc);

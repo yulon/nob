@@ -2,7 +2,9 @@
 #include <nob/script.hpp>
 
 #include <windows.h>
+
 #include <atomic>
+#include <memory>
 #include <cstring>
 
 namespace nob {
@@ -15,45 +17,44 @@ namespace nob {
 			}
 		});
 
-		std::list<std::function<bool(int, bool)>> _listeners;
+		std::unique_ptr<std::list<std::function<bool(int, bool)>>> _listeners;
 
-		listener::listener(const std::function<bool(int, bool)> &listener) : _null(false) {
-			_listeners.push_front(listener);
-			_it = _listeners.begin();
+		listener::listener() {
+			if (!_listeners) {
+				_listeners.reset(new std::list<std::function<bool(int, bool)>>);
+			}
+			_it = _listeners->end();
 		}
 
-		listener::listener(listener &&src) {
-			if (src._null) {
-				_null = true;
-			} else {
-				_null = false;
-				_it = src._it;
+		listener::listener(std::function<bool(int, bool)> listener) {
+			if (!_listeners) {
+				_listeners.reset(new std::list<std::function<bool(int, bool)>>);
+			}
+			_listeners->emplace_front(std::move(listener));
+			_it = _listeners->begin();
+		}
 
-				src._null = true;
+		listener::listener(listener &&src) : _it(src._it) {
+			if (src._it != _listeners->end()) {
+				src._it = _listeners->end();
 			}
 		}
 
 		const listener &listener::operator=(listener &&src) {
-			if (!_null) {
-				_listeners.erase(_it);
-				_null = true;
-			}
-			if (!src._null) {
-				_null = false;
+			del();
+			if (src._it != _listeners->end()) {
 				_it = src._it;
-
-				src._null = true;
+				src._it = _listeners->end();
 			}
 			return *this;
 		}
 
 		void listener::del() {
-			if (_null) {
+			if (_it == _listeners->end()) {
 				return;
 			}
-			_null = true;
-
-			_listeners.erase(_it);
+			_listeners->erase(_it);
+			_it = _listeners->end();
 		}
 
 		bool is_down(int code) {
@@ -65,12 +66,12 @@ namespace nob {
 			if (old_state == down) {
 				return;
 			}
-			size_t ffc = this_script::first_frame_count;
+			size_t ffc = this_script::gameplay_id;
 			go([ffc, code, down]() {
-				if (ffc != this_script::first_frame_count) {
+				if (ffc != this_script::gameplay_id) {
 					return;
 				}
-				for (auto &listener : keyboard::_listeners) {
+				for (auto &listener : *_listeners) {
 					if (!listener(code, down)) {
 						return;
 					}
