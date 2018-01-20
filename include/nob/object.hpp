@@ -174,9 +174,7 @@ namespace nob {
 
 	class character : public entity {
 		public:
-			using entity::entity;
-
-			character(entity e) : entity(e) {}
+			character(int native_handle = 0) : entity(native_handle) {}
 
 			character(model m, const vector3 &coords, bool player_body = false) :
 				entity(ntv::PED::CREATE_PED(4, m.load(), coords.x, coords.y, coords.z, 0.0f, false, false))
@@ -187,6 +185,9 @@ namespace nob {
 
 				auto h = _h;
 				gc::track(*this, [h]() mutable {
+					if (h == ntv::PLAYER::PLAYER_PED_ID()) {
+						return;
+					}
 					ntv::PED::DELETE_PED(&h);
 				});
 
@@ -687,9 +688,7 @@ namespace nob {
 
 	class vehicle : public entity {
 		public:
-			using entity::entity;
-
-			vehicle(entity e) : entity(e) {}
+			vehicle(int native_handle = 0) : entity(native_handle) {}
 
 			vehicle(model m, const vector3 &coords, float heading = 0.0f) :
 				entity(ntv::VEHICLE::CREATE_VEHICLE(m.load(), coords.x, coords.y, coords.z, heading, false, false))
@@ -904,7 +903,6 @@ namespace nob {
 
 	class plane : public vehicle {
 		public:
-			//using entity::entity;
 			using vehicle::vehicle;
 
 			enum class landing_gear_state : int {
