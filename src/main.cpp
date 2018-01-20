@@ -72,16 +72,22 @@ namespace nob {
 	}
 
 	void _exit(HMODULE hinstDLL) {
-		if (!this_script::exiting) {
-			this_script::exiting = true;
-			for (
-				bool exited = !IsWindowVisible(window::native_handle()) || this_script::_exited;
-				!exited;
-				exited = !IsWindowVisible(window::native_handle()) || this_script::_exited
-			) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			}
+		if (this_script::exiting) {
+			return;
 		}
+
+		this_script::exiting = true;
+
+		for (;;) {
+			if (!IsWindowVisible(window::native_handle())) {
+				return;
+			}
+			if (this_script::_exited) {
+				break;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
+
 		if (this_script::mode == this_script::mode_t::shv) {
 			shv::scriptUnregister(hinstDLL);
 			return;
