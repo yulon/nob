@@ -7,14 +7,12 @@
 
 #include <windows.h>
 
-#include <queue>
 #include <vector>
-#include <memory>
 #include <cstring>
 #include <cassert>
 
 namespace nob {
-	rua::co_pool tasks;
+	std::unique_ptr<rua::co_pool> tasks(nullptr);
 
 	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
 
@@ -44,7 +42,7 @@ namespace nob {
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
 			gameplay_id = ntv::GAMEPLAY::GET_FRAME_COUNT();
-			tasks.bind_this_thread();
+			tasks->bind_this_thread();
 
 			for (auto &initer : *_initers) {
 				initer();
@@ -68,7 +66,7 @@ namespace nob {
 					_exit();
 					return;
 				}
-				tasks.handle();
+				tasks->handle();
 				shv::WAIT(0);
 			}
 		}
@@ -81,7 +79,7 @@ namespace nob {
 					ntv::SCRIPT::TERMINATE_THIS_THREAD();
 					return;
 				}
-				tasks.handle();
+				tasks->handle();
 				ntv::SYSTEM::WAIT(0);
 			}
 		}
@@ -137,7 +135,7 @@ namespace nob {
 							return;
 						}
 
-						tasks.handle();
+						tasks->handle();
 					}
 					wait_hkd(cc);
 				}

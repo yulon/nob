@@ -204,11 +204,10 @@ namespace nob {
 				std::string _tit;
 				std::stack<list> _list_stack;
 				task _tsk;
-				keyboard::listener _kl;
+				keyboard::blocker _kb_bkr;
+				keyboard::listener _kb_lnr;
 				g2d::texture_dict _cm_td;
 		};
-
-		void disable_interaction_menu(bool toggle = true);
 
 		inline void tip(const std::string &content) {
 			ntv::UI::_SET_NOTIFICATION_TEXT_ENTRY("STRING");

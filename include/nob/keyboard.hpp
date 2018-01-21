@@ -2,6 +2,8 @@
 
 #include <functional>
 #include <list>
+#include <initializer_list>
+#include <vector>
 
 namespace nob {
 	namespace keyboard {
@@ -13,7 +15,7 @@ namespace nob {
 
 				listener(listener &&);
 
-				const listener &operator=(listener &&);
+				listener &operator=(listener &&);
 
 				~listener() {
 					del();
@@ -26,5 +28,34 @@ namespace nob {
 		};
 
 		bool is_down(int code);
+
+		enum class block_t : int {
+			phone = 27,
+			frontend_menu_pause = 199,
+			frontend_menu_esc = 200,
+			interaction_menu = 244
+		};
+
+		class blocker {
+			public:
+				blocker() = default;
+
+				blocker(block_t);
+
+				blocker(std::initializer_list<block_t>);
+
+				blocker(blocker &&);
+
+				blocker &operator=(blocker &&);
+
+				~blocker() {
+					del();
+				}
+
+				void del();
+
+			private:
+				std::vector<int> _blks;
+		};
 	} /* keyboard */
 } /* nob */

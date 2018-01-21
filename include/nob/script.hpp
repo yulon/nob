@@ -6,6 +6,7 @@
 #include <functional>
 #include <thread>
 #include <atomic>
+#include <memory>
 
 namespace nob {
 	namespace this_script {
@@ -22,7 +23,7 @@ namespace nob {
 		extern std::atomic<bool> exiting;
 	} /* this_script */
 
-	extern rua::co_pool tasks;
+	extern std::unique_ptr<rua::co_pool> tasks;
 
 	using duration = rua::co_pool::duration;
 
@@ -30,21 +31,27 @@ namespace nob {
 		public:
 			task(std::nullptr_t np = nullptr) : _cp_tsk(np) {}
 
-			task(const std::function<void()> &handler, duration timeout = duration::forever) :
-				_cp_tsk(tasks.add(handler, timeout))
-			{}
+			task(const std::function<void()> &handler, duration timeout = duration::forever) {
+				if (!tasks) {
+					tasks.reset(new rua::co_pool);
+					tasks->add_back([]() {
+						tasks->exit();
+					});
+				}
+				_cp_tsk = tasks->add(handler, timeout);
+			}
 
 			operator bool() const {
-				return tasks.has(_cp_tsk);
+				return tasks->has(_cp_tsk);
 			}
 
 			void del() {
-				tasks.erase(_cp_tsk);
+				tasks->erase(_cp_tsk);
 				_cp_tsk.reset();
 			}
 
 			void reset_dol(duration timeout = duration::disposable) {
-				tasks.reset_dol(_cp_tsk, timeout);
+				tasks->reset_dol(_cp_tsk, timeout);
 			}
 
 		private:
@@ -56,24 +63,24 @@ namespace nob {
 	}
 
 	inline bool in_task() {
-		return tasks.this_caller_in_task();
+		return tasks->this_caller_in_task();
 	}
 
 	namespace this_task {
 		inline void del() {
-			tasks.erase();
+			tasks->erase();
 		}
 
 		inline void reset_dol(duration timeout) {
-			tasks.reset_dol(timeout);
+			tasks->reset_dol(timeout);
 		}
 
 		inline void sleep(duration timeout) {
-			tasks.sleep(timeout);
+			tasks->sleep(timeout);
 		}
 
 		inline void yield() {
-			tasks.yield();
+			tasks->yield();
 		}
 	}
 
@@ -118,7 +125,7 @@ namespace nob {
 	template <typename T>
 	class chan : public rua::chan<T> {
 		public:
-			chan() : rua::chan<T>({ tasks.get_scheduler() }) {}
+			chan() : rua::chan<T>({ tasks->get_scheduler() }) {}
 	};
 
 	void terminate_unimportant_scripts();

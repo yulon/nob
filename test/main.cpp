@@ -15,10 +15,7 @@ nob::task print_pos([]() {
 	nob::g2d::text(0, 0.93, 1, ss.str(), 0.6, 255, 255, 255, 255, 1, true);
 });
 
-nob::first_task init([]() {
-	nob::ui::disable_interaction_menu();
-	nob::unlock_banned_vehicles();
-});
+nob::first_task unlock_vehs(nob::unlock_banned_vehicles);
 
 using namespace nob::ui;
 
@@ -402,6 +399,8 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 		})
 	})
 }));
+
+nob::keyboard::blocker ntv_ia_menu_blocker(nob::keyboard::block_t::interaction_menu);
 
 nob::keyboard::listener ia_menu_hotkey([](int code, bool down)->bool {
 	if (code == 'M') {

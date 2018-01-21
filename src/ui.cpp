@@ -76,11 +76,6 @@ namespace nob {
 				}
 
 				_tsk = task([this]() {
-					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
-					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::Phone, true);
-
-					//////////////////////////////////////////////////////////////////////////
-
 					_cm_td.load();
 
 					float x = left;
@@ -175,7 +170,13 @@ namespace nob {
 					}
 				});
 
-				_kl = keyboard::listener([this](int code, bool down)->bool {
+				_kb_bkr = keyboard::blocker({
+					keyboard::block_t::interaction_menu,
+					keyboard::block_t::phone,
+					keyboard::block_t::frontend_menu_esc
+				});
+
+				_kb_lnr = keyboard::listener([this](int code, bool down)->bool {
 					switch (code) {
 						case VK_BACK:
 						case VK_ESCAPE:
@@ -247,27 +248,15 @@ namespace nob {
 
 			} else {
 				_tsk.del();
-				_kl.del();
-			}
-		}
-
-		void disable_interaction_menu(bool toggle) {
-			static nob::task tsk;
-			if (toggle) {
-				if (!tsk) {
-					tsk = task([]() {
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::InteractionMenu, true);
-					});
-				}
-			} else {
-				tsk.del();
+				_kb_lnr.del();
+				_kb_bkr.del();
 			}
 		}
 
 		int _bnr_sf;
 		task _bnr_tsk;
 
-		initer _initer([]() {
+		initer _reset_bnr_sf([]() {
 			_bnr_sf = 0;
 		});
 
