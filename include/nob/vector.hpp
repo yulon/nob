@@ -2,6 +2,7 @@
 
 #include <initializer_list>
 #include <cmath>
+#include <string>
 
 namespace nob {
 	struct vector2_i {
@@ -70,6 +71,12 @@ namespace nob {
 
 		vector3 offset(const vector3 &rot, float distance = 10.0f) const {
 			return *this + (rot.rot_to_dir() * distance);
+		}
+
+		std::string str() const {
+			std::stringstream ss;
+			ss << "X: " << x << ", Y: " << y << ", Z: " << z;
+			return ss.str();
 		}
 	};
 
