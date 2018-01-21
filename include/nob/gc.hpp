@@ -41,9 +41,11 @@ namespace nob {
 
 		template <typename T>
 		inline bool try_ref_dec(const T &obj) {
-			if (!in_task()) {
+			if (this_script::exiting) {
 				return false;
 			}
+
+			assert(in_task());
 
 			auto &sub_map = _map[typeid(T)];
 			auto it = sub_map.find(hash(obj.native_handle()));
@@ -59,18 +61,22 @@ namespace nob {
 
 		template <typename T>
 		inline void untrack(const T &obj) {
-			if (!in_task()) {
+			if (this_script::exiting) {
 				return;
 			}
+
+			assert(in_task());
 
 			_map[typeid(T)].erase(hash(obj.native_handle()));
 		}
 
 		template <typename T>
 		inline void untrack_onec(const T &obj) {
-			if (!in_task()) {
+			if (this_script::exiting) {
 				return;
 			}
+
+			assert(in_task());
 
 			auto &sub_map = _map[typeid(T)];
 			auto it = sub_map.find(hash(obj.native_handle()));

@@ -129,7 +129,7 @@ namespace nob {
 					_bkr_map->erase(it);
 				}
 			}
-			if (_bkr_map->empty()) {
+			if (_bkr_map->empty() && !this_script::exiting) {
 				_bkr_tsk.del();
 			}
 			_blks.clear();
