@@ -29,9 +29,9 @@ namespace nob {
 
 		constexpr vector3(float x_val, float y_val, float z_val = 0) : x(x_val), y(y_val), z(z_val) {}
 
-		constexpr vector3(std::initializer_list<float> vals) : x(*vals.begin()), y(vals.begin()[1]), z(vals.begin()[2]) {}
+		constexpr vector3(std::initializer_list<float> vals) : vector3(*vals.begin(), vals.begin()[1], vals.begin()[2]) {}
 
-		constexpr vector3(const ntv::Vector3 &nv3) : x(nv3.x), y(nv3.y), z(nv3.z) {}
+		constexpr vector3(const ntv::Vector3 &nv3) : vector3(nv3.x, nv3.y, nv3.z) {}
 
 		constexpr operator ntv::Vector3() const {
 			return {x, y, z};
@@ -65,6 +65,16 @@ namespace nob {
 			result.x += v3.x;
 			result.y += v3.y;
 			result.z += v3.z;
+
+			return result;
+		}
+
+		vector3 operator-(const vector3 &v3) const {
+			vector3 result = *this;
+
+			result.x -= v3.x;
+			result.y -= v3.y;
+			result.z -= v3.z;
 
 			return result;
 		}
