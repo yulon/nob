@@ -1,6 +1,7 @@
 #include <nob.hpp>
 
 #include <rua/hook.hpp>
+#include <rua/observer.hpp>
 
 #include <cstring>
 #include <cstdlib>
@@ -9,10 +10,7 @@
 #include <iostream>
 
 nob::task print_pos([]() {
-	auto pos = nob::player::body().pos();
-	std::stringstream ss;
-	ss << "X: " << pos.x << ", Y: " << pos.y << ", Z: " << pos.z;
-	nob::g2d::text(0, 0.93, 1, ss.str(), 0.6, 255, 255, 255, 255, 1, true);
+	nob::g2d::text(0, 0.93, 1, nob::player::body().pos().str(), 0.6, 255, 255, 255, 255, 1, true);
 });
 
 nob::first_task unlock_vehs(nob::unlock_banned_vehicles);
@@ -88,13 +86,14 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				nob::ntv::ENTITY::FREEZE_ENTITY_POSITION(pb, true);
 				kl = nob::keyboard::listener([](int code, bool down)->bool {
 					static float m = 1.0f;
-					static auto cmd = [](bool down, size_t ti, nob::vector3 (*offset)()) {
+					static auto cmd = [](bool down, size_t ti, nob::vector3 (*dest)(nob::vector3)) {
 						if (down) {
 							if (!tsks[ti]) {
-								tsks[ti] = nob::task([offset]() {
+								tsks[ti] = nob::task([dest]() {
 									auto pb = nob::player::body();
-									auto pos = pb.pos(offset());
-									nob::player::body().move(pos);
+									auto rot = nob::ntv::CAM::GET_GAMEPLAY_CAM_ROT(0);
+									pb.rotation(rot);
+									pb.move(dest(rot));
 								});
 							}
 						} else if (tsks[ti]) {
@@ -103,38 +102,44 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					};
 					switch (code) {
 						case 'W': {
-							cmd(down, 0, []()->nob::vector3 {
-								return {0, m, 0};
+							cmd(down, 0, [](nob::vector3 cam_rot)->nob::vector3 {
+								return nob::player::body().pos().offset(cam_rot, m);
 							});
 							return false;
 						}
 						case 'S': {
-							cmd(down, 1, []()->nob::vector3 {
-								return {0, -m, 0};
+							cmd(down, 1, [](nob::vector3 cam_rot)->nob::vector3 {
+								return nob::player::body().pos().offset(cam_rot, -m);
 							});
 							return false;
 						}
 						case 'A': {
-							cmd(down, 2, []()->nob::vector3 {
-								return {-m, 0, 0};
+							cmd(down, 2, [](nob::vector3 cam_rot)->nob::vector3 {
+								cam_rot.z += 90.0f;
+								return nob::player::body().pos().offset(cam_rot, m);
 							});
 							return false;
 						}
 						case 'D': {
-							cmd(down, 3, []()->nob::vector3 {
-								return {m, 0, 0};
+							cmd(down, 3, [](nob::vector3 cam_rot)->nob::vector3 {
+								cam_rot.z -= 90.0f;
+								return nob::player::body().pos().offset(cam_rot, m);
 							});
 							return false;
 						}
 						case VK_SPACE: {
-							cmd(down, 4, []()->nob::vector3 {
-								return {0, 0, 5.0f};
+							cmd(down, 4, [](nob::vector3)->nob::vector3 {
+								auto pos = nob::player::body().pos();
+								pos.z += 5.0f;
+								return pos;
 							});
 							return false;
 						}
 						case 'F': {
-							cmd(down, 5, []()->nob::vector3 {
-								return {0, 0, -3.0f};
+							cmd(down, 5, [](nob::vector3)->nob::vector3 {
+								auto pos = nob::player::body().pos();
+								pos.z -= 3.0f;
+								return pos;
 							});
 							return false;
 						}
@@ -225,14 +230,29 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			));
 		}),
 		action("Other", []() {
-			static nob::character::group g1("nob_g1");
-			static nob::character::group g2("nob_g2");
+/*			static auto g = nob::character::group("nob_111");
+			static auto g2 = nob::character::group("nob_222");
 			auto pb = nob::player::body();
-			g1.add(pb);
+			g.add(pb);
+			nob::ntv::PLAYER::SET_PLAYER_WEAPON_DAMAGE_MODIFIER(0,0);
 			auto chr = nob::character("mp_m_freemode_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
 			g2.add(chr);
-			g1.hate(g2);
-/*			//auto pos = pb.pos({0, 50, 200});
+			g.like(g2);
+
+			auto veh = nob::vehicle("NINEF", pb.pos({0, 15, 0}));
+			chr.into_vehicle(veh, -1);
+
+			nob::task([pb, chr]() {
+				static rua::observer<bool> ob(nullptr, nullptr, [chr](const bool &val) {
+					nob::log(val);
+					if (val) {
+						nob::ntv::WEAPON::CLEAR_PED_LAST_WEAPON_DAMAGE(chr);
+					}
+				});
+				ob = nob::ntv::WEAPON::HAS_PED_BEEN_DAMAGED_BY_WEAPON(chr, 0, 2);
+			});
+
+			//auto pos = pb.pos({0, 50, 200});
 			nob::ntv::PATHFIND::LOAD_ALL_PATH_NODES(true);
 			for (size_t i = 0; i < 500; ++i) {
 				nob::ntv::Vector3 pos;
@@ -287,43 +307,8 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 				}
 			}
 
-			nob::ntv::PED::_0x39D55A620FCB6A3A(
-				pb,
-				0,
-				18,
-				0
-			);
-			auto chr = nob::character("mp_m_freemode_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
-			nob::ntv::PED::_0x39D55A620FCB6A3A(
-				chr,
-				0,
-				119,
-				0
-			);
-			nob::task([pb]() {
-				nob::ntv::Vector3 v3;
-				if (nob::ntv::WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(pb, &v3)) {
-					//nob::yield();
-					nob::log(&v3, ": ", v3.x, ", ", v3.y, ", ", v3.z);
-					//nob::log(v3._paddingx, ", ", v3._paddingy, ", ", v3._paddingz, "=======================");
-				}
-			});
 			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
-			auto d = "skydive@parachute@chute";
-			nob::ntv::STREAMING::REQUEST_ANIM_DICT(d);
-			if (!nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d)) {
-				nob::sleep([d]()->bool {
-					return nob::ntv::STREAMING::HAS_ANIM_DICT_LOADED(d);
-				});
-			}
 
-
-
-			auto chr = nob::character("s_m_m_movalien_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
-			chr.add_weapon("WEAPON_PISTOL");
-			chr.switch_weapon("WEAPON_PISTOL");
-			chr.aim(chr.pos({20, 20, 0}));
-			chr.go();
 
 			auto n = "p_parachute_s_idlefast";
 			nob::ntv::AI::TASK_PLAY_ANIM(pb, d, n, 8.0f, 0.0f, -1, 9, 0, 0, 0, 0);
@@ -347,6 +332,10 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 		}),
 		flag("Snowy", [](bool val) {
 			nob::world::snowy(val);
+		}),
+		action("Load All Buildings", []() {
+			nob::world::load_all_ilps();
+			nob::world::lock_all_doors(false);
 		}),
 		action("Clean Pickups", []() {
 			nob::world::clean_pickups();
