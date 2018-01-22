@@ -22,7 +22,7 @@ namespace nob {
 				}
 
 				auto h = _h;
-				gc::track(*this, [h]() mutable {
+				gc::delegate(*this, [h]() mutable {
 					ntv::ENTITY::DELETE_ENTITY(&h);
 				});
 			}
@@ -36,12 +36,12 @@ namespace nob {
 			}
 
 			void del() {
-				gc::untrack(*this);
+				gc::undelegate(*this);
 				ntv::ENTITY::DELETE_ENTITY(&_h);
 			}
 
 			void free() {
-				gc::untrack(*this);
+				gc::undelegate(*this);
 				ntv::ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&_h);
 			}
 
@@ -165,9 +165,6 @@ namespace nob {
 
 		protected:
 			int _h;
-
-			void _gc_mk() const;
-			void _gc_unmk() const;
 	};
 
 	class vehicle;
@@ -184,7 +181,7 @@ namespace nob {
 				}
 
 				auto h = _h;
-				gc::track(*this, [h]() mutable {
+				gc::delegate(*this, [h]() mutable {
 					if (h == ntv::PLAYER::PLAYER_PED_ID()) {
 						return;
 					}
@@ -477,7 +474,7 @@ namespace nob {
 			}
 
 			void ammo(const hasher &type, int total) {
-				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_h, type, total);
+				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_h, type.hash(), total);
 			}
 
 			int ammo(const hasher &type) {
@@ -485,7 +482,7 @@ namespace nob {
 			}
 
 			void add_ammo(const hasher &type, int count) {
-				ammo(type, ammo(type) + count);
+				ammo(type.hash(), ammo(type) + count);
 			}
 
 			void ammo_no_consumption(bool toggle = true) {
@@ -504,7 +501,7 @@ namespace nob {
 
 			void thrown_weapon(const hasher &thr_wpn, int total) {
 				if (!has_weapon(thr_wpn)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn, total, false, false);
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn.hash(), total, false, false);
 					return;
 				}
 				ammo(weapon_ammo_type(thr_wpn), total);
@@ -515,7 +512,7 @@ namespace nob {
 			}
 
 			void add_thrown_weapon(const hasher &thr_wpn, int count) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn, count, false, false);
+				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn.hash(), count, false, false);
 			}
 
 			void print_weapon_info() {
@@ -601,27 +598,41 @@ namespace nob {
 
 			class group {
 				public:
-					group(const std::string &name) : _n(name), _h(0) {}
+					group(const std::string &name) : _n(name), _h(0), _ct_gpid(0) {}
 
 					~group() {
 						del();
 					}
 
 					void del() {
-						if (_h) {
-							if (!in_task()) {
-								return;
-							}
-							ntv::PED::REMOVE_RELATIONSHIP_GROUP(_h);
+						if (_ct_gpid == this_script::gameplay_id) {
+							gc::try_free(*this);
 							_h = 0;
 						}
 					}
 
-					operator hash_t() const {
+					using native_handle_t = hash_t;
+
+					native_handle_t native_handle() const {
 						return _h;
 					}
 
-					void add(character chr);
+					operator native_handle_t() const {
+						return native_handle();
+					}
+
+					void add(character chr) {
+						auto cur_gpid = this_script::gameplay_id.load();
+						if (_ct_gpid != cur_gpid) {
+							_ct_gpid = cur_gpid;
+							ntv::PED::ADD_RELATIONSHIP_GROUP(_n.c_str(), &_h);
+							auto h = _h;
+							gc::delegate(*this, [h]() {
+								ntv::PED::REMOVE_RELATIONSHIP_GROUP(h);
+							});
+						}
+						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr, _h);
+					}
 
 					void rm(character chr) {
 						ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr, ntv::PED::GET_PED_RELATIONSHIP_GROUP_DEFAULT_HASH(chr));
@@ -631,13 +642,22 @@ namespace nob {
 						ntv::ENTITY::SET_ENTITY_CAN_BE_DAMAGED_BY_RELATIONSHIP_GROUP(e, !toggle, _h);
 					}
 
-					void hate(const group &target) {
+					void like(const group &target) {
 						ntv::PED::SET_RELATIONSHIP_BETWEEN_GROUPS(2, _h, target);
+					}
+
+					void hate(const group &target) {
+						ntv::PED::SET_RELATIONSHIP_BETWEEN_GROUPS(5, _h, target);
+					}
+
+					void clear_relationship(const group &target) {
+						ntv::PED::CLEAR_RELATIONSHIP_BETWEEN_GROUPS(ntv::PED::GET_RELATIONSHIP_BETWEEN_GROUPS(_h, target), _h, target);
 					}
 
 				private:
 					std::string _n;
 					hash_t _h;
+					size_t _ct_gpid;
 			};
 	};
 
@@ -698,7 +718,7 @@ namespace nob {
 				}
 
 				auto h = _h;
-				gc::track(*this, [h]() mutable {
+				gc::delegate(*this, [h]() mutable {
 					ntv::VEHICLE::DELETE_VEHICLE(&h);
 				});
 
@@ -706,13 +726,13 @@ namespace nob {
 			}
 
 			void del() {
-				gc::untrack(*this);
+				gc::undelegate(*this);
 
 				ntv::VEHICLE::DELETE_VEHICLE(&_h);
 			}
 
 			void free() {
-				gc::untrack(*this);
+				gc::undelegate(*this);
 
 				ntv::ENTITY::SET_VEHICLE_AS_NO_LONGER_NEEDED(&_h);
 			}

@@ -21,13 +21,13 @@ namespace nob {
 	});
 
 	void character::del() {
-		gc::untrack(*this);
+		gc::undelegate(*this);
 		_chr_data_map.erase(_h);
 		ntv::PED::DELETE_PED(&_h);
 	}
 
 	void character::free() {
-		gc::untrack(*this);
+		gc::undelegate(*this);
 		_chr_data_map.erase(_h);
 		ntv::ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&_h);
 	}
@@ -355,14 +355,5 @@ namespace nob {
 			default:
 				break;
 		}
-	}
-
-	std::unordered_map<hash_t, bool> _chr_grp_map;
-
-	void character::group::add(character chr) {
-		if (!_h) {
-			ntv::PED::ADD_RELATIONSHIP_GROUP(_n.c_str(), &_h);
-		}
-		ntv::PED::SET_PED_RELATIONSHIP_GROUP_HASH(chr, _h);
 	}
 } /* nob */

@@ -88,25 +88,24 @@ namespace nob {
 				start:
 
 				if (is_loaded()) {
-					if (_loaded != this_script::gameplay_id && gc::try_ref_inc(*this)) {
-						_loaded = this_script::gameplay_id;
-					}
 					return *this;
 				}
-
-				_loaded = this_script::gameplay_id;
 
 				auto h = hash();
 				ntv::STREAMING::REQUEST_MODEL(h);
 
+				auto cur_gpid = this_script::gameplay_id.load();
+
 				while (!is_loaded()) {
 					yield();
-					if (_loaded != this_script::gameplay_id) {
+					if (cur_gpid != this_script::gameplay_id) {
 						goto start;
 					}
 				}
 
-				gc::track(*this, [h]() {
+				_loaded = cur_gpid;
+
+				gc::delegate(*this, [h]() {
 					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(h);
 				});
 
@@ -115,7 +114,7 @@ namespace nob {
 
 			void free() {
 				if (_loaded == this_script::gameplay_id) {
-					gc::try_ref_dec(*this);
+					gc::try_free(*this);
 					_loaded = 0;
 				}
 			}

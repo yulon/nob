@@ -113,25 +113,24 @@ namespace nob {
 					start:
 
 					if (is_loaded()) {
-						if (_loaded != this_script::gameplay_id && gc::try_ref_inc(*this)) {
-							_loaded = this_script::gameplay_id;
-						}
 						return *this;
 					}
 
-					_loaded = this_script::gameplay_id;
-
 					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name.c_str(), false);
+
+					auto cur_gpid = this_script::gameplay_id.load();
 
 					while (!is_loaded()) {
 						yield();
-						if (_loaded != this_script::gameplay_id) {
+						if (cur_gpid != this_script::gameplay_id) {
 							goto start;
 						}
 					}
 
+					_loaded = cur_gpid;
+
 					auto n = _name;
-					gc::track(*this, [n]() {
+					gc::delegate(*this, [n]() {
 						ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(n.c_str());
 					});
 
@@ -140,18 +139,12 @@ namespace nob {
 
 				void free() {
 					if (_loaded == this_script::gameplay_id) {
-						gc::try_ref_dec(*this);
+						gc::try_free(*this);
 						_loaded = 0;
 					}
 				}
 
-				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) const {
-					assert(is_loaded());
-
-					ntv::GRAPHICS::DRAW_SPRITE(native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
-				}
-
-				void draw_s(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
+				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
 					ntv::GRAPHICS::DRAW_SPRITE(load().native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
 				}
 

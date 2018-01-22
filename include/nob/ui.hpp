@@ -175,7 +175,7 @@ namespace nob {
 
 		class menu {
 			public:
-				menu(const std::string &title, const list &li) : _tit(title), _cm_td("CommonMenu") {
+				menu(const std::string &title, const list &li) : _tit(title) {
 					_list_stack.push(li);
 				}
 
@@ -206,7 +206,6 @@ namespace nob {
 				task _tsk;
 				keyboard::blocker _kb_bkr;
 				keyboard::listener _kb_lnr;
-				g2d::texture_dict _cm_td;
 		};
 
 		inline void tip(const std::string &content) {

@@ -2,6 +2,7 @@
 #include <nob/object.hpp>
 #include <nob/program.hpp>
 #include <nob/script.hpp>
+#include <nob/gc.hpp>
 #include <nob/log.hpp>
 
 #include <cstring>
@@ -1172,92 +1173,71 @@ namespace nob {
 		}
 
 		void snowy(bool toggle) {
-			static class snowy_mgr_t {
-				public:
-					void *block_code_addr;
-					uint8_t block_code_bak[20];
-					uint8_t *feet_tracks, *veh_tracks, *veh_track_types, *ped_track_types;
-					bool enabled;
-
-					snowy_mgr_t() : block_code_addr(nullptr), enabled(false) {}
-
-					void find() {
-						if (block_code_addr) {
-							return;
-						}
-
-						chan<void *> ch;
-
-						std::thread([this, ch]() mutable {
-							auto bca = program::code.match({
-								// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
-								0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
-							}).data();
-
-							if (bca) {
-								VirtualProtect(block_code_addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
-								memcpy(&block_code_bak, bca, 20);
-							} else {
-								log("nob::world::snowy::block_code_addr: not found!");
-							}
-
-							ch << bca;
-						}).detach();
-
-						ch >> block_code_addr;
-					}
-
-					void enable() {
-						enabled = true;
-
-						if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x74) {
-							memset(block_code_addr, 0x90, 20);
-						}
-
-						ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(true);
-						ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(true);
-
-						ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core_snow");
-						while (!ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
-							yield();
-						}
-						ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core_snow");
-
-						ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS", true);
-						ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS", true);
-					}
-
-					void disable() {
-						enabled = false;
-
-						if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
-							memcpy(block_code_addr, &block_code_bak, 20);
-						}
-
-						ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(false);
-						ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(false);
-
-						if (ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
-							ntv::STREAMING::_REMOVE_NAMED_PTFX_ASSET("core_snow");
-						}
-
-						ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS");
-						ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS");
-					}
-
-					~snowy_mgr_t() {
-						if (enabled) {
-							disable();
-						}
-					}
-			} snowy_mgr;
-
-			snowy_mgr.find();
+			static void *block_code_addr = nullptr;
+			static uint8_t block_code_bak[20];
+			static struct gc_id_t {
+				constexpr bool native_handle() const {
+					return true;
+				}
+			} gc_id;
 
 			if (toggle) {
-				snowy_mgr.enable();
-			} else {
-				snowy_mgr.disable();
+				if (!block_code_addr) {
+					chan<void *> ch;
+
+					std::thread([ch]() mutable {
+						auto bca = program::code.match({
+							// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
+							0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
+						}).data();
+
+						if (bca) {
+							VirtualProtect(block_code_addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
+							memcpy(&block_code_bak, bca, 20);
+						} else {
+							log("nob::world::snowy::block_code_addr: not found!");
+						}
+
+						ch << bca;
+					}).detach();
+
+					ch >> block_code_addr;
+				}
+
+				if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x74) {
+					memset(block_code_addr, 0x90, 20);
+				}
+
+				ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(true);
+				ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(true);
+
+				ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core_snow");
+				while (!ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
+					yield();
+				}
+				ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core_snow");
+
+				ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS", true);
+				ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS", true);
+
+				gc::delegate(gc_id, []() {
+					if (*reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
+						memcpy(block_code_addr, &block_code_bak, 20);
+					}
+
+					ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(false);
+					ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(false);
+
+					if (ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
+						ntv::STREAMING::_REMOVE_NAMED_PTFX_ASSET("core_snow");
+					}
+
+					ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS");
+					ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS");
+				});
+
+			} else if (block_code_addr) {
+				gc::try_free(gc_id);
 			}
 		}
 	} /* world */

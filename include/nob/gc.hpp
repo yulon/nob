@@ -10,37 +10,17 @@
 
 namespace nob {
 	namespace gc {
-		struct _res_info {
-			size_t ref_count = 0;
-			std::function<void()> free;
-		};
-
-		extern std::unordered_map<std::type_index, std::unordered_map<hash_t, _res_info>> _map;
+		extern std::unordered_map<std::type_index, std::unordered_map<hash_t, std::function<void()>>> _map;
 
 		template <typename T>
-		inline void track(const T &obj, std::function<void()> free) {
+		inline void delegate(const T &obj, std::function<void()> free) {
 			assert(in_task());
 
-			auto &res_info = _map[typeid(T)][hash(obj.native_handle())];
-			++res_info.ref_count;
-			res_info.free = free;
+			_map[typeid(T)][hash(obj.native_handle())] = free;
 		}
 
 		template <typename T>
-		inline bool try_ref_inc(const T &obj) {
-			assert(in_task());
-
-			auto &sub_map = _map[typeid(T)];
-			auto it = sub_map.find(hash(obj.native_handle()));
-			if (it == sub_map.end()) {
-				return false;
-			}
-			++it->second.ref_count;
-			return true;
-		}
-
-		template <typename T>
-		inline bool try_ref_dec(const T &obj) {
+		inline bool try_free(const T &obj) {
 			if (this_script::exiting) {
 				return false;
 			}
@@ -52,15 +32,13 @@ namespace nob {
 			if (it == sub_map.end()) {
 				return false;
 			}
-			if (!--it->second.ref_count) {
-				it->second.free();
-				sub_map.erase(it);
-			}
+			it->second();
+			sub_map.erase(it);
 			return true;
 		}
 
 		template <typename T>
-		inline void untrack(const T &obj) {
+		inline void undelegate(const T &obj) {
 			if (this_script::exiting) {
 				return;
 			}
@@ -68,22 +46,6 @@ namespace nob {
 			assert(in_task());
 
 			_map[typeid(T)].erase(hash(obj.native_handle()));
-		}
-
-		template <typename T>
-		inline void untrack_onec(const T &obj) {
-			if (this_script::exiting) {
-				return;
-			}
-
-			assert(in_task());
-
-			auto &sub_map = _map[typeid(T)];
-			auto it = sub_map.find(hash(obj.native_handle()));
-			if (it == sub_map.end()) {
-				return;
-			}
-			--it->second.ref_count;
 		}
 	};
 }
