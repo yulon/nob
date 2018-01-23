@@ -302,5 +302,8 @@ namespace nob {
 				ntv::UI::_SET_MAP_FULL_SCREEN(toggle);
 			}
 		}
+
+		void takeover_frontend_menu(bool toggle = true);
+		void frontend_menu_cant_be_pause_game(bool toggle = true);
 	} /* ui */
 } /* nob */

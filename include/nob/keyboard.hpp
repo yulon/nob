@@ -23,6 +23,8 @@ namespace nob {
 
 				void del();
 
+				operator bool() const;
+
 			private:
 				std::list<std::function<bool(int, bool)>>::iterator _it;
 		};
@@ -53,6 +55,8 @@ namespace nob {
 				}
 
 				void del();
+
+				operator bool() const;
 
 			private:
 				std::vector<int> _blks;

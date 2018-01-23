@@ -4,18 +4,17 @@
 
 #include <windows.h>
 
-#include <atomic>
 #include <memory>
 #include <map>
+#include <cstring>
 
 namespace nob {
 	namespace keyboard {
-		std::atomic<bool> _downs[120];
+		bool _downs[120], _downs_shadow[120];
 
 		initer _clear_downs([]() {
-			for (size_t i = 0; i < 120; ++i) {
-				_downs[i] = false;
-			}
+			memset(&_downs, 0, 120 * sizeof(bool));
+			memset(&_downs_shadow, 0, 120 * sizeof(bool));
 		});
 
 		std::unique_ptr<std::list<std::function<bool(int, bool)>>> _listeners;
@@ -58,22 +57,27 @@ namespace nob {
 			_it = _listeners->end();
 		}
 
+		listener::operator bool() const {
+			return _listeners && _it != _listeners->end();
+		}
+
 		bool is_down(int code) {
-			return _downs[code];
+			return _downs_shadow[code];
 		}
 
 		void _send(int code, bool down) {
-			auto old_state = keyboard::_downs[code].exchange(down);
-			if (old_state == down) {
+			if (down == _downs[code]) {
 				return;
 			}
-			size_t ffc = this_script::gameplay_id;
-			go([ffc, code, down]() {
-				if (ffc != this_script::gameplay_id) {
+			_downs[code] = down;
+			size_t cgpid = this_script::gameplay_id;
+			go([cgpid, code, down]() {
+				if (cgpid != this_script::gameplay_id) {
 					return;
 				}
-				for (auto &listener : *_listeners) {
-					if (!listener(code, down)) {
+				_downs_shadow[code] = down;
+				for (auto it = _listeners->begin(); it != _listeners->end(); it++) {
+					if (!(*it)(code, down)) {
 						return;
 					}
 				}
@@ -133,6 +137,10 @@ namespace nob {
 				_bkr_tsk.del();
 			}
 			_blks.clear();
+		}
+
+		blocker::operator bool() const {
+			return _bkr_map && _blks.size();
 		}
 	} /* keyboard */
 } /* nob */

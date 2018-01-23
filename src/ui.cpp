@@ -184,16 +184,19 @@ namespace nob {
 								if (_list_stack.size() > 1) {
 									_list_stack.pop();
 								} else {
-									toggle();
-
-									static task det;
-									if (det) {
-										det.reset_dol(1000);
-									} else {
-										det = task([]() {
-											nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::ntv::eControl::FrontendPauseAlternate, true);
-										}, 1000);
+									static keyboard::listener esc_uper;
+									if (esc_uper) {
+										return false;
 									}
+									esc_uper = keyboard::listener([this](int code, bool down)->bool {
+										if (code == VK_ESCAPE && !down) {
+											toggle();
+											go([]() {
+												esc_uper.del();
+											});
+										}
+										return false;
+									});
 								}
 							}
 							return false;
@@ -298,6 +301,65 @@ namespace nob {
 			if (_bnr_sf) {
 				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
 				_bnr_sf = 0;
+			}
+		}
+
+		bool _fm_pause = true;
+
+		void takeover_frontend_menu(bool toggle) {
+			static keyboard::blocker kb_bkr;
+			static keyboard::listener kb_lnr;
+			if (toggle) {
+				if (kb_bkr) {
+					return;
+				}
+				kb_bkr = {
+					keyboard::block_t::frontend_menu_esc,
+					keyboard::block_t::frontend_menu_pause
+				};
+				kb_lnr = keyboard::listener([](int code, bool down)->bool {
+					switch (code) {
+						case 'P':
+						case VK_ESCAPE:
+							if (down) {
+								static keyboard::listener kb_bk_all;
+								if (kb_bk_all) {
+									return false;
+								}
+								kb_bk_all = keyboard::listener([](int code, bool down)->bool {
+									if (code == 'P' && down && ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
+										ntv::UI::SET_FRONTEND_ACTIVE(false);
+									}
+									return false;
+								});
+								ntv::UI::ACTIVATE_FRONTEND_MENU(-1171018317, _fm_pause, -1);
+								while (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
+									yield();
+								}
+								task([]() {
+									if (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
+										log(341);
+										kb_bk_all.del();
+										this_task::del();
+									}
+								});
+							}
+							return false;
+						default:
+							return true;
+					}
+					return true;
+				});
+			} else if (kb_bkr) {
+				kb_lnr.del();
+				kb_bkr.del();
+			}
+		}
+
+		void frontend_menu_cant_be_pause_game(bool toggle) {
+			_fm_pause = !toggle;
+			if (toggle) {
+				takeover_frontend_menu(true);
 			}
 		}
 	} /* ui */
