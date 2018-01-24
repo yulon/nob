@@ -95,7 +95,7 @@ namespace nob {
 
 					if (sz) {
 						size_t len;
-						if (sz < 10) {
+						if (sz < 11) {
 							len = sz;
 						} else {
 							std::stringstream ss;
@@ -144,7 +144,7 @@ namespace nob {
 							y += h;
 						}
 
-						if (sz < 10) {
+						if (sz < 11) {
 							h = 0.005f;
 						} else {
 							y += 0.001f;
