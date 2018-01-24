@@ -4,6 +4,7 @@
 #include <list>
 #include <initializer_list>
 #include <vector>
+#include <memory>
 
 namespace nob {
 	namespace keyboard {
@@ -26,7 +27,7 @@ namespace nob {
 				operator bool() const;
 
 			private:
-				std::list<std::function<bool(int, bool)>>::iterator _it;
+				std::list<std::shared_ptr<std::function<bool(int, bool)>>>::iterator _it;
 		};
 
 		bool is_down(int code);

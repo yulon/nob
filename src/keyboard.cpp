@@ -4,8 +4,8 @@
 
 #include <windows.h>
 
-#include <memory>
 #include <map>
+#include <queue>
 #include <cstring>
 
 namespace nob {
@@ -17,20 +17,20 @@ namespace nob {
 			memset(&_downs_shadow, 0, 120 * sizeof(bool));
 		});
 
-		std::unique_ptr<std::list<std::function<bool(int, bool)>>> _listeners;
+		std::unique_ptr<std::list<std::shared_ptr<std::function<bool(int, bool)>>>> _listeners;
 
 		listener::listener() {
 			if (!_listeners) {
-				_listeners.reset(new std::list<std::function<bool(int, bool)>>);
+				_listeners.reset(new std::list<std::shared_ptr<std::function<bool(int, bool)>>>);
 			}
 			_it = _listeners->end();
 		}
 
 		listener::listener(std::function<bool(int, bool)> listener) {
 			if (!_listeners) {
-				_listeners.reset(new std::list<std::function<bool(int, bool)>>);
+				_listeners.reset(new std::list<std::shared_ptr<std::function<bool(int, bool)>>>);
 			}
-			_listeners->emplace_front(std::move(listener));
+			_listeners->emplace_front(std::make_shared<std::function<bool(int, bool)>>(std::move(listener)));
 			_it = _listeners->begin();
 		}
 
@@ -76,9 +76,17 @@ namespace nob {
 					return;
 				}
 				_downs_shadow[code] = down;
-				for (auto it = _listeners->begin(); it != _listeners->end(); it++) {
-					if (!(*it)(code, down)) {
-						return;
+				std::queue<std::weak_ptr<std::function<bool(int, bool)>>> qu;
+				for (auto &hdr_sp : *_listeners) {
+					qu.emplace(hdr_sp);
+				}
+				while (qu.size()) {
+					auto hdr_sp = qu.front().lock();
+					qu.pop();
+					if (hdr_sp) {
+						if (!(*hdr_sp)(code, down)) {
+							return;
+						}
 					}
 				}
 			});
