@@ -101,7 +101,7 @@ namespace nob {
 					mkr.graphic(462);
 					break;
 				default:
-					mkr.graphic(357);
+					mkr.graphic(40);
 			}
 			mkr.keep_track(false);
 		}
