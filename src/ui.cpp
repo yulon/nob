@@ -299,7 +299,9 @@ namespace nob {
 				_bnr_tsk.del();
 			}
 			if (_bnr_sf) {
-				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
+				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
+					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
+				}
 				_bnr_sf = 0;
 			}
 		}
