@@ -54,5 +54,13 @@ namespace nob {
 			ntv::PLAYER::SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(0, val);
 			ntv::PLAYER::SET_PLAYER_VEHICLE_DAMAGE_MODIFIER(0, val);
 		}
+
+		inline void health_recharge_multiplier(float val) {
+			ntv::PLAYER::SET_PLAYER_HEALTH_RECHARGE_MULTIPLIER(0, val);
+		}
+
+		inline void health_perception_multiplier(float val) {
+			ntv::PLAYER::SET_PLAYER_STEALTH_PERCEPTION_MODIFIER(0, val);
+		}
 	}
 }
