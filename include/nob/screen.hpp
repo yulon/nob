@@ -3,6 +3,7 @@
 #include "ntv.hpp"
 #include "vector.hpp"
 #include "entity.hpp"
+#include "player.hpp"
 
 #include <array>
 
