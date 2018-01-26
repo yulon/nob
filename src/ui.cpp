@@ -261,6 +261,9 @@ namespace nob {
 
 		initer _reset_bnr_sf([]() {
 			_bnr_sf = 0;
+			if (_bnr_tsk) {
+				_bnr_tsk.del();
+			}
 		});
 
 		void banner(const std::string &text) {
@@ -362,6 +365,23 @@ namespace nob {
 			_fm_pause = !toggle;
 			if (toggle) {
 				takeover_frontend_menu(true);
+			}
+		}
+
+		namespace hud {
+			void hide_lower_right(bool toggle) {
+				static task tsk;
+				if (toggle) {
+					if (!tsk) {
+						tsk = nob::task([]() {
+							for (int i = 6; i < 10; ++i) {
+								nob::ntv::UI::HIDE_HUD_COMPONENT_THIS_FRAME(i);
+							}
+						});
+					}
+				} else if (tsk) {
+					tsk.del();
+				}
 			}
 		}
 	} /* ui */

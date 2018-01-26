@@ -268,6 +268,8 @@ namespace nob {
 			inline bool is_display() {
 				return !ntv::UI::IS_HUD_HIDDEN();
 			}
+
+			void hide_lower_right(bool toggle = true);
 		}
 
 		namespace minimap {
