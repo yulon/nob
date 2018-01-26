@@ -67,7 +67,7 @@ namespace nob {
 			}
 		}
 
-		void disable_sp_features(bool toggle) {
+		void disable_ambient_missions(bool toggle) {
 			static task tsk;
 
 			if (toggle) {
@@ -91,15 +91,6 @@ namespace nob {
 							ntv::CUTSCENE::STOP_CUTSCENE_IMMEDIATELY();
 						}
 					});
-
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_SCRIPT_INCREASE_STAM"), 100, 1);
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_SCRIPT_INCREASE_STRN"), 100, 1);
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_SCRIPT_INCREASE_LUNG"), 100, 1);
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_SCRIPT_INCREASE_DRIV"), 100, 1);
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_SCRIPT_INCREASE_FLY"), 100, 1);
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_SCRIPT_INCREASE_SHO"), 100, 1);
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_SCRIPT_INCREASE_STL"), 100, 1);
-					ntv::STATS::STAT_SET_INT(ntv::GAMEPLAY::GET_HASH_KEY("MP0_NO_MORE_TUTORIALS"), 1, 1);
 				}
 			} else {
 				tsk.del();
@@ -1152,6 +1143,7 @@ namespace nob {
 						ntv::STREAMING::REQUEST_IPL("hei_yacht_heist_enginrm");
 						ntv::STREAMING::REQUEST_IPL("hei_yacht_heist_LODLights");
 						ntv::STREAMING::REQUEST_IPL("hei_yacht_heist_Lounge");
+						ntv::AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_HEI_AIRCRAFT_CARRIER", true, true);
 					}
 					return {-2062.79f, -1025.98f, 3.06146f};
 
@@ -1166,6 +1158,7 @@ namespace nob {
 						ntv::STREAMING::REQUEST_IPL("hei_Carrier_int5");
 						ntv::STREAMING::REQUEST_IPL("hei_Carrier_int6");
 						ntv::STREAMING::REQUEST_IPL("hei_carrier_LODLights");
+						ntv::AUDIO::SET_AMBIENT_ZONE_LIST_STATE_PERSISTENT("AZL_DLC_HEI_MILO_YACHT_ZONES", true, true);
 					}
 					return {3068.94f, -4721.21f, 15.2614f};
 			}

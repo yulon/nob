@@ -29,7 +29,7 @@ namespace nob {
 
 		void no_mans_island(bool toggle = true);
 
-		void disable_sp_features(bool toggle = true);
+		void disable_ambient_missions(bool toggle = true);
 
 		inline void emp(bool toggle) {
 			ntv::GRAPHICS::_SET_BLACKOUT(toggle);
@@ -82,7 +82,7 @@ namespace nob {
 
 		vector3 load_ilp(ilp i, bool toggle = true);
 
-		inline void load_mp_map() {
+		inline void load_mp_resources() {
 			ntv::GAMEPLAY::_USE_FREEMODE_MAP_BEHAVIOR(true);
 			ntv::DLC2::_LOAD_MP_DLC_MAPS();
 		}
@@ -107,8 +107,6 @@ namespace nob {
 		}
 
 		inline void load_all_ilps() {
-			load_mp_map();
-
 			for (size_t i = 0; i < static_cast<size_t>(ilp::hospital_destroyed); ++i) {
 				load_ilp_with_marker(static_cast<ilp>(i));
 			}
@@ -122,7 +120,11 @@ namespace nob {
 			for (size_t i = static_cast<size_t>(ilp::trevors_trailer); i < static_cast<size_t>(ilp::mp_lost_safe_house); ++i) {
 				load_ilp_with_marker(static_cast<ilp>(i));
 			}
+		}
 
+		inline void load_all_ilps_ex() {
+			load_mp_resources();
+			load_all_ilps();
 			load_ilp_with_marker(ilp::mp_yacht);
 			load_ilp_with_marker(ilp::mp_heist_carrier);
 		}
