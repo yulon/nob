@@ -583,6 +583,11 @@ namespace nob {
 				#endif
 			}
 
+			void disable_melee(bool toggle = true) {
+				ntv::PED::SET_PED_CONFIG_FLAG(_h, 122, toggle); // PED_FLAG_NO_PLAYER_MELEE
+				ntv::PED::SET_PED_CONFIG_FLAG(_h, 314, toggle); // PED_FLAG_NO_PED_MELEE
+			}
+
 			void look();
 
 			void stop_look() {
