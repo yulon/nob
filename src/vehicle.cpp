@@ -1,4 +1,4 @@
-#include <nob/object.hpp>
+#include <nob/entity.hpp>
 #include <nob/hash.hpp>
 #include <nob/script.hpp>
 #include <nob/log.hpp>

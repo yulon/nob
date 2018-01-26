@@ -200,6 +200,7 @@ namespace nob {
 					ntv::PED::_SET_PED_RAGDOLL_BLOCKING_FLAGS(_h, 1); // Blocks ragdolling when shot.
 					ntv::WEAPON::SET_PED_DROPS_WEAPONS_WHEN_DEAD(_h, false);
 					ntv::PED::SET_PED_CAN_RAGDOLL_FROM_PLAYER_IMPACT(_h, false);
+					ntv::AI::SET_PED_PATH_AVOID_FIRE(_h, false);
 				}
 				ntv::PED::SET_PED_CONFIG_FLAG(_h, 281, true); // PED_FLAG_NO_WRITHE
 			}
@@ -834,59 +835,6 @@ namespace nob {
 			};
 	};
 
-	namespace player {
-		constexpr int native_handle() {
-			return 0;
-		}
-
-		inline character body() {
-			return ntv::PLAYER::PLAYER_PED_ID();
-		}
-
-		inline void change_body(character chr) {
-			ntv::PLAYER::CHANGE_PLAYER_PED(0, chr, true, true);
-		}
-
-		inline void switch_body(character chr) {
-			auto old_chr = body();
-			auto old_chr_coords = old_chr.pos({ 0, 0, 0 });
-			auto chr_coords = chr.pos({ 0, 0, 0 });
-
-			int st = ntv::STREAMING::GET_IDEAL_PLAYER_SWITCH_TYPE(old_chr_coords.x, old_chr_coords.y, old_chr_coords.z, chr_coords.x, chr_coords.y, chr_coords.z);
-			ntv::STREAMING::START_PLAYER_SWITCH(old_chr, chr, 0, st);
-
-			sleep(1000);
-
-			if (ntv::ENTITY::DOES_ENTITY_EXIST(chr) && !ntv::ENTITY::IS_ENTITY_DEAD(chr)) {
-				change_body(chr);
-				old_chr.free();
-			}
-		}
-
-		inline void auto_get_parachute_in_plane(bool toggle = true) {
-			ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
-		}
-
-		inline void disable_automatic_respawn() {
-			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_DEATH(false);
-			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_ARREST(false);
-			ntv::GAMEPLAY::SET_FADE_IN_AFTER_DEATH_ARREST(false);
-			ntv::GAMEPLAY::_DISABLE_AUTOMATIC_RESPAWN(true);
-		}
-
-		inline entity aiming_entity() {
-			int e;
-			ntv::PLAYER::GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(0, &e);
-			return entity(e);
-		}
-
-		inline void damage_modifier(float val) {
-			ntv::PLAYER::SET_PLAYER_WEAPON_DAMAGE_MODIFIER(0, val);
-			ntv::PLAYER::SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(0, val);
-			ntv::PLAYER::SET_PLAYER_VEHICLE_DAMAGE_MODIFIER(0, val);
-		}
-	}
-
 	class vehicle : public entity {
 		public:
 			vehicle(int native_handle = 0) : entity(native_handle) {}
@@ -924,16 +872,16 @@ namespace nob {
 
 			static constexpr int mod_type_sum = 50;
 
-			int mod_sum(int mod_type) {
-				return ntv::VEHICLE::GET_NUM_VEHICLE_MODS(_h, mod_type);
+			int mod_sum(int type) {
+				return ntv::VEHICLE::GET_NUM_VEHICLE_MODS(_h, type);
 			}
 
-			void mod(int mod_type, int mod) {
-				ntv::VEHICLE::SET_VEHICLE_MOD(_h, mod_type, mod, true);
+			void mod(int type, int ix) {
+				ntv::VEHICLE::SET_VEHICLE_MOD(_h, type, ix, true);
 			}
 
-			void mod(int mod_type) {
-				ntv::VEHICLE::GET_VEHICLE_MOD(_h, mod_type);
+			void mod(int type) {
+				ntv::VEHICLE::GET_VEHICLE_MOD(_h, type);
 			}
 
 			void set_best_mods() {
@@ -947,6 +895,57 @@ namespace nob {
 						mod(i, n - 1);
 					}
 				}
+			}
+
+			enum class tint_type : int {
+				normal = 0,
+				metallic,
+				pearl,
+				matte,
+				metal,
+				chrome
+			};
+
+			void tint(tint_type type, int ix) {
+				ntv::VEHICLE::SET_VEHICLE_MOD_COLOR_1(_h, static_cast<int>(type), ix, 0);
+			}
+
+			void second_tint(tint_type type, int ix) {
+				ntv::VEHICLE::SET_VEHICLE_MOD_COLOR_2(_h, static_cast<int>(type), ix);
+			}
+
+			struct tint_t {
+				tint_type type;
+				int ix;
+			};
+
+			void tint(const tint_t &t) {
+				tint(t.type, t.ix);
+			}
+
+			void second_tint(const tint_t &t) {
+				second_tint(t.type, t.ix);
+			}
+
+			tint_t tint() const {
+				tint_t t;
+				int pl;
+				ntv::VEHICLE::GET_VEHICLE_MOD_COLOR_1(_h, reinterpret_cast<int *>(&t.type), &t.ix, &pl);
+				return t;
+			}
+
+			tint_t second_tint() const {
+				tint_t t;
+				ntv::VEHICLE::GET_VEHICLE_MOD_COLOR_2(_h, reinterpret_cast<int *>(&t.type), &t.ix);
+				return t;
+			}
+
+			std::string tint_name() const {
+				return ntv::VEHICLE::GET_VEHICLE_MOD_COLOR_1_NAME(_h, false);
+			}
+
+			std::string second_tint_name() const {
+				return ntv::VEHICLE::GET_VEHICLE_MOD_COLOR_2_NAME(_h);
 			}
 
 			bool is_playing_radio() {
@@ -973,8 +972,8 @@ namespace nob {
 				ntv::AUDIO::SET_VEH_RADIO_STATION(_h, rs.c_str());
 			}
 
-			void engine_on() {
-				ntv::VEHICLE::SET_VEHICLE_ENGINE_ON(_h, true, true, true);
+			void engine_on(bool toggle = true) {
+				ntv::VEHICLE::SET_VEHICLE_ENGINE_ON(_h, toggle, true, true);
 			}
 
 			static constexpr float min_engine_health = -4000.0f;
@@ -1132,6 +1131,10 @@ namespace nob {
 			bool has_landing_gear() {
 				return ntv::VEHICLE::_VEHICLE_HAS_LANDING_GEAR(_h);
 			}
+
+			void jet_engine_on(bool toggle = true) {
+				ntv::VEHICLE::_SET_VEHICLE_JET_ENGINE_ON(_h, toggle);
+			}
 	};
 
 	class helicopter : public plane {
@@ -1143,7 +1146,7 @@ namespace nob {
 				At -100 both helicopter rotors will stall.
 			*/
 
-			float engine_health() {
+			float heli_engine_health() const {
 				return ntv::VEHICLE::_GET_HELI_ENGINE_HEALTH(_h);
 			}
 
@@ -1152,11 +1155,11 @@ namespace nob {
 				At 0 the tail rotor will stall.
 			*/
 
-			float rotor_health() {
+			float rotor_health() const {
 				return ntv::VEHICLE::_GET_HELI_MAIN_ROTOR_HEALTH(_h);
 			}
 
-			float tail_rotor_health() {
+			float tail_rotor_health() const {
 				return ntv::VEHICLE::_GET_HELI_TAIL_ROTOR_HEALTH(_h);
 			}
 
@@ -1164,8 +1167,8 @@ namespace nob {
 				ntv::VEHICLE::SET_VEHICLE_SEARCHLIGHT(_h, toggle, false);
 			}
 
-			void engine_on(float val = 1.0f) {
-				ntv::VEHICLE::_SET_HELICOPTER_ROLL_PITCH_YAW_MULT(_h, val);
+			void rotor_lift_force(float val = 1.0f) {
+				ntv::VEHICLE::SET_HELI_BLADES_SPEED(_h, val);
 			}
 	};
 

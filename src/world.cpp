@@ -1,5 +1,5 @@
 #include <nob/world.hpp>
-#include <nob/object.hpp>
+#include <nob/player.hpp>
 #include <nob/program.hpp>
 #include <nob/script.hpp>
 #include <nob/gc.hpp>

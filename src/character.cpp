@@ -1,4 +1,4 @@
-#include <nob/object.hpp>
+#include <nob/entity.hpp>
 #include <nob/ntv.hpp>
 
 #include <unordered_map>

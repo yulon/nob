@@ -2,7 +2,7 @@
 
 #include "ntv.hpp"
 #include "vector.hpp"
-#include "object.hpp"
+#include "entity.hpp"
 
 #include <array>
 
