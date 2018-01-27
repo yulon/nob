@@ -128,7 +128,7 @@ namespace nob {
 		}
 
 		inline vector3 forward_world_pos(float distance = 10.0f) {
-			return vector3(ntv::CAM::GET_GAMEPLAY_CAM_COORD()).offset(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), distance);
+			return vector3(ntv::CAM::GET_GAMEPLAY_CAM_COORD()).forward(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), distance);
 		}
 
 		struct world_info_t {
@@ -138,7 +138,7 @@ namespace nob {
 
 		inline world_info_t center_point_world_info() {
 			vector3 cam_pos = ntv::CAM::GET_GAMEPLAY_CAM_COORD();
-			vector3 fwd = vector3(cam_pos).offset(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), 10.0f);
+			vector3 fwd = vector3(cam_pos).forward(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), 10.0f);
 			auto ray = ntv::WORLDPROBE::_START_SHAPE_TEST_RAY(cam_pos.x, cam_pos.y, cam_pos.z, fwd.x, fwd.y, fwd.z, -1, player::body(), 7);
 			bool hit;
 			ntv::Vector3 pos;

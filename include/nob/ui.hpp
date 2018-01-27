@@ -140,6 +140,10 @@ namespace nob {
 					std::string name,
 					std::function<void(list)> on_show
 				) : list(std::move(name), "", std::vector<item>(), std::move(on_show)) {}
+
+				list(
+					std::string name
+				) : list(std::move(name), "", std::vector<item>(), nullptr) {}
 		};
 
 		struct _flag : _item {

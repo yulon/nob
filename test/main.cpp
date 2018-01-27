@@ -8,32 +8,65 @@
 
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 nob::task print_pos([]() {
-	nob::g2d::text(0, 0.93, 1, nob::player::body().pos().str(), 0.6, 255, 255, 255, 255, 1, true);
+	auto pb = nob::player::body();
+	nob::g2d::text(0, 0.93, 1, pb.pos().str() + ", " + pb.rotation().str(), 0.4, 255, 255, 255, 255, 1, true);
 });
 
 nob::first_task unlock_vehs(nob::unlock_banned_vehicles);
 
 using namespace nob::ui;
 
-template<typename C>
-void add_vehs(list &li, const C &c) {
-	for (nob::model m : c) {
-		li->items.emplace_back(action(nob::i18n::get(m.name()), m.name(), [m]() {
-			auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
-			veh.place_on_ground();
-			veh.set_best_mods();
-			veh.invincible();
-		}));
-	}
+void add_veh(list &li, const nob::model &m) {
+	li->items.emplace_back(action(nob::i18n::get(m.name()), m.name(), [m]() {
+		auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
+		veh.place_on_ground();
+		veh.set_best_mods();
+		veh.invincible();
+	}));
 }
 
 nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	list("Vehicle", {
 		list("Spawn", [](list li) {
-			add_vehs(li, nob::base_vehicles);
-			add_vehs(li, nob::dlc_vehicles());
+			list super("Super"), plane("Plane"), heli("Helicopter"), other("Other");
+
+			for (nob::model m : nob::base_vehicles) {
+				switch (nob::vehicle::get_class_from_model(m)) {
+					case nob::vehicle::class_t::super:
+						add_veh(super, m);
+						break;
+					case nob::vehicle::class_t::plane:
+						add_veh(plane, m);
+						break;
+					case nob::vehicle::class_t::helicopter:
+						add_veh(heli, m);
+						break;
+					default:
+						add_veh(other, m);
+				}
+			}
+
+			for (nob::model m : nob::dlc_vehicles()) {
+				switch (nob::vehicle::get_class_from_model(m)) {
+					case nob::vehicle::class_t::super:
+						add_veh(super, m);
+						break;
+					case nob::vehicle::class_t::plane:
+						add_veh(plane, m);
+						break;
+					case nob::vehicle::class_t::helicopter:
+						add_veh(heli, m);
+						break;
+					default:
+						add_veh(other, m);
+				}
+			}
+
+			li->items = { std::move(super), std::move(plane), std::move(heli), std::move(other) };
+
 			li->on_show = nullptr;
 		})
 	}),
@@ -103,27 +136,27 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					switch (code) {
 						case 'W': {
 							cmd(down, 0, [](nob::vector3 cam_rot)->nob::vector3 {
-								return nob::player::body().pos().offset(cam_rot, m);
+								return nob::player::body().pos().forward(cam_rot, m);
 							});
 							return false;
 						}
 						case 'S': {
 							cmd(down, 1, [](nob::vector3 cam_rot)->nob::vector3 {
-								return nob::player::body().pos().offset(cam_rot, -m);
+								return nob::player::body().pos().forward(cam_rot, -m);
 							});
 							return false;
 						}
 						case 'A': {
 							cmd(down, 2, [](nob::vector3 cam_rot)->nob::vector3 {
 								cam_rot.z += 90.0f;
-								return nob::player::body().pos().offset(cam_rot, m);
+								return nob::player::body().pos().forward(cam_rot, m);
 							});
 							return false;
 						}
 						case 'D': {
 							cmd(down, 3, [](nob::vector3 cam_rot)->nob::vector3 {
 								cam_rot.z -= 90.0f;
-								return nob::player::body().pos().offset(cam_rot, m);
+								return nob::player::body().pos().forward(cam_rot, m);
 							});
 							return false;
 						}
@@ -229,17 +262,96 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				}
 			));
 		}),
-		action("Other", []() {
-/*			static auto g = nob::character::group("nob_111");
-			static auto g2 = nob::character::group("nob_222");
-			auto pb = nob::player::body();
-			g.add(pb);
-			nob::ntv::PLAYER::SET_PLAYER_WEAPON_DAMAGE_MODIFIER(0,0);
-			auto chr = nob::character("mp_m_freemode_01", nob::world::get_ground_pos(pb.pos({0, 5, 0})), true);
-			g2.add(chr);
-			g.like(g2);
+		action("Make Vehicle Nodes", []() {
+			std::fstream f("veh_nodes_500.inc", f.binary | f.trunc | f.in | f.out);
+			if (!f.is_open()) {
+				nob::log("failed to open");
+			}
 
-			auto veh = nob::vehicle("NINEF", pb.pos({0, 15, 0}));
+			nob::ntv::PATHFIND::_0xF7B79A50B905A30D(-6101.1f, 8033.74f, 6101.1f, -4168.46);
+
+			auto pb = nob::player::body();
+			for (size_t x = 0; x < 16; ++x) {
+				for (size_t y = 0; y < 16; ++y) {
+					nob::vector3 ct {-6101.1f + x * 800.0f, 8033.74f - y * 800.0f, 1500.0f};
+					pb.move(ct);
+					nob::sleep(1111);
+
+					for (size_t i = 0; i < 120 && !nob::world::ground_height(ct, false); ++i) {
+						nob::yield();
+					}
+
+					for (size_t i = 0; i < 3; ++i) {
+						nob::ntv::Vector3 pos;
+						int id;
+						nob::ntv::PATHFIND::GET_RANDOM_VEHICLE_NODE(ct.x, ct.y, ct.z, 400.0f, false, false, false, &pos, &id);
+						auto mkr = nob::map::marker({pos.x, pos.y, pos.z});
+						mkr.graphic(357);
+						mkr.keep_track(false);
+						f << "{ " << pos.x << ", " << pos.y << ", " << pos.z << " }," << std::endl;
+					}
+				}
+			}
+
+			/*std::fstream f("veh_nodes.inc", f.binary | f.trunc | f.in | f.out);
+			if (!f.is_open()) {
+				nob::log("failed to open");
+			}
+
+			std::vector<nob::vector3> nodes {
+				#include "../../gtabr/veh_nodes_500.inc"
+			};
+
+			for (size_t i = 0; i < nodes.size(); ++i) {
+				auto pos = nodes[i];
+				if (
+					i > 0
+					&& nodes[i].x == nodes[i-1].x
+					&& nodes[i].y == nodes[i-1].y
+					&& nodes[i].z == nodes[i-1].z
+				) {
+					continue;
+				}
+				auto mkr = nob::map::marker(pos);
+				mkr.graphic(357);
+				mkr.keep_track(false);
+				f << "{ " << pos.x << ", " << pos.y << ", " << pos.z << " }," << std::endl;
+			}*/
+		}),
+		action("Other", []() {
+			static auto pb = nob::player::body();
+			//auto pos = pb.pos({0, 1, 0});
+
+			static nob::g3d::cylinder clir;
+			clir.move({0, 0, 0});
+			clir.height(1000.0f);
+			clir.radius(5000.0f);
+			clir.color({0, 0, 255, 100});
+
+			nob::task([]() {
+				clir.height(pb.pos().z + 100);
+			});
+
+/*			auto veh = pb.current_vehicle();
+			nob::log(veh.get_model().name(), ": { ", veh.pos().str(), ", ", veh.rotation().str(), " }");
+
+			for (auto &n : nodes) {
+				auto mkr = nob::map::marker(n);
+				mkr.graphic(357);
+				mkr.keep_track(false);
+			}
+
+			auto chr = nob::character("mp_m_freemode_01", nob::world::ground_pos(pb.pos({0, 5, 0})), true);
+			nob::player::switch_body(chr);
+			nob::ntv::PED::SET_PED_ENABLE_WEAPON_BLOCKING(chr, false);
+
+			static auto g = nob::character::group("nob_111");
+			static auto g2 = nob::character::group("nob_222");
+			g.add(pb);
+			g.add(chr);
+			//g.like(g2);
+
+			auto veh = nob::vehicle("KURUMA", pb.pos({0, 15, 0}));
 			chr.into_vehicle(veh, -1);
 
 			nob::task([pb, chr]() {
@@ -253,15 +365,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			});
 
 			//auto pos = pb.pos({0, 50, 200});
-			nob::ntv::PATHFIND::LOAD_ALL_PATH_NODES(true);
-			for (size_t i = 0; i < 500; ++i) {
-				nob::ntv::Vector3 pos;
-				int id;
-				nob::ntv::PATHFIND::GET_RANDOM_VEHICLE_NODE(0, 1932.64f, 0, 6101.1f, false, false, false, &pos, &id);
-				auto mkr = nob::map::marker({pos.x, pos.y, pos.z});
-				mkr.graphic(357);
-				mkr.keep_track(false);
-			}
+
 
 			nob::ntv::PED::SET_PED_TO_RAGDOLL(pb, -1, -1, 0, false, false, false);
 			nob::sleep(5000);

@@ -1065,7 +1065,7 @@ namespace nob {
 				ntv::AI::TASK_VEHICLE_TEMP_ACTION(passenger(-1), _h, ac, -1);
 			}
 
-			enum class klass_t : int {
+			enum class class_t : int {
 				none = -1,
 				compact,
 				sedan,
@@ -1091,15 +1091,15 @@ namespace nob {
 				train
 			};
 
-			static klass_t klass(const model &mi) {
+			static class_t get_class_from_model(const model &mi) {
 				if (!mi.is_vehicle()) {
-					return klass_t::none;
+					return class_t::none;
 				}
-				return static_cast<klass_t>(ntv::VEHICLE::GET_VEHICLE_CLASS_FROM_NAME(mi));
+				return static_cast<class_t>(ntv::VEHICLE::GET_VEHICLE_CLASS_FROM_NAME(mi));
 			}
 
-			klass_t klass() const {
-				return static_cast<klass_t>(ntv::VEHICLE::GET_VEHICLE_CLASS(_h));
+			class_t get_class() const {
+				return static_cast<class_t>(ntv::VEHICLE::GET_VEHICLE_CLASS(_h));
 			}
 
 			bool is_armed() const {

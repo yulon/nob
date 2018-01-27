@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <cmath>
 #include <string>
+#include <sstream>
 
 namespace nob {
 	struct vector2_i {
@@ -79,13 +80,21 @@ namespace nob {
 			return result;
 		}
 
-		vector3 offset(const vector3 &rot, float distance = 10.0f) const {
+		vector3 forward(const vector3 &rot, float distance = 10.0f) const {
 			return *this + (rot.rot_to_dir() * distance);
+		}
+
+		float distance(const vector3 &v3) const {
+			return std::sqrt(
+				std::pow((double)x - (double)v3.x, 2) +
+				std::pow((double)x - (double)v3.x, 2) +
+				std::pow((double)x - (double)v3.x, 2)
+			);
 		}
 
 		std::string str() const {
 			std::stringstream ss;
-			ss << "X: " << x << ", Y: " << y << ", Z: " << z;
+			ss << "{ " << x << ", " << y << ", " << z << " }";
 			return ss.str();
 		}
 	};
