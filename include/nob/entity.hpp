@@ -902,7 +902,7 @@ namespace nob {
 				}
 			}
 
-			enum class tint_type : int {
+			enum class tint_type_t : int {
 				normal = 0,
 				metallic,
 				pearl,
@@ -911,16 +911,16 @@ namespace nob {
 				chrome
 			};
 
-			void tint(tint_type type, int ix) {
+			void tint(tint_type_t type, int ix) {
 				ntv::VEHICLE::SET_VEHICLE_MOD_COLOR_1(_h, static_cast<int>(type), ix, 0);
 			}
 
-			void second_tint(tint_type type, int ix) {
+			void second_tint(tint_type_t type, int ix) {
 				ntv::VEHICLE::SET_VEHICLE_MOD_COLOR_2(_h, static_cast<int>(type), ix);
 			}
 
 			struct tint_t {
-				tint_type type;
+				tint_type_t type;
 				int ix;
 			};
 
