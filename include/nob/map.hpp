@@ -3,6 +3,7 @@
 #include "ntv.hpp"
 #include "vector.hpp"
 #include "entity.hpp"
+#include "gc.hpp"
 
 #include <string>
 
@@ -16,16 +17,51 @@ namespace nob {
 
 		class marker {
 			public:
-				marker(const vector3 &pos) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_COORD(pos.x, pos.y, pos.z)) {}
+				static marker from_player() {
+					return ntv::UI::GET_MAIN_PLAYER_BLIP_ID();
+				}
 
-				marker(const vector3 &pos, float radius) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_RADIUS(pos.x, pos.y, pos.z, radius)) {}
+				static marker from_entity(entity e) {
+					return ntv::UI::GET_BLIP_FROM_ENTITY(e);
+				}
 
-				marker(entity e) : _ntv_hdl(ntv::UI::ADD_BLIP_FOR_ENTITY(e)) {}
+				marker(int native_handle = 0) : _h(native_handle) {}
 
-				marker(int ntv_hdl = 0) : _ntv_hdl(ntv_hdl) {}
+				marker(const vector3 &pos) : _h(ntv::UI::ADD_BLIP_FOR_COORD(pos.x, pos.y, pos.z)) {
+					if (_h) {
+						auto h = _h;
+						gc::delegate(*this, [h]() mutable {
+							if (ntv::UI::DOES_BLIP_EXIST(h)) {
+								ntv::UI::REMOVE_BLIP(&h);
+							}
+						});
+					}
+				}
+
+				marker(const vector3 &pos, float radius) : _h(ntv::UI::ADD_BLIP_FOR_RADIUS(pos.x, pos.y, pos.z, radius)) {
+					if (_h) {
+						auto h = _h;
+						gc::delegate(*this, [h]() mutable {
+							if (ntv::UI::DOES_BLIP_EXIST(h)) {
+								ntv::UI::REMOVE_BLIP(&h);
+							}
+						});
+					}
+				}
+
+				marker(entity e) : _h(ntv::UI::ADD_BLIP_FOR_ENTITY(e)) {
+					if (_h) {
+						auto h = _h;
+						gc::delegate(*this, [h]() mutable {
+							if (ntv::UI::DOES_BLIP_EXIST(h)) {
+								ntv::UI::REMOVE_BLIP(&h);
+							}
+						});
+					}
+				}
 
 				int native_handle() const {
-					return _ntv_hdl;
+					return _h;
 				}
 
 				operator int() const {
@@ -33,23 +69,30 @@ namespace nob {
 				}
 
 				operator bool() const {
-					return _ntv_hdl && ntv::UI::DOES_BLIP_EXIST(_ntv_hdl);
+					return _h && ntv::UI::DOES_BLIP_EXIST(_h);
+				}
+
+				void del() {
+					if (_h) {
+						gc::free(*this);
+						_h = 0;
+					}
 				}
 
 				void graphic(int g) {
-					ntv::UI::SET_BLIP_SPRITE(_ntv_hdl, g);
+					ntv::UI::SET_BLIP_SPRITE(_h, g);
 				}
 
 				int graphic() const {
-					return ntv::UI::GET_BLIP_SPRITE(_ntv_hdl);
+					return ntv::UI::GET_BLIP_SPRITE(_h);
 				}
 
-				void pos(const vector3 &coords) {
-					ntv::UI::SET_BLIP_COORDS(_ntv_hdl, coords.x, coords.y, coords.z);
+				void move(const vector3 &coords) {
+					ntv::UI::SET_BLIP_COORDS(_h, coords.x, coords.y, coords.z);
 				}
 
 				vector3 pos() const {
-					auto v3 = ntv::UI::GET_BLIP_COORDS(_ntv_hdl);
+					auto v3 = ntv::UI::GET_BLIP_COORDS(_h);
 					return {v3.x, v3.y, v3.z};
 				}
 
@@ -69,35 +112,35 @@ namespace nob {
 				};
 
 				void color(color_t clr) {
-					ntv::UI::SET_BLIP_COLOUR(_ntv_hdl, static_cast<int>(clr));
+					ntv::UI::SET_BLIP_COLOUR(_h, static_cast<int>(clr));
 				}
 
 				color_t color() const {
-					return static_cast<color_t>(ntv::UI::GET_BLIP_COLOUR(_ntv_hdl));
+					return static_cast<color_t>(ntv::UI::GET_BLIP_COLOUR(_h));
 				}
 
 				void keep_track(bool toggle = true) {
-					ntv::UI::SET_BLIP_AS_SHORT_RANGE(_ntv_hdl, !toggle);
+					ntv::UI::SET_BLIP_AS_SHORT_RANGE(_h, !toggle);
 				}
 
 				bool is_keep_track() const {
-					return !ntv::UI::IS_BLIP_SHORT_RANGE(_ntv_hdl);
+					return !ntv::UI::IS_BLIP_SHORT_RANGE(_h);
 				}
 
 				bool is_on_minimap() const {
-					return ntv::UI::IS_BLIP_ON_MINIMAP(_ntv_hdl);
+					return ntv::UI::IS_BLIP_ON_MINIMAP(_h);
 				}
 
 				void nav(bool toggle = true) {
-					ntv::UI::SET_BLIP_ROUTE(_ntv_hdl, toggle);
+					ntv::UI::SET_BLIP_ROUTE(_h, toggle);
 				}
 
 				void nav_color(color_t clr) {
-					ntv::UI::SET_BLIP_ROUTE_COLOUR(_ntv_hdl, static_cast<int>(clr));
+					ntv::UI::SET_BLIP_ROUTE_COLOUR(_h, static_cast<int>(clr));
 				}
 
 			private:
-				int _ntv_hdl;
+				int _h;
 		};
 	}
 }
