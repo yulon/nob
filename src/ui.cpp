@@ -343,7 +343,6 @@ namespace nob {
 								}
 								task([]() {
 									if (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
-										log(341);
 										kb_bk_all.del();
 										this_task::del();
 									}
@@ -373,9 +372,9 @@ namespace nob {
 				static task tsk;
 				if (toggle) {
 					if (!tsk) {
-						tsk = nob::task([]() {
+						tsk = task([]() {
 							for (int i = 6; i < 10; ++i) {
-								nob::ntv::UI::HIDE_HUD_COMPONENT_THIS_FRAME(i);
+								ntv::UI::HIDE_HUD_COMPONENT_THIS_FRAME(i);
 							}
 						});
 					}

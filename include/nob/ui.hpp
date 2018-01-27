@@ -307,5 +307,45 @@ namespace nob {
 
 		void takeover_frontend_menu(bool toggle = true);
 		void frontend_menu_cant_be_pause_game(bool toggle = true);
+
+		inline void loading_screen(bool toggle = true, int fade_duration = 500) {
+			if (toggle) {
+				ntv::CAM::DO_SCREEN_FADE_OUT(fade_duration);
+			} else {
+				ntv::CAM::DO_SCREEN_FADE_IN(fade_duration);
+			}
+		}
+
+		inline bool loading_screen_faded_in() {
+			return ntv::CAM::IS_SCREEN_FADED_OUT();
+		}
+
+		inline bool loading_screen_faded_out() {
+			return ntv::CAM::IS_SCREEN_FADED_IN();
+		}
+
+		inline bool loading_screen_fading_in() {
+			return ntv::CAM::IS_SCREEN_FADING_OUT();
+		}
+
+		inline bool loading_screen_fading_out() {
+			return ntv::CAM::IS_SCREEN_FADING_IN();
+		}
+
+		enum class prompt_type_t : int {
+			loading = 0,
+			mp_saving = 4,
+			saving = 6
+		};
+
+		inline void prompt(const std::string &info, prompt_type_t type = prompt_type_t::loading) {
+			ntv::UI::_BEGIN_TEXT_COMMAND_BUSY_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(info.c_str());
+			ntv::UI::_END_TEXT_COMMAND_BUSY_STRING(static_cast<int>(type));
+		}
+
+		inline void clear_prompt() {
+			ntv::UI::_REMOVE_LOADING_PROMPT();
+		}
 	} /* ui */
 } /* nob */
