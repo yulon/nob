@@ -85,9 +85,16 @@ namespace nob {
 			const model &load() {
 				assert(*this);
 
+				if (_loaded == this_script::gameplay_id) {
+					return *this;
+				}
+
 				start:
 
-				if (is_loaded()) {
+				if (gc::try_ref(*this)) {
+					assert(is_loaded());
+
+					_loaded = this_script::gameplay_id;
 					return *this;
 				}
 
@@ -106,7 +113,9 @@ namespace nob {
 				_loaded = cur_gpid;
 
 				gc::delegate(*this, [h]() {
-					ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(h);
+					if (ntv::STREAMING::HAS_MODEL_LOADED(h)) {
+						ntv::STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(h);
+					}
 				});
 
 				return *this;
@@ -114,7 +123,7 @@ namespace nob {
 
 			void free() {
 				if (_loaded == this_script::gameplay_id) {
-					gc::try_free(*this);
+					gc::free(*this);
 					_loaded = 0;
 				}
 			}

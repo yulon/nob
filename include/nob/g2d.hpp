@@ -65,6 +65,10 @@ namespace nob {
 
 				texture_dict(const texture_dict &src) : _name(src._name), _loaded(0) {}
 
+				~texture_dict() {
+					free();
+				}
+
 				texture_dict &operator=(const texture_dict &src) {
 					free();
 					_name = src._name;
@@ -110,9 +114,16 @@ namespace nob {
 				const texture_dict &load() {
 					assert(*this);
 
+					if (_loaded == this_script::gameplay_id) {
+						return *this;
+					}
+
 					start:
 
-					if (is_loaded()) {
+					if (gc::try_ref(*this)) {
+						assert(is_loaded());
+
+						_loaded = this_script::gameplay_id;
 						return *this;
 					}
 
@@ -131,7 +142,9 @@ namespace nob {
 
 					auto n = _name;
 					gc::delegate(*this, [n]() {
-						ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(n.c_str());
+						if (ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(n.c_str())) {
+							ntv::GRAPHICS::SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(n.c_str());
+						}
 					});
 
 					return *this;
@@ -139,13 +152,13 @@ namespace nob {
 
 				void free() {
 					if (_loaded == this_script::gameplay_id) {
-						gc::try_free(*this);
+						gc::free(*this);
 						_loaded = 0;
 					}
 				}
 
 				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
-					ntv::GRAPHICS::DRAW_SPRITE(load().native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
+					ntv::GRAPHICS::DRAW_SPRITE(native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
 				}
 
 			private:

@@ -23,7 +23,9 @@ namespace nob {
 
 				auto h = _h;
 				gc::delegate(*this, [h]() mutable {
-					ntv::ENTITY::DELETE_ENTITY(&h);
+					if (ntv::ENTITY::DOES_ENTITY_EXIST(h)) {
+						ntv::ENTITY::DELETE_ENTITY(&h);
+					}
 				});
 			}
 
@@ -37,11 +39,13 @@ namespace nob {
 
 			void del() {
 				gc::undelegate(*this);
+
 				ntv::ENTITY::DELETE_ENTITY(&_h);
 			}
 
 			void free() {
 				gc::undelegate(*this);
+
 				ntv::ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&_h);
 			}
 
@@ -189,6 +193,9 @@ namespace nob {
 					if (h == ntv::PLAYER::PLAYER_PED_ID()) {
 						return;
 					}
+					if (!ntv::ENTITY::DOES_ENTITY_EXIST(h)) {
+						return;
+					}
 					ntv::PED::DELETE_PED(&h);
 				});
 
@@ -289,7 +296,7 @@ namespace nob {
 				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, false);
 			}
 
-			bool is_get_in_vehicle() {
+			bool is_getting_in_vehicle() {
 				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, true);
 			}
 
@@ -785,7 +792,7 @@ namespace nob {
 
 					void del() {
 						if (_ct_gpid == this_script::gameplay_id) {
-							gc::try_free(*this);
+							gc::free(*this);
 							_h = 0;
 						}
 					}
@@ -853,7 +860,9 @@ namespace nob {
 
 				auto h = _h;
 				gc::delegate(*this, [h]() mutable {
-					ntv::VEHICLE::DELETE_VEHICLE(&h);
+					if (ntv::ENTITY::DOES_ENTITY_EXIST(h)) {
+						ntv::VEHICLE::DELETE_VEHICLE(&h);
+					}
 				});
 
 				ntv::VEHICLE::SET_VEHICLE_MOD_KIT(_h, 0);
@@ -1038,6 +1047,14 @@ namespace nob {
 
 			int max_passengers() {
 				return ntv::VEHICLE::GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(_h);
+			}
+
+			void open_door(int ix, bool instantly = false) {
+				ntv::VEHICLE::SET_VEHICLE_DOOR_OPEN(_h, ix, false, instantly);
+			}
+
+			void close_all_doors(bool instantly = false) {
+				ntv::VEHICLE::SET_VEHICLE_DOORS_SHUT(_h, instantly);
 			}
 
 			void disable_crash_damage(bool toggle = true) {

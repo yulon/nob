@@ -1230,7 +1230,7 @@ namespace nob {
 				});
 
 			} else if (block_code_addr) {
-				gc::try_free(gc_id);
+				gc::free(gc_id);
 			}
 		}
 	} /* world */
