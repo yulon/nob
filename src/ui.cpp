@@ -68,24 +68,41 @@ namespace nob {
 		}
 
 		void menu::toggle() {
-			if (!_tsk) {
+			static menu *cur_menu = nullptr;
+			static task draw_tsk;
+			static keyboard::blocker kb_bkr;
+			static keyboard::listener kb_lnr;
+			static g2d::texture_dict cm_td("CommonMenu");
+			static initer reset([]() {
+				if (cur_menu) {
+					cur_menu->toggle();
+				}
+			});
+
+			if (cur_menu != this) {
+				cur_menu = this;
+
 				auto cur_li = _list_stack.top();
 				if (cur_li->on_show) {
 					cur_li->on_show(cur_li);
 					cur_li->fix();
 				}
 
-				_cm_td.load();
+				if (draw_tsk) {
+					return;
+				}
 
-				_tsk = task([this]() {
+				cm_td.load();
+
+				draw_tsk = task([]() {
 					float x = left;
 					float y = top;
 					float w = width();
 					float h = title_bg_height;
-					_cm_td.draw("interaction_bgd", x, y, w, h);
-					g2d::text(x, y + ((h - title_font_height) / 2), w, _tit, title_font_size, 255, 255, 255, 255, 1);
+					cm_td.draw("interaction_bgd", x, y, w, h);
+					g2d::text(x, y + ((h - title_font_height) / 2), w, cur_menu->_tit, title_font_size, 255, 255, 255, 255, 1);
 
-					auto &cur_li = _list_stack.top();
+					auto &cur_li = cur_menu->_list_stack.top();
 					auto sz = cur_li->items.size();
 
 					y += h;
@@ -108,7 +125,7 @@ namespace nob {
 						size_t end = cur_li->page_top + len;
 
 						y += h;
-						_cm_td.draw("gradient_bgd", x, y, w, len * h);
+						cm_td.draw("gradient_bgd", x, y, w, len * h);
 
 						for (size_t i = cur_li->page_top; i < sz && i < end; ++i) {
 							uint8_t r, g, b;
@@ -116,14 +133,14 @@ namespace nob {
 							if (i == cur_li->selected) {
 								r = g = b = 0;
 
-								_cm_td.draw("gradient_nav", x, y, w, h);
+								cm_td.draw("gradient_nav", x, y, w, h);
 
 								if (cur_li->items[i].type_is<flag>()) {
 									auto flg_val = cur_li->items[i].to<flag>()->value;
 									if (flg_val) {
-										_cm_td.draw("shop_box_tickb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_tickb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
-										_cm_td.draw("shop_box_blankb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_blankb", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									}
 								}
 							} else {
@@ -132,9 +149,9 @@ namespace nob {
 								if (cur_li->items[i].type_is<flag>()) {
 									auto flg_val = cur_li->items[i].to<flag>()->value;
 									if (flg_val) {
-										_cm_td.draw("shop_box_tick", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_tick", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									} else {
-										_cm_td.draw("shop_box_blank", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+										cm_td.draw("shop_box_blank", x + w - icon_width, y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 									}
 								}
 							}
@@ -149,7 +166,7 @@ namespace nob {
 						} else {
 							y += 0.001f;
 							g2d::rect(x, y, w, h, 0, 0, 0, 200);
-							_cm_td.draw("shop_arrows_upanddown", x + ((w - icon_width) / 2.0f), y + ((h - icon_height) / 2.0f), icon_width, icon_height);
+							cm_td.draw("shop_arrows_upanddown", x + ((w - icon_width) / 2.0f), y + ((h - icon_height) / 2.0f), icon_width, icon_height);
 							y += h;
 
 							h = 0.0025f;
@@ -163,26 +180,41 @@ namespace nob {
 							y += h;
 							y = y - 0.0015f;
 							h = item_height * 1.0f;
-							_cm_td.draw("gradient_bgd", x, y, w, h, 200);
+							cm_td.draw("gradient_bgd", x, y, w, h, 200);
 
 							g2d::text(x + margin, y + ((h - font_height) / 2), w, cur_li->items[cur_li->selected]->desc, font_size, 255, 255, 255, 255, 0);
 						}
 					}
 				});
 
-				_kb_bkr = {
+				kb_bkr = {
 					keyboard::block_t::interaction_menu,
 					keyboard::block_t::phone,
 					keyboard::block_t::frontend_menu_esc
 				};
 
-				_kb_lnr = keyboard::listener([this](int code, bool down)->bool {
+				kb_lnr = keyboard::listener([this](int code, bool down)->bool {
 					switch (code) {
 						case VK_BACK:
-						case VK_ESCAPE:
+							if (!cur_menu->_edchk) {
+								return true;
+							}
 							if (down) {
-								if (_list_stack.size() > 1) {
-									_list_stack.pop();
+								if (cur_menu->_list_stack.size() > 1) {
+									cur_menu->_list_stack.pop();
+								} else {
+									toggle();
+								}
+							}
+							return false;
+
+						case VK_ESCAPE:
+							if (!cur_menu->_edchk) {
+								return true;
+							}
+							if (down) {
+								if (cur_menu->_list_stack.size() > 1) {
+									cur_menu->_list_stack.pop();
 								} else {
 									static keyboard::listener esc_uper;
 									if (esc_uper) {
@@ -191,9 +223,7 @@ namespace nob {
 									esc_uper = keyboard::listener([this](int code, bool down)->bool {
 										if (code == VK_ESCAPE && !down) {
 											toggle();
-											go([]() {
-												esc_uper.del();
-											});
+											esc_uper.del();
 										}
 										return false;
 									});
@@ -203,19 +233,19 @@ namespace nob {
 
 						case VK_DOWN:
 							if (down) {
-								_list_stack.top()->next();
+								cur_menu->_list_stack.top()->next();
 							}
 							return false;
 
 						case VK_UP:
 							if (down) {
-								_list_stack.top()->prev();
+								cur_menu->_list_stack.top()->prev();
 							}
 							return false;
 
 						case VK_RETURN:
 							if (down) {
-								auto cur_li = _list_stack.top();
+								auto cur_li = cur_menu->_list_stack.top();
 								if (cur_li->items.size()) {
 									auto cur_it = cur_li->items[cur_li->selected];
 
@@ -232,7 +262,7 @@ namespace nob {
 											cur_li->on_show(cur_li);
 											cur_li->fix();
 										}
-										_list_stack.push(cur_li);
+										cur_menu->_list_stack.push(cur_li);
 									} else
 
 									if (cur_it.type_is<flag>()) {
@@ -250,10 +280,11 @@ namespace nob {
 				});
 
 			} else {
-				_tsk.del();
-				_kb_lnr.del();
-				_kb_bkr.del();
-				_cm_td.free();
+				draw_tsk.del();
+				kb_lnr.del();
+				kb_bkr.del();
+				cm_td.free();
+				cur_menu = nullptr;
 			}
 		}
 

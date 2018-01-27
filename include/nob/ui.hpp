@@ -179,7 +179,11 @@ namespace nob {
 
 		class menu {
 			public:
-				menu(const std::string &title, const list &li) : _tit(title), _cm_td("CommonMenu") {
+				menu(
+					const std::string &title,
+					const list &li,
+					bool enable_default_close_hotkeys = true
+				) : _tit(title), _edchk(enable_default_close_hotkeys) {
 					_list_stack.push(li);
 				}
 
@@ -207,10 +211,7 @@ namespace nob {
 			private:
 				std::string _tit;
 				std::stack<list> _list_stack;
-				task _tsk;
-				keyboard::blocker _kb_bkr;
-				keyboard::listener _kb_lnr;
-				g2d::texture_dict _cm_td;
+				bool _edchk;
 		};
 
 		inline void tip(const std::string &content) {
