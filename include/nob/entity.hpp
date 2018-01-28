@@ -292,21 +292,21 @@ namespace nob {
 				}
 			}
 
-			bool is_in_vehicle() {
+			bool is_in_vehicle() const {
 				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, false);
 			}
 
-			bool is_getting_in_vehicle() {
+			bool is_getting_in_vehicle() const {
 				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, true);
 			}
 
-			inline vehicle current_vehicle();
+			inline vehicle current_vehicle() const;
 
-			inline vehicle last_vehicle();
+			inline vehicle last_vehicle() const;
 
-			inline vehicle trying_to_enter_vehicle();
+			inline vehicle trying_to_enter_vehicle() const;
 
-			inline int trying_to_enter_vehicle_seat();
+			inline int trying_to_enter_vehicle_seat() const;
 
 			enum class motion_state_t : uint8_t {
 				null = 0,
@@ -457,7 +457,7 @@ namespace nob {
 				ntv::WEAPON::SET_CURRENT_PED_WEAPON(_h, wpn.hash(), true);
 			}
 
-			hasher current_weapon() {
+			hasher current_weapon() const {
 				hash_t h;
 				if (is_in_vehicle()) {
 					ntv::WEAPON::GET_CURRENT_PED_VEHICLE_WEAPON(_h, &h);
@@ -467,7 +467,7 @@ namespace nob {
 				return h;
 			}
 
-			bool is_current_weapon(const hasher &wpn) {
+			bool is_current_weapon(const hasher &wpn) const {
 				return current_weapon() == wpn;
 			}
 
@@ -475,15 +475,15 @@ namespace nob {
 				switch_weapon("WEAPON_UNARMED");
 			}
 
-			bool is_unarmed() {
+			bool is_unarmed() const {
 				return is_current_weapon("WEAPON_UNARMED");
 			}
 
-			bool has_weapon_in_pack(const hasher &wpn) {
+			bool has_weapon_in_pack(const hasher &wpn) const {
 				return ntv::WEAPON::HAS_PED_GOT_WEAPON(_h, wpn.hash(), false);
 			}
 
-			bool has_weapon(const hasher &wpn) {
+			bool has_weapon(const hasher &wpn) const {
 				return is_current_weapon(wpn.hash()) ? true : has_weapon_in_pack(wpn);
 			}
 
@@ -491,7 +491,7 @@ namespace nob {
 				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_h, type.hash(), total);
 			}
 
-			int ammo(const hasher &type) {
+			int ammo(const hasher &type) const {
 				return ntv::WEAPON::GET_PED_AMMO_BY_TYPE(_h, type.hash());
 			}
 
@@ -503,11 +503,11 @@ namespace nob {
 				ntv::WEAPON::SET_PED_INFINITE_AMMO_CLIP(_h, toggle);
 			}
 
-			hasher weapon_ammo_type(const hasher &wpn) {
+			hasher weapon_ammo_type(const hasher &wpn) const {
 				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_h, wpn.hash());
 			}
 
-			int weapon_max_ammo(const hasher &wpn) {
+			int weapon_max_ammo(const hasher &wpn) const {
 				int total;
 				ntv::WEAPON::GET_MAX_AMMO(_h, wpn.hash(), &total);
 				return total;
@@ -521,7 +521,7 @@ namespace nob {
 				ammo(weapon_ammo_type(thr_wpn), total);
 			}
 
-			int thrown_weapon(const hasher &thr_wpn) {
+			int thrown_weapon(const hasher &thr_wpn) const {
 				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_h, thr_wpn.hash());
 			}
 
@@ -529,7 +529,7 @@ namespace nob {
 				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn.hash(), count, false, false);
 			}
 
-			void print_weapon_info() {
+			void print_weapon_info() const {
 				#ifdef DEBUG
 					auto cur_wpn = current_weapon();
 					if (cur_wpn == "WEAPON_UNARMED") {
@@ -886,7 +886,7 @@ namespace nob {
 
 			static constexpr int mod_type_sum = 50;
 
-			int mod_sum(int type) {
+			int mod_sum(int type) const {
 				return ntv::VEHICLE::GET_NUM_VEHICLE_MODS(_h, type);
 			}
 
@@ -962,11 +962,11 @@ namespace nob {
 				return ntv::VEHICLE::GET_VEHICLE_MOD_COLOR_2_NAME(_h);
 			}
 
-			bool is_playing_radio() {
+			bool is_playing_radio() const {
 				return ntv::AUDIO::_IS_VEHICLE_RADIO_LOUD(_h);
 			}
 
-			std::string radio_station() {
+			std::string radio_station() const {
 				if (ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(ntv::PLAYER::PLAYER_PED_ID(), _h) && is_playing_radio()) {
 					return ntv::AUDIO::GET_PLAYER_RADIO_STATION_NAME();
 				}
@@ -990,8 +990,10 @@ namespace nob {
 				ntv::VEHICLE::SET_VEHICLE_ENGINE_ON(_h, toggle, true, true);
 			}
 
-			static constexpr float min_engine_health = -4000.0f;
-			static constexpr float max_engine_health = 1000.0f;
+			static constexpr float engine_health_max = 1000.0f;
+			static constexpr float engine_health_smoking = 300.0f;
+			static constexpr float engine_health_fire = 0.0f;
+			static constexpr float engine_health_min = -4000.0f;
 
 			/*
 				-4000: Engine is destroyed
@@ -1000,7 +1002,7 @@ namespace nob {
 				1000: Engine is perfect
 			*/
 
-			float engine_health() {
+			float engine_health() const {
 				return ntv::VEHICLE::GET_VEHICLE_ENGINE_HEALTH(_h);
 			}
 
@@ -1008,8 +1010,9 @@ namespace nob {
 				ntv::VEHICLE::SET_VEHICLE_ENGINE_HEALTH(_h, v);
 			}
 
-			static constexpr float min_petrol_tank_health = -4000.0f;
-			static constexpr float max_petrol_tank_health = 1000.0f;
+			static constexpr float petrol_tank_health_max = 1000.0f;
+			static constexpr float petrol_tank_health_leaking_gas = 650.0f;
+			static constexpr float petrol_tank_health_min = -4000.0f;
 
 			/*
 				1000 is max health
@@ -1017,7 +1020,7 @@ namespace nob {
 				-999.90002441406 appears to be minimum health, although nothing special occurs
 			*/
 
-			float petrol_tank_health() {
+			float petrol_tank_health() const {
 				return ntv::VEHICLE::GET_VEHICLE_PETROL_TANK_HEALTH(_h);
 			}
 
@@ -1033,19 +1036,19 @@ namespace nob {
 				ntv::VEHICLE::EXPLODE_VEHICLE(_h, false, false);
 			}
 
-			bool has(character chr) {
+			bool has(character chr) const {
 				return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(chr, _h);
 			}
 
-			character passenger(int seat) {
-				return ntv::VEHICLE::GET_PED_IN_VEHICLE_SEAT(_h, seat);
+			character passenger_from_seat(int ix) const {
+				return ntv::VEHICLE::GET_PED_IN_VEHICLE_SEAT(_h, ix);
 			}
 
-			bool has_passenger(int seat) {
-				return !ntv::VEHICLE::IS_VEHICLE_SEAT_FREE(_h, seat);
+			bool has_passenger_from_seat(int ix) const {
+				return !ntv::VEHICLE::IS_VEHICLE_SEAT_FREE(_h, ix);
 			}
 
-			int max_passengers() {
+			int passengers_max() {
 				return ntv::VEHICLE::GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(_h);
 			}
 
@@ -1062,7 +1065,7 @@ namespace nob {
 			}
 
 			void action(int ac) {
-				ntv::AI::TASK_VEHICLE_TEMP_ACTION(passenger(-1), _h, ac, -1);
+				ntv::AI::TASK_VEHICLE_TEMP_ACTION(passenger_from_seat(-1), _h, ac, -1);
 			}
 
 			enum class class_t : int {
@@ -1115,19 +1118,19 @@ namespace nob {
 		ntv::PED::SET_PED_INTO_VEHICLE(_h, veh, seat);
 	}
 
-	inline vehicle character::current_vehicle() {
+	inline vehicle character::current_vehicle() const {
 		return ntv::PED::GET_VEHICLE_PED_IS_IN(_h, false);
 	}
 
-	inline vehicle character::last_vehicle() {
+	inline vehicle character::last_vehicle() const {
 		return ntv::PED::GET_VEHICLE_PED_IS_IN(_h, true);
 	}
 
-	inline vehicle character::trying_to_enter_vehicle() {
+	inline vehicle character::trying_to_enter_vehicle() const {
 		return ntv::PED::GET_VEHICLE_PED_IS_TRYING_TO_ENTER(_h);
 	}
 
-	inline int character::trying_to_enter_vehicle_seat() {
+	inline int character::trying_to_enter_vehicle_seat() const {
 		return ntv::PED::GET_SEAT_PED_IS_TRYING_TO_ENTER(_h);
 	}
 
