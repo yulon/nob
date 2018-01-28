@@ -25,6 +25,10 @@ namespace nob {
 					_data->r = r;
 				}
 
+				void cap(bool toggle) {
+					_data->cap = toggle;
+				}
+
 				void color(const rgba<int> &);
 
 				void alpha(float a) {
@@ -38,6 +42,7 @@ namespace nob {
 					vector3 ctr;
 					float h, r;
 					rgba<int> clr;
+					bool cap = true;
 					task draw_tsk;
 
 					~_data_t() {

@@ -54,6 +54,36 @@ namespace nob {
 							lr.x, lr.y, d->ctr.z,
 							d->clr.r, d->clr.g, d->clr.b, d->clr.a
 						);
+
+						if (d->cap) {
+							ntv::GRAPHICS::DRAW_POLY(
+								d->ctr.x, d->ctr.y, d->h,
+								top.x, top.y, d->h,
+								ll.x, ll.y, d->h,
+								d->clr.r, d->clr.g, d->clr.b, d->clr.a
+							);
+
+							ntv::GRAPHICS::DRAW_POLY(
+								d->ctr.x, d->ctr.y, d->h,
+								ll.x, ll.y, d->h,
+								top.x, top.y, d->h,
+								d->clr.r, d->clr.g, d->clr.b, d->clr.a
+							);
+
+							ntv::GRAPHICS::DRAW_POLY(
+								d->ctr.x, d->ctr.y, d->ctr.z,
+								ll.x, ll.y, d->ctr.z,
+								top.x, top.y, d->ctr.z,
+								d->clr.r, d->clr.g, d->clr.b, d->clr.a
+							);
+
+							ntv::GRAPHICS::DRAW_POLY(
+								d->ctr.x, d->ctr.y, d->ctr.z,
+								top.x, top.y, d->ctr.z,
+								ll.x, ll.y, d->ctr.z,
+								d->clr.r, d->clr.g, d->clr.b, d->clr.a
+							);
+						}
 					}
 				});
 			} else if (_data->draw_tsk) {
