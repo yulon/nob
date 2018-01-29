@@ -10,10 +10,10 @@
 
 namespace nob {
 	namespace world {
-		inline float ground_height(const vector3 &coords, bool load_scene = true) {
+		inline float ground_height(const vector3 &coords, bool auto_load_scene = false) {
 			float height;
 			ntv::GAMEPLAY::GET_GROUND_Z_FOR_3D_COORD(coords.x, coords.y, coords.z, &height, 0);
-			if (load_scene) {
+			if (auto_load_scene) {
 				while (height == 0.0f) {
 					ntv::STREAMING::LOAD_SCENE(coords.x, coords.y, coords.z);
 					sleep(1000);
@@ -23,8 +23,8 @@ namespace nob {
 			return height;
 		}
 
-		inline vector3 ground_pos(const vector3 &coords, bool load_scene = true) {
-			return {coords.x, coords.y, ground_height(coords, load_scene)};
+		inline vector3 ground_pos(const vector3 &coords, bool auto_load_scene = false) {
+			return {coords.x, coords.y, ground_height(coords, auto_load_scene)};
 		}
 
 		void no_mans_island(bool toggle = true);
