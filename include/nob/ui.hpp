@@ -179,15 +179,54 @@ namespace nob {
 
 		class menu {
 			public:
+				menu() = default;
+
 				menu(
 					const std::string &title,
 					const list &li,
 					bool enable_default_close_hotkeys = true
-				) : _tit(title), _edchk(enable_default_close_hotkeys) {
-					_list_stack.push(li);
+				) : _data(std::make_shared<_data_t>()) {
+					_data->_tit = title;
+					_data->_edchk = enable_default_close_hotkeys;
+					_data->_li_stack.push(li);
 				}
 
-				void toggle();
+				operator bool() const {
+					return _data && _data->_li_stack.size();
+				}
+
+				void open();
+
+				void close();
+
+				static void close_any();
+
+				bool is_opened() const;
+
+				static bool is_opened_any();
+
+				void toggle() {
+					if (is_opened()) {
+						close();
+					} else {
+						open();
+					}
+				}
+
+				void weak_open() {
+					if (is_opened_any()) {
+						return;
+					}
+					open();
+				}
+
+				void weak_toggle() {
+					if (is_opened()) {
+						close();
+					} else if (!is_opened_any()) {
+						open();
+					}
+				}
 
 				////////////////////////////////////////////////////////////////
 
@@ -208,10 +247,14 @@ namespace nob {
 				static constexpr float icon_height = item_height / 0.77f;
 				static constexpr float icon_width = icon_height * aspect_ratio;
 
+				struct _data_t {
+					std::string _tit;
+					std::stack<list> _li_stack;
+					bool _edchk;
+				};
+
 			private:
-				std::string _tit;
-				std::stack<list> _list_stack;
-				bool _edchk;
+				std::shared_ptr<_data_t> _data;
 		};
 
 		inline void tip(const std::string &content) {
