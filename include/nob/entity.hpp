@@ -948,7 +948,7 @@ namespace nob {
 				return t;
 			}
 
-			tint_t second_tint() const {
+			tint_t secondary_tint() const {
 				tint_t t;
 				ntv::VEHICLE::GET_VEHICLE_MOD_COLOR_2(_h, reinterpret_cast<int *>(&t.type), &t.ix);
 				return t;
@@ -960,6 +960,14 @@ namespace nob {
 
 			std::string second_tint_name() const {
 				return ntv::VEHICLE::GET_VEHICLE_MOD_COLOR_2_NAME(_h);
+			}
+
+			void tints_from_ll_ix(int primary, int secondary) {
+				ntv::VEHICLE::SET_VEHICLE_COLOURS(_h, primary, secondary);
+			}
+
+			void tints_ll_ix(int &primary, int &secondary) const {
+				ntv::VEHICLE::GET_VEHICLE_COLOURS(_h, &primary, &secondary);
 			}
 
 			bool is_playing_radio() const {
