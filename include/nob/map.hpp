@@ -9,12 +9,15 @@
 
 namespace nob {
 	namespace map {
-		static constexpr float w_max = -3500.0f;
-		static constexpr float e_max = 4250.0f;
-		static constexpr float x_max = 7750.0f;
-		static constexpr float n_max = 8034.0f;
-		static constexpr float s_max = -4170.0f;
-		static constexpr float y_max = 12204.0f;
+		static constexpr float x_min = -3500.0f;
+		static constexpr float x_max = 4250.0f;
+
+		static constexpr float y_min = -4170.0f;
+		static constexpr float y_max = 8034.0f;
+
+		static constexpr float width = 7750.0f;
+		static constexpr float height = 12204.0f;
+
 		static constexpr vector2 center { 375.0f, 1932.0f };
 		static constexpr vector2 radius { 3875.0f, 6102.0f };
 
