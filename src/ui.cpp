@@ -76,8 +76,22 @@ namespace nob {
 			initer reset(menu::close_any);
 		}
 
+		bool menu::is_opened() const {
+			if (this->_data && _menu::cur && _menu::cur.get() == this->_data.get()) {
+				return true;
+			}
+			return false;
+		}
+
+		bool menu::is_opened_any() {
+			if (_menu::cur) {
+				return true;
+			}
+			return false;
+		}
+
 		void menu::open() {
-			if (_menu::cur.get() == this->_data.get()) {
+			if (is_opened()) {
 				return;
 			}
 
@@ -282,7 +296,7 @@ namespace nob {
 		}
 
 		void menu::close() {
-			if (_menu::cur.get() == this->_data.get()) {
+			if (!is_opened()) {
 				return;
 			}
 			_menu::draw_tsk.del();
@@ -293,7 +307,7 @@ namespace nob {
 		}
 
 		void menu::close_any() {
-			if (!_menu::cur.get()) {
+			if (!is_opened_any()) {
 				return;
 			}
 			_menu::draw_tsk.del();
@@ -301,20 +315,6 @@ namespace nob {
 			_menu::kb_bkr.del();
 			_menu::cm_td.free();
 			_menu::cur.reset();
-		}
-
-		bool menu::is_opened() const {
-			if (_menu::cur.get() == this->_data.get()) {
-				return true;
-			}
-			return false;
-		}
-
-		bool menu::is_opened_any() {
-			if (_menu::cur.get()) {
-				return true;
-			}
-			return false;
 		}
 
 		int _bnr_sf;
