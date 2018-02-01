@@ -12,6 +12,19 @@
 			"jhash": "0x0356E3CE"
 		}
 	},
+	"GRAPHICS": {
+		"0x36AD3E690DA5ACEB": {
+			"name": "_GET_SCREEN_EFFECT_IS_ACTIVE",
+			"params": [
+				{
+					"type": "char*",
+					"name": "effectName"
+				}
+			],
+			"results": "BOOL",
+			"jhash": "0x089D5921"
+		}
+	},
 	"VEHICLE": {
 		"0x36D782F68B309BDA": {
 			"name": "_HAS_VEHICLE_ROCKET_BOOST",

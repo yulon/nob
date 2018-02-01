@@ -1097,7 +1097,7 @@ namespace nob {
 			typed_lazy_func_t<void(int scaleform, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float p7, float p8, float p9, float scaleX, float scaleY, float scaleZ, Any p13)> _DRAW_SCALEFORM_MOVIE_3D_NON_ADDITIVE(0x1CE592FDC749D6F5);
 			typed_lazy_func_t<void(Any p0)> SET_PARTICLE_FX_SHOOTOUT_BOAT(0x96EF97DAEB89BEF5);
 			typed_lazy_func_t<bool(Vehicle vehicle, Ped ped, int boneIndex, float x1, float x2, float x3, float y1, float y2, float y3, float z1, float z2, float z3, float scale, Any p13, int alpha)> _ADD_CLAN_DECAL_TO_VEHICLE(0x428BDCB9DA58DA53);
-			typed_lazy_func_t<bool(bool effectName)> _GET_SCREEN_EFFECT_IS_ACTIVE(0x36AD3E690DA5ACEB);
+			typed_lazy_func_t<bool(const char* effectName)> _GET_SCREEN_EFFECT_IS_ACTIVE(0x36AD3E690DA5ACEB);
 			typed_lazy_func_t<void(int checkpoint, int red, int green, int blue, int alpha)> _SET_CHECKPOINT_ICON_RGBA(0xB9EA40907C680580);
 			typed_lazy_func_t<void()> _0x3669F1B198DCAA4F(0x3669F1B198DCAA4F);
 			typed_lazy_func_t<bool(float transitionTime)> _TRANSITION_FROM_BLURRED(0xEFACC8AEF94430D5);

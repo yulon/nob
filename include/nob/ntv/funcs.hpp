@@ -4134,7 +4134,7 @@ namespace nob {
 			extern typed_lazy_func_t<void(int scaleform, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float p7, float p8, float p9, float scaleX, float scaleY, float scaleZ, Any p13)> _DRAW_SCALEFORM_MOVIE_3D_NON_ADDITIVE;
 			extern typed_lazy_func_t<void(Any p0)> SET_PARTICLE_FX_SHOOTOUT_BOAT;
 			extern typed_lazy_func_t<bool(Vehicle vehicle, Ped ped, int boneIndex, float x1, float x2, float x3, float y1, float y2, float y3, float z1, float z2, float z3, float scale, Any p13, int alpha)> _ADD_CLAN_DECAL_TO_VEHICLE;
-			extern typed_lazy_func_t<bool(bool effectName)> _GET_SCREEN_EFFECT_IS_ACTIVE;
+			extern typed_lazy_func_t<bool(const char* effectName)> _GET_SCREEN_EFFECT_IS_ACTIVE;
 			extern typed_lazy_func_t<void(int checkpoint, int red, int green, int blue, int alpha)> _SET_CHECKPOINT_ICON_RGBA;
 			extern typed_lazy_func_t<void()> _0x3669F1B198DCAA4F;
 			extern typed_lazy_func_t<bool(float transitionTime)> _TRANSITION_FROM_BLURRED;
