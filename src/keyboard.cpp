@@ -49,16 +49,16 @@ namespace nob {
 			return *this;
 		}
 
+		listener::operator bool() const {
+			return _listeners && _it != _listeners->end();
+		}
+
 		void listener::del() {
-			if (!_listeners || _it == _listeners->end()) {
+			if (!*this) {
 				return;
 			}
 			_listeners->erase(_it);
 			_it = _listeners->end();
-		}
-
-		listener::operator bool() const {
-			return _listeners && _it != _listeners->end();
 		}
 
 		bool is_down(int code) {
@@ -131,8 +131,12 @@ namespace nob {
 			return *this;
 		}
 
+		blocker::operator bool() const {
+			return _bkr_map && _blks.size();
+		}
+
 		void blocker::del() {
-			if (_blks.empty()) {
+			if (!*this) {
 				return;
 			}
 			for (auto blk : _blks) {
@@ -145,10 +149,6 @@ namespace nob {
 				_bkr_tsk.del();
 			}
 			_blks.clear();
-		}
-
-		blocker::operator bool() const {
-			return _bkr_map && _blks.size();
 		}
 	} /* keyboard */
 } /* nob */
