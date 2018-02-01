@@ -77,17 +77,11 @@ namespace nob {
 		}
 
 		bool menu::is_opened() const {
-			if (this->_data && _menu::cur && _menu::cur.get() == this->_data.get()) {
-				return true;
-			}
-			return false;
+			return this->_data.get() && _menu::cur.get() && _menu::cur.get() == this->_data.get();
 		}
 
 		bool menu::is_opened_any() {
-			if (_menu::cur) {
-				return true;
-			}
-			return false;
+			return _menu::cur.get();
 		}
 
 		void menu::open() {
