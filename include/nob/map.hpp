@@ -35,6 +35,49 @@ namespace nob {
 					return ntv::UI::GET_BLIP_FROM_ENTITY(e);
 				}
 
+				static void remove_all_from_graphic(int g) {
+					for (auto b = ntv::UI::GET_FIRST_BLIP_INFO_ID(g); b; b = ntv::UI::GET_NEXT_BLIP_INFO_ID(g)) {
+						ntv::UI::REMOVE_BLIP(&b);
+					}
+				}
+
+				static void force_remove(bool toggle = true) {
+					ntv::GAMEPLAY::SET_THIS_SCRIPT_CAN_REMOVE_BLIPS_CREATED_BY_ANY_SCRIPT(toggle);
+				}
+
+				static void remove_missions() {
+					force_remove(true);
+
+					nob::map::marker::remove_all_from_graphic(66);
+					for (size_t i = 76; i < 81; ++i) {
+						nob::map::marker::remove_all_from_graphic(i);
+					}
+					for (size_t i = 86; i < 90; ++i) {
+						nob::map::marker::remove_all_from_graphic(i);
+					}
+					nob::map::marker::remove_all_from_graphic(149);
+					nob::map::marker::remove_all_from_graphic(205);
+					for (size_t i = 208; i < 212; ++i) {
+						nob::map::marker::remove_all_from_graphic(i);
+					}
+					for (size_t i = 314; i < 317; ++i) {
+						nob::map::marker::remove_all_from_graphic(i);
+					}
+					nob::map::marker::remove_all_from_graphic(350);
+					nob::map::marker::remove_all_from_graphic(352);
+					for (size_t i = 356; i < 361; ++i) {
+						nob::map::marker::remove_all_from_graphic(i);
+					}
+					nob::map::marker::remove_all_from_graphic(363);
+					for (size_t i = 369; i < 390; ++i) {
+						nob::map::marker::remove_all_from_graphic(i);
+					}
+					for (size_t i = 400; i < 406; ++i) {
+						nob::map::marker::remove_all_from_graphic(i);
+					}
+					nob::map::marker::remove_all_from_graphic(456);
+				}
+
 				marker(int native_handle = 0) : _h(native_handle) {}
 
 				marker(const vector3 &pos) : _h(ntv::UI::ADD_BLIP_FOR_COORD(pos.x, pos.y, pos.z)) {
