@@ -61,14 +61,18 @@ namespace nob {
 				return _h && is_exist();
 			}
 
-			vector3 pos(const vector3 &rcs_offset) const {
-				auto co = ntv::ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(_h, rcs_offset.x, rcs_offset.y, rcs_offset.z);
-				return {co.x, co.y, co.z};
-			}
-
 			vector3 pos() const {
 				auto co = ntv::ENTITY::GET_ENTITY_COORDS(_h, true);
 				return {co.x, co.y, co.z};
+			}
+
+			vector3 pos(const vector3 &relative_pos) const {
+				auto co = ntv::ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(_h, relative_pos.x, relative_pos.y, relative_pos.z);
+				return {co.x, co.y, co.z};
+			}
+
+			vector3 relative_pos(const vector3 &pos) const {
+				return ntv::ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(_h, pos.x, pos.y, pos.z);
 			}
 
 			void move(const vector3 &coords) {
