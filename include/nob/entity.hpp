@@ -62,13 +62,11 @@ namespace nob {
 			}
 
 			vector3 pos() const {
-				auto co = ntv::ENTITY::GET_ENTITY_COORDS(_h, true);
-				return {co.x, co.y, co.z};
+				return ntv::ENTITY::GET_ENTITY_COORDS(_h, true);
 			}
 
 			vector3 pos(const vector3 &relative_pos) const {
-				auto co = ntv::ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(_h, relative_pos.x, relative_pos.y, relative_pos.z);
-				return {co.x, co.y, co.z};
+				return ntv::ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(_h, relative_pos.x, relative_pos.y, relative_pos.z);
 			}
 
 			vector3 relative_pos(const vector3 &pos) const {
@@ -80,8 +78,7 @@ namespace nob {
 			}
 
 			vector3 rotation() const {
-				auto ro = ntv::ENTITY::GET_ENTITY_ROTATION(_h, 2);
-				return {ro.x, ro.y, ro.z};
+				return ntv::ENTITY::GET_ENTITY_ROTATION(_h, 2);
 			}
 
 			void rotation(const vector3 &ro) {
@@ -99,8 +96,7 @@ namespace nob {
 			}
 
 			vector3 velocity() const {
-				auto ve = ntv::ENTITY::GET_ENTITY_VELOCITY(_h);
-				return {ve.x, ve.y, ve.z};
+				return ntv::ENTITY::GET_ENTITY_VELOCITY(_h);
 			}
 
 			void velocity(const vector3 &ve) {

@@ -145,8 +145,7 @@ namespace nob {
 				}
 
 				vector3 pos() const {
-					auto v3 = ntv::UI::GET_BLIP_COORDS(_h);
-					return {v3.x, v3.y, v3.z};
+					return ntv::UI::GET_BLIP_COORDS(_h);
 				}
 
 				enum class color_t : int {
