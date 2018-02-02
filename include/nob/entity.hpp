@@ -300,6 +300,12 @@ namespace nob {
 				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, true);
 			}
 
+			bool is_on_vehicle() const {
+				return ntv::PED::IS_PED_ON_VEHICLE(_h);
+			}
+
+			inline bool is_on_vehicle(vehicle veh) const;
+
 			inline vehicle current_vehicle() const;
 
 			inline vehicle last_vehicle() const;
@@ -1121,6 +1127,10 @@ namespace nob {
 				ntv::VEHICLE::_SET_VEHICLE_HUD_SPECIAL_ABILITY_BAR_ACTIVE(_h, toggle);
 			}
 	};
+
+	inline bool character::is_on_vehicle(vehicle veh) const {
+		return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(_h, veh);
+	}
 
 	inline void character::into_vehicle(vehicle veh, int seat) {
 		ntv::PED::SET_PED_INTO_VEHICLE(_h, veh, seat);
