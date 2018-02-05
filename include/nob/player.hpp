@@ -32,6 +32,29 @@ namespace nob {
 			}
 		}
 
+		inline void switch_scene(character chr) {
+			ntv::STREAMING::START_PLAYER_SWITCH(body(), chr, 8, 2);
+		}
+
+		static character _switch_scene_chr;
+
+		inline void switch_scene(const vector3 &pos) {
+			_switch_scene_chr = character("a_c_chop", pos);
+			_switch_scene_chr.alpha(0);
+			_switch_scene_chr.collidable(false);
+			_switch_scene_chr.freeze_pos();
+			switch_scene(_switch_scene_chr);
+		}
+
+		inline void switch_scene_finish() {
+			ntv::GRAPHICS::_START_SCREEN_EFFECT("CamPushInNeutral", 0, false);
+			sleep(400);
+			ntv::STREAMING::STOP_PLAYER_SWITCH();
+			if (_switch_scene_chr) {
+				_switch_scene_chr.del();
+			}
+		}
+
 		inline void auto_get_parachute_in_plane(bool toggle = true) {
 			ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
 		}
