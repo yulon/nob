@@ -69,7 +69,7 @@ namespace std {
 	template <>
 	class hash<nob::hasher> {
 		public:
-			constexpr size_t operator()(const nob::hasher &hr) {
+			constexpr size_t operator()(const nob::hasher &hr) const {
 				return static_cast<size_t>(hr.hash());
 			}
 	};
