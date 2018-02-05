@@ -202,36 +202,30 @@ namespace nob {
 				keyboard::block_t::frontend_menu_esc
 			};
 
-			_menu::kb_lnr = keyboard::listener([this](int code, bool down)->bool {
+			_menu::kb_lnr = keyboard::listener([](int code, bool down)->bool {
 				switch (code) {
 					case VK_BACK:
-						if (!_menu::cur->_edchk) {
-							return true;
-						}
 						if (down) {
 							if (_menu::cur->_li_stack.size() > 1) {
 								_menu::cur->_li_stack.pop();
-							} else {
-								toggle();
+							} else if (_menu::cur->_edchk) {
+								close_any();
 							}
 						}
 						return false;
 
 					case VK_ESCAPE:
-						if (!_menu::cur->_edchk) {
-							return true;
-						}
 						if (down) {
 							if (_menu::cur->_li_stack.size() > 1) {
 								_menu::cur->_li_stack.pop();
-							} else {
+							} else if (_menu::cur->_edchk) {
 								static keyboard::listener esc_uper;
 								if (esc_uper) {
 									return false;
 								}
-								esc_uper = keyboard::listener([this](int code, bool down)->bool {
+								esc_uper = keyboard::listener([](int code, bool down)->bool {
 									if (code == VK_ESCAPE && !down) {
-										toggle();
+										close_any();
 										esc_uper.del();
 									}
 									return false;
