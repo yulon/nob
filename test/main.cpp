@@ -3,20 +3,59 @@
 #include <rua/hook.hpp>
 #include <rua/observer.hpp>
 
+#include "../../steam_id_getter/include/steam_id_getter.hpp"
+
 #include <cstring>
 #include <cstdlib>
 
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <random>
+
+float high_speed = 0.0f;
 
 nob::task print_pos([]() {
 	auto pb = nob::player::body();
-	nob::g2d::text(0, 0.93, 1, pb.pos().str() + ", " + pb.rotation().str(), 0.4, 255, 255, 255, 255, 1, true);
+	auto pos = pb.pos();
+	std::stringstream ss;
+	ss << pos.str() << ", " << pb.rotation().str() << ", " << high_speed;
+	nob::g2d::text(0, 0.93, 1, ss.str().c_str(), 0.4, 255, 255, 255, 255, 1, true);
+});
+
+nob::task speed_log([]() {
+	static auto lst_tp = std::chrono::steady_clock::time_point::min();
+	static nob::vector3 lst_pos {0, 0, 0};
+	auto pb = nob::player::body();
+	if (!pb.is_in_vehicle()) {
+		auto tp = std::chrono::steady_clock::now();
+		auto pos = pb.pos();
+		if (lst_pos.z) {
+			auto dis = pos.distance(lst_pos);
+			auto speed = 1000.0f / std::chrono::duration_cast<std::chrono::milliseconds>(tp - lst_tp).count() * dis;
+			if (speed > high_speed) {
+				high_speed = speed;
+			}
+		}
+		lst_tp = tp;
+		lst_pos = pos;
+	}
+	nob::sleep(5000);
 });
 
 nob::first_task unlock_vehs(nob::unlock_banned_vehicles);
+/*
+nob::first_task blk([]() {
 
+	while (*nob::ntv::game_state != nob::ntv::game_state_t::playing) {
+		nob::yield();
+	}
+	nob::sleep(2000);
+	nob::ui::loading_screen();
+	nob::sleep(10000);
+	nob::ui::loading_screen(false);
+});
+*/
 using namespace nob::ui;
 
 void add_veh(list &li, const nob::model &m) {
@@ -100,7 +139,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 						return;
 					}
 
-					pb.ammo(pb.weapon_ammo_type(wpn), pb.weapon_max_ammo(wpn));
+					pb.weapon_ammo(wpn, pb.weapon_max_ammo(wpn));
 				}));
 			}
 		})
@@ -219,6 +258,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("Auto Get Parachute in Plane", [](bool val) {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
+		action("Clear High Speed", []() {
+			high_speed = 0.0f;
+		}),
 		action("Record", []() {
 			auto pb = nob::player::body();
 			static std::queue<nob::character::movement_t> rec;
@@ -262,23 +304,46 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				}
 			));
 		}),
-		action("Make Vehicle Nodes", []() {
-			std::fstream f("veh_nodes_500.inc", f.binary | f.trunc | f.in | f.out);
+		action("Make Nodes", []() {
+			std::fstream f("wpn_nodes.inc", f.binary | f.trunc | f.in | f.out);
 			if (!f.is_open()) {
 				nob::log("failed to open");
 			}
 
-			nob::ntv::PATHFIND::_0xF7B79A50B905A30D(-6101.1f, 8033.74f, 6101.1f, -4168.46);
+			std::mt19937_64 rd_ng(20180129);
+			std::uniform_real_distribution<float> dis_x(nob::map::x_min, nob::map::x_max);
+			std::uniform_real_distribution<float> dis_y(nob::map::y_min, nob::map::y_max);
 
-			auto pb = nob::player::body();
-			for (size_t x = 0; x < 16; ++x) {
-				for (size_t y = 0; y < 16; ++y) {
-					nob::vector3 ct {-6101.1f + x * 800.0f, 8033.74f - y * 800.0f, 1500.0f};
+			for (size_t i = 0; i < 2000; ++i) {
+				nob::vector2 pos{dis_x(rd_ng), dis_y(rd_ng)};
+				auto mkr = nob::map::marker({pos.x, pos.y, 100.0f});
+				mkr.graphic(357);
+				mkr.keep_track(false);
+				f << "{ " << pos.x << ", " << pos.y << " }," << std::endl;
+			}
+
+			/*auto pb = nob::player::body();
+			for (size_t x = 0; x < static_cast<size_t>(nob::map::width) / 800 - 1; ++x) {
+				for (size_t y = 0; y < static_cast<size_t>(nob::map::height) / 800 - 1; ++y) {
+					nob::vector3 ct {nob::map::x_min + 400.0f + x * 800.0f, nob::map::y_min + 400.0f + x * 800.0f, 900.0f};
 					pb.move(ct);
-					nob::sleep(1111);
+					nob::sleep(500);
 
-					for (size_t i = 0; i < 120 && !nob::world::ground_height(ct, false); ++i) {
-						nob::yield();
+					bool ctn = false;
+
+					while (!nob::world::ground_height(ct)) {
+						if (ct.z <= 0) {
+							ctn = true;
+							break;
+						}
+
+						ct.z -= 200;
+						pb.move(ct);
+						nob::sleep(500);
+					}
+
+					if (ctn) {
+						continue;
 					}
 
 					for (size_t i = 0; i < 3; ++i) {
@@ -293,7 +358,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				}
 			}
 
-			/*std::fstream f("veh_nodes.inc", f.binary | f.trunc | f.in | f.out);
+			std::fstream f("veh_nodes.inc", f.binary | f.trunc | f.in | f.out);
 			if (!f.is_open()) {
 				nob::log("failed to open");
 			}
@@ -320,19 +385,39 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		}),
 		action("Other", []() {
 			static auto pb = nob::player::body();
-			//auto pos = pb.pos({0, 1, 0});
+			auto pos = pb.pos({0, 5, 0});
+			//static auto veh = nob::vehicle("cargoplane", pb.pos({0, 15, 0}));
+			//veh.invincible();
+			//static auto chr = nob::character("mp_m_freemode_01", nob::world::ground_pos(pb.pos({0, 5, 0})), true);
 
-			static nob::g3d::cylinder clir;
-			clir.move({0, 0, 0});
-			clir.height(1000.0f);
-			clir.radius(5000.0f);
-			clir.color({0, 0, 255, 100});
+			pb.ammo("AMMO_RIFLE", 100);
+			nob::log(pb.ammo("AMMO_RIFLE"));
+			pb.add_weapon("WEAPON_SPECIALCARBINE");
+			nob::log(pb.ammo("AMMO_RIFLE"));
+/*
+			//nob::ntv::OBJECT::CREATE_AMBIENT_PICKUP((nob::hash_t)nob::ntv::ePickupType::WeaponRPG, pos.x, pos.y, pos.z, 0, 0, nob::arm::get_model("WEAPON_RPG").load(), 1, 0);
 
-			nob::task([]() {
-				clir.height(pb.pos().z + 100);
+			static rua::observer<bool> ob(nullptr, nullptr, [](const bool &val) {
+				nob::log(val);
 			});
 
-/*			auto veh = pb.current_vehicle();
+			ob = false;
+
+			nob::task([]() {
+				ob = nob::ntv::PED::IS_PED_INJURED(chr);
+			});
+
+			nob::sleep(5000);
+			for (size_t i = 0; i < 25; ++i) {
+				nob::character("mp_m_freemode_01", veh.pos({ -1.7f, -19.0f + i * 1.0f, -3.05f }), true);
+				nob::character("mp_m_freemode_01", veh.pos({ -0.7f, -19.0f + i * 1.0f, -3.05f }), true);
+				nob::character("mp_m_freemode_01", veh.pos({ 0.7f, -19.0f + i * 1.0f, -3.05f }), true);
+				nob::character("mp_m_freemode_01", veh.pos({ 1.7f, -19.0f + i * 1.0f, -3.05f }), true);
+				nob::yield();
+			}
+			nob::log("done");
+
+			auto veh = pb.current_vehicle();
 			nob::log(veh.get_model().name(), ": { ", veh.pos().str(), ", ", veh.rotation().str(), " }");
 
 			for (auto &n : nodes) {
@@ -341,7 +426,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				mkr.keep_track(false);
 			}
 
-			auto chr = nob::character("mp_m_freemode_01", nob::world::ground_pos(pb.pos({0, 5, 0})), true);
+
 			nob::player::switch_body(chr);
 			nob::ntv::PED::SET_PED_ENABLE_WEAPON_BLOCKING(chr, false);
 
@@ -353,18 +438,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			auto veh = nob::vehicle("KURUMA", pb.pos({0, 15, 0}));
 			chr.into_vehicle(veh, -1);
-
-			nob::task([pb, chr]() {
-				static rua::observer<bool> ob(nullptr, nullptr, [chr](const bool &val) {
-					nob::log(val);
-					if (val) {
-						nob::ntv::WEAPON::CLEAR_PED_LAST_WEAPON_DAMAGE(chr);
-					}
-				});
-				ob = nob::ntv::WEAPON::HAS_PED_BEEN_DAMAGED_BY_WEAPON(chr, 0, 2);
-			});
-
-			//auto pos = pb.pos({0, 50, 200});
 
 
 			nob::ntv::PED::SET_PED_TO_RAGDOLL(pb, -1, -1, 0, false, false, false);
@@ -438,7 +511,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			nob::world::snowy(val);
 		}),
 		action("Load All Buildings", []() {
-			nob::world::load_all_ilps();
+			nob::world::load_all_ilps_ex();
 			nob::world::lock_all_doors(false);
 		}),
 		action("Clean Pickups", []() {
