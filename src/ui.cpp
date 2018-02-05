@@ -189,7 +189,7 @@ namespace nob {
 						y += h;
 						y = y - 0.0015f;
 						h = item_height * 1.0f;
-						_menu::cm_td.draw("gradient_bgd", x, y, w, h, 200);
+						_menu::cm_td.draw("gradient_bgd", x, y, w, h, 0.0f, 200);
 
 						g2d::text(x + margin, y + ((h - font_height) / 2), w, cur_li->items[cur_li->selected]->desc, font_size, 255, 255, 255, 255, 0);
 					}

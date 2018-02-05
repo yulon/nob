@@ -157,8 +157,8 @@ namespace nob {
 					}
 				}
 
-				void draw(const char *texture_name, float x, float y, float width, float height, uint8_t a = 255) {
-					ntv::GRAPHICS::DRAW_SPRITE(native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, 0.0f, 255, 255, 255, a);
+				void draw(const char *texture_name, float x, float y, float width, float height, float heading = 0.0f, uint8_t alpha = 255) {
+					ntv::GRAPHICS::DRAW_SPRITE(native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, heading, 255, 255, 255, alpha);
 				}
 
 			private:
