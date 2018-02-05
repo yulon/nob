@@ -449,7 +449,7 @@ namespace nob {
 						continue;
 					}
 
-					ammo(weapon_ammo_type(wpn), weapon_max_ammo(wpn));
+					weapon_ammo(wpn, weapon_max_ammo(wpn));
 				}
 			}
 
@@ -505,8 +505,20 @@ namespace nob {
 				return is_current_weapon(wpn.hash()) ? true : has_weapon_in_pack(wpn);
 			}
 
+			void weapon_ammo(const hasher &wpn, int total) {
+				if (!weapon_ammo(wpn)) {
+					add_weapon_ammo(wpn, total);
+					return;
+				}
+				ntv::WEAPON::SET_PED_AMMO(_h, wpn.hash(), total);
+			}
+
+			int weapon_ammo(const hasher &wpn) const {
+				return ntv::WEAPON::GET_AMMO_IN_PED_WEAPON(_h, wpn.hash());
+			}
+
 			void ammo(const hasher &type, int total) {
-				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_h, type.hash(), total);
+				weapon_ammo(arm::weapon_from_ammo_type(type), total);
 			}
 
 			int ammo(const hasher &type) const {
@@ -514,7 +526,11 @@ namespace nob {
 			}
 
 			void add_ammo(const hasher &type, int count) {
-				ammo(type.hash(), ammo(type) + count);
+				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_h, type.hash(), count);
+			}
+
+			void add_weapon_ammo(const hasher &wpn, int count) {
+				ntv::WEAPON::ADD_AMMO_TO_PED(_h, wpn.hash(), count);
 			}
 
 			void ammo_no_consumption(bool toggle = true) {
@@ -536,7 +552,7 @@ namespace nob {
 					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn.hash(), total, false, false);
 					return;
 				}
-				ammo(weapon_ammo_type(thr_wpn), total);
+				weapon_ammo(thr_wpn, total);
 			}
 
 			int thrown_weapon(const hasher &thr_wpn) const {
