@@ -23,6 +23,10 @@ namespace nob {
 			return ntv::WEAPON::GET_WEAPONTYPE_GROUP(wpn.hash());
 		}
 
+		inline model get_model(const hasher &wpn_or_amm) {
+			return ntv::WEAPON::GET_WEAPONTYPE_MODEL(wpn_or_amm.hash());
+		}
+
 		static constexpr std::array<hasher, 71> weapons {{
 			"WEAPON_PISTOL", "WEAPON_COMBATPISTOL", "WEAPON_APPISTOL", "WEAPON_PISTOL50", "WEAPON_HEAVYPISTOL",
 			"WEAPON_VINTAGEPISTOL", "WEAPON_SNSPISTOL", "WEAPON_MARKSMANPISTOL", "WEAPON_MACHINEPISTOL",
