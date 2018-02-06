@@ -32,16 +32,20 @@ namespace nob {
 			}
 		}
 
+		inline void disable_control(bool toggle = true) {
+			ntv::PLAYER::SET_PLAYER_CONTROL(body(), !toggle, 0);
+		}
+
 		inline void switch_scene(character chr) {
+			disable_control();
 			ntv::STREAMING::START_PLAYER_SWITCH(body(), chr, 8, 2);
-			nob::sleep(1000);
+			while (ntv::STREAMING::GET_PLAYER_SWITCH_STATE() < 3) {
+				sleep(1000);
+			}
 			auto pos = chr.pos();
 			ntv::STREAMING::NEW_LOAD_SCENE_START_SPHERE(pos.x, pos.y, pos.z, 100.0f, 0);
-			while (!ntv::STREAMING::IS_NEW_LOAD_SCENE_ACTIVE()) {
-				nob::yield();
-			}
 			while (!ntv::STREAMING::IS_NEW_LOAD_SCENE_LOADED()) {
-				nob::yield();
+				sleep(1000);
 			}
 		}
 
@@ -61,10 +65,14 @@ namespace nob {
 			auto fVar12 = ntv::CAM::GET_CAM_FOV(0);
 			auto uVar13 = ntv::CAM::GET_CAM_FAR_CLIP(0);
 			ntv::STREAMING::SET_PLAYER_SWITCH_OUTRO(vVar6.x, vVar6.y, vVar6.z, vVar11.x, vVar11.y, vVar11.z, fVar12, uVar13, 2);*/
+			while (ntv::STREAMING::GET_PLAYER_SWITCH_STATE() != 8) {
+				sleep(1000);
+			}
 			ntv::GRAPHICS::_START_SCREEN_EFFECT("CamPushInNeutral", 0, false);
 			sleep(400);
 			ntv::STREAMING::NEW_LOAD_SCENE_STOP();
 			ntv::STREAMING::STOP_PLAYER_SWITCH();
+			disable_control(false);
 			if (_switch_scene_chr) {
 				_switch_scene_chr.del();
 			}
