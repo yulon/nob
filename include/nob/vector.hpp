@@ -87,8 +87,8 @@ namespace nob {
 		float distance(const vector3 &v3) const {
 			return std::sqrt(
 				std::pow((double)x - (double)v3.x, 2) +
-				std::pow((double)x - (double)v3.x, 2) +
-				std::pow((double)x - (double)v3.x, 2)
+				std::pow((double)y - (double)v3.y, 2) +
+				std::pow((double)z - (double)v3.z, 2)
 			);
 		}
 
