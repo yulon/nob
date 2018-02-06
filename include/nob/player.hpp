@@ -34,6 +34,15 @@ namespace nob {
 
 		inline void switch_scene(character chr) {
 			ntv::STREAMING::START_PLAYER_SWITCH(body(), chr, 8, 2);
+			nob::sleep(1000);
+			auto pos = chr.pos();
+			ntv::STREAMING::NEW_LOAD_SCENE_START_SPHERE(pos.x, pos.y, pos.z, 100.0f, 0);
+			while (!ntv::STREAMING::IS_NEW_LOAD_SCENE_ACTIVE()) {
+				nob::yield();
+			}
+			while (!ntv::STREAMING::IS_NEW_LOAD_SCENE_LOADED()) {
+				nob::yield();
+			}
 		}
 
 		static character _switch_scene_chr;
@@ -47,8 +56,14 @@ namespace nob {
 		}
 
 		inline void switch_scene_finish() {
+			/*auto vVar6 = ntv::CAM::GET_CAM_COORD(0);
+			auto vVar11 = ntv::CAM::GET_CAM_ROT(0, 2);
+			auto fVar12 = ntv::CAM::GET_CAM_FOV(0);
+			auto uVar13 = ntv::CAM::GET_CAM_FAR_CLIP(0);
+			ntv::STREAMING::SET_PLAYER_SWITCH_OUTRO(vVar6.x, vVar6.y, vVar6.z, vVar11.x, vVar11.y, vVar11.z, fVar12, uVar13, 2);*/
 			ntv::GRAPHICS::_START_SCREEN_EFFECT("CamPushInNeutral", 0, false);
 			sleep(400);
+			ntv::STREAMING::NEW_LOAD_SCENE_STOP();
 			ntv::STREAMING::STOP_PLAYER_SWITCH();
 			if (_switch_scene_chr) {
 				_switch_scene_chr.del();
