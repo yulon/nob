@@ -432,5 +432,16 @@ namespace nob {
 				}
 			}
 		}
+
+		void show_cursor(bool toggle) {
+			static task tsk;
+			if (toggle) {
+				if (!tsk) {
+					tsk = task(ntv::UI::_SHOW_CURSOR_THIS_FRAME);
+				}
+			} else if (tsk) {
+				tsk.del();
+			}
+		}
 	} /* ui */
 } /* nob */

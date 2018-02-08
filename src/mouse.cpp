@@ -1,6 +1,7 @@
-#include <nob/keyboard.hpp>
+#include <nob/mouse.hpp>
 #include <nob/script.hpp>
 #include <nob/ntv.hpp>
+#include <nob/screen.hpp>
 
 #include <windows.h>
 
@@ -11,11 +12,13 @@
 namespace nob {
 	extern std::queue<std::function<void()>> _inputs;
 
-	namespace keyboard {
-		bool _downs[120];
+	namespace mouse {
+		bool _downs[3];
 		initer _clear_downs([]() {
-			memset(&_downs, 0, 120 * sizeof(bool));
+			memset(&_downs, 0, 3 * sizeof(bool));
 		});
+
+		vector2_i _coords;
 
 		std::unique_ptr<std::list<std::shared_ptr<std::function<bool(int, bool)>>>> _listeners;
 
@@ -61,20 +64,30 @@ namespace nob {
 			_it = _listeners->end();
 		}
 
-		bool is_down(int code) {
-			return _downs[code];
+		vector2 coords() {
+			auto rez = screen::resolution();
+			return { static_cast<float>(_coords.x) / rez.x, static_cast<float>(_coords.y) / rez.y };
 		}
 
-		void _send(int code, bool down) {
-			if (down == _downs[code]) {
-				return;
-			}
-			_downs[code] = down;
+		vector2_i coords_i() {
+			return _coords;
+		}
 
+		bool is_down(int button) {
+			return _downs[button];
+		}
+
+		void _send(int button, bool down) {
+			if (button < 3) {
+				if (down == _downs[button]) {
+					return;
+				}
+				_downs[button] = down;
+			}
 			if (!_listeners) {
 				return;
 			}
-			_inputs.push([code, down]() {
+			_inputs.push([button, down]() {
 				std::queue<std::weak_ptr<std::function<bool(int, bool)>>> qu;
 				for (auto &hdr_sp : *_listeners) {
 					qu.emplace(hdr_sp);
@@ -83,7 +96,7 @@ namespace nob {
 					auto hdr_sp = qu.front().lock();
 					qu.pop();
 					if (hdr_sp) {
-						if (!(*hdr_sp)(code, down)) {
+						if (!(*hdr_sp)(button, down)) {
 							return;
 						}
 					}
@@ -92,70 +105,11 @@ namespace nob {
 		}
 
 		void _reset() {
-			for (size_t i = 0; i < 120; ++i) {
+			for (size_t i = 0; i < 3; ++i) {
 				if (_downs[i]) {
 					_send(i, false);
 				}
 			}
 		}
-
-		std::unique_ptr<std::map<int, size_t>> _bkr_map;
-		task _bkr_tsk;
-
-		blocker::blocker(std::initializer_list<block_t> blks) {
-			if (!blks.size()) {
-				return;
-			}
-			if (!_bkr_map) {
-				_bkr_map.reset(new std::map<int, size_t>);
-			}
-			for (auto blk : blks) {
-				auto b = static_cast<int>(blk);
-				_blks.emplace_back(b);
-				auto it = _bkr_map->find(b);
-				if (it == _bkr_map->end()) {
-					_bkr_map->emplace(b, 1);
-				} else {
-					++it->second;
-				}
-			}
-			if (!_bkr_tsk) {
-				_bkr_tsk = task([]() {
-					for (auto &pr : *_bkr_map) {
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, pr.first, true);
-					}
-				});
-			}
-		}
-
-		blocker::blocker(block_t blk) : blocker({blk}) {}
-
-		blocker::blocker(blocker &&src) : _blks(std::move(src._blks)) {}
-
-		blocker &blocker::operator=(blocker &&src) {
-			del();
-			_blks = std::move(src._blks);
-			return *this;
-		}
-
-		blocker::operator bool() const {
-			return _bkr_map && _blks.size();
-		}
-
-		void blocker::del() {
-			if (!*this) {
-				return;
-			}
-			for (auto blk : _blks) {
-				auto it = _bkr_map->find(blk);
-				if (it != _bkr_map->end() && !--it->second) {
-					_bkr_map->erase(it);
-				}
-			}
-			if (_bkr_map->empty() && !this_script::exiting) {
-				_bkr_tsk.del();
-			}
-			_blks.clear();
-		}
-	} /* keyboard */
+	} /* mouse */
 } /* nob */

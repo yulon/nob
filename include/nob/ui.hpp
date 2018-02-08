@@ -2,6 +2,7 @@
 
 #include "ntv.hpp"
 #include "g2d.hpp"
+#include "screen.hpp"
 #include "vector.hpp"
 #include "script.hpp"
 #include "keyboard.hpp"
@@ -16,12 +17,6 @@
 
 namespace nob {
 	namespace ui {
-		inline vector2_i resolution() {
-			vector2_i v2;
-			ntv::GRAPHICS::_GET_ACTIVE_SCREEN_RESOLUTION(&v2.x, &v2.y);
-			return v2;
-		}
-
 		static constexpr float aspect_ratio = 9.0f / 16.0f;
 
 		struct _item {
@@ -231,7 +226,7 @@ namespace nob {
 				////////////////////////////////////////////////////////////////
 
 				static float width() {
-					auto sr = resolution();
+					auto sr = screen::resolution();
 					return 432.0f / 1080.0f * sr.y / sr.x;
 				}
 
@@ -396,5 +391,7 @@ namespace nob {
 		inline void clear_prompt() {
 			ntv::UI::_REMOVE_LOADING_PROMPT();
 		}
+
+		void show_cursor(bool toggle = true);
 	} /* ui */
 } /* nob */

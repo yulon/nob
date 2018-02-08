@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include <vector>
+#include <queue>
 #include <cstring>
 #include <cassert>
 
@@ -32,6 +33,21 @@ namespace nob {
 		_exiters->push_back(std::move(handler));
 	}
 
+	std::queue<std::function<void()>> _inputs;
+
+	static inline void _clear_inputs() {
+		while (_inputs.size()) {
+			_inputs.pop();
+		}
+	}
+
+	static inline void _flush_inputs() {
+		while (_inputs.size()) {
+			go(_inputs.front());
+			_inputs.pop();
+		}
+	}
+
 	namespace this_script {
 		mode_t mode = mode_t::invalid;
 		std::thread::id thread_id;
@@ -47,6 +63,8 @@ namespace nob {
 			for (auto &initer : *_initers) {
 				initer();
 			}
+
+			_clear_inputs();
 		}
 
 		static inline void _exit() {
@@ -66,6 +84,7 @@ namespace nob {
 					_exit();
 					return;
 				}
+				_flush_inputs();
 				tasks->handle();
 				shv::WAIT(0);
 			}
@@ -79,6 +98,7 @@ namespace nob {
 					ntv::SCRIPT::TERMINATE_THIS_THREAD();
 					return;
 				}
+				_flush_inputs();
 				tasks->handle();
 				ntv::SYSTEM::WAIT(0);
 			}
@@ -135,6 +155,7 @@ namespace nob {
 							return;
 						}
 
+						_flush_inputs();
 						tasks->handle();
 					}
 					wait_hkd(cc);

@@ -384,18 +384,20 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}*/
 		}),
 		action("Other", []() {
-			static auto pb = nob::player::body();
+			static auto ml = nob::mouse::listener([](int b, bool d)->bool {
+				nob::log(b, ", ", d);
+				return true;
+			});
+/*			static auto pb = nob::player::body();
 			auto pos = pb.pos({0, 5, 0});
 			//static auto veh = nob::vehicle("cargoplane", pb.pos({0, 15, 0}));
 			//veh.invincible();
 			//static auto chr = nob::character("mp_m_freemode_01", nob::world::ground_pos(pb.pos({0, 5, 0})), true);
+			nob::task([]() {
+				nob::ntv::PLAYER::RESET_PLAYER_STAMINA(0);
+			});
 
-			pb.ammo("AMMO_RIFLE", 100);
-			nob::log(pb.ammo("AMMO_RIFLE"));
-			pb.add_weapon("WEAPON_SPECIALCARBINE");
-			nob::log(pb.ammo("AMMO_RIFLE"));
-/*
-			//nob::ntv::OBJECT::CREATE_AMBIENT_PICKUP((nob::hash_t)nob::ntv::ePickupType::WeaponRPG, pos.x, pos.y, pos.z, 0, 0, nob::arm::get_model("WEAPON_RPG").load(), 1, 0);
+			nob::ntv::OBJECT::CREATE_AMBIENT_PICKUP((nob::hash_t)nob::ntv::ePickupType::WeaponRPG, pos.x, pos.y, pos.z, 0, 0, nob::arm::get_model("AMMO_RIFLE").load(), 1, 0);
 
 			static rua::observer<bool> ob(nullptr, nullptr, [](const bool &val) {
 				nob::log(val);
@@ -519,12 +521,6 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 		})
 	}),
 	list("UI", {
-		flag("Disable Story Features", [](bool val) {
-			nob::ui::disable_sp_features(val);
-		}),
-		flag("Disable Wheel Slowmo", [](bool val) {
-			nob::ui::disable_wheel_slowmo(val);
-		}),
 		action("Pops", []() {
 			nob::ui::info("you know!");
 
@@ -537,6 +533,15 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			);
 
 			ia_menu.toggle();
+		}),
+		flag("Show Cursor", [](bool val) {
+			nob::ui::show_cursor(val);
+		}),
+		flag("Disable Story Features", [](bool val) {
+			nob::ui::disable_sp_features(val);
+		}),
+		flag("Disable Wheel Slowmo", [](bool val) {
+			nob::ui::disable_wheel_slowmo(val);
 		})
 	}),
 	list("Map", {

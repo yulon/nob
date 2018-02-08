@@ -9,6 +9,12 @@
 
 namespace nob {
 	namespace screen {
+		inline vector2_i resolution() {
+			vector2_i v2;
+			ntv::GRAPHICS::_GET_ACTIVE_SCREEN_RESOLUTION(&v2.x, &v2.y);
+			return v2;
+		}
+
 		inline void night_vision(bool toggle = true) {
 			ntv::GRAPHICS::SET_NIGHTVISION(toggle);
 		}
