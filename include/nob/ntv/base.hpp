@@ -202,7 +202,7 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////////
 
-		// Reference from https://github.com/ivanmeler/OpenVHook
+		// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/include/scrThread.h
 
 		enum class game_state_t : uint8_t {
 			playing = 0,

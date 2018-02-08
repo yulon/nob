@@ -72,8 +72,6 @@ namespace nob {
 
 			if (toggle) {
 				if (!tsk) {
-					// Reference from https://github.com/codecat/quinMP/blob/master/StrawberryPie/Scripts/CleanWorld.cpp
-
 					tsk = task([]() {
 						if (ntv::GAMEPLAY::IS_STUNT_JUMP_IN_PROGRESS()) {
 							ntv::GAMEPLAY::CANCEL_STUNT_JUMP();

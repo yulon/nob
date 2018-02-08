@@ -150,8 +150,6 @@ namespace nob {
 
 	////////////////////////////////////////////////////////////////////////////
 
-	// Reference from https://github.com/Azon099/Five-Multiplayer/blob/master/FiveMP_Client/ResourceMissionCleanup_Minimal.cpp
-
 	struct _script_info {
 		const char *name;
 		bool essential;
@@ -896,7 +894,7 @@ namespace nob {
 		{ "utvc", false },
 		{ "vehicle_ai_test", false },
 		{ "vehicle_force_widget", true },
-		{ "vehicle_gen_controller", false }, //wtf is this (it seems to have something to do with parked cars, when disabled they don't spawn)
+		{ "vehicle_gen_controller", false },
 		{ "vehicle_plate", true },
 		{ "veh_play_widget", false },
 		{ "walking_ped", false },

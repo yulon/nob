@@ -118,7 +118,7 @@ namespace nob {
 			}
 
 			call_context_t::fix_res_fn = program::code.match({
-				// Reference from https://github.com/ivanmeler/OpenVHook
+				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L104
 				0x83, 0x79, 0x18, 1111, 0x48, 0x8B, 0xD1, 0x74, 0x4A, 0xFF, 0x4A, 0x18
 			}).data();
 
@@ -130,7 +130,7 @@ namespace nob {
 			func_table._nodes =
 				program::version < 1290 ?
 				program::code.match_rel_ptr({
-					// Reference from https://github.com/ivanmeler/OpenVHook
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L389
 					0x76, 0x61, 0x49, 0x8B, 0x7A, 0x40, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
 				}) :
 				program::code.match_rel_ptr({
@@ -155,12 +155,12 @@ namespace nob {
 			}
 
 			game_state = ++program::code.match_rel_ptr({
-				// Reference from https://github.com/ivanmeler/OpenVHook
+				// Reference from https://github.com/MockbaTheBorg/GTALuaF/blob/master/PHP/patternsGTA.txt#L10
 				0x83, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x8A, 0xD9, 0x74, 0x0A
 			});
 
 			if (!game_state) {
-				log("nob::ntv::script_list: not found!");
+				log("nob::ntv::game_state: not found!");
 				finded = false;
 			}
 
