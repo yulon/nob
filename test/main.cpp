@@ -384,10 +384,12 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}*/
 		}),
 		action("Other", []() {
-			static auto ml = nob::mouse::listener([](int b, bool d)->bool {
-				nob::log(b, ", ", d);
-				return true;
-			});
+			static nob::g3d::cylinder c;
+			c.move({0, 0, 0});
+			c.height(1000);
+			c.radius(100);
+			c.color({255, 0, 0, 255});
+			c.draw();
 /*			static auto pb = nob::player::body();
 			auto pos = pb.pos({0, 5, 0});
 			//static auto veh = nob::vehicle("cargoplane", pb.pos({0, 15, 0}));

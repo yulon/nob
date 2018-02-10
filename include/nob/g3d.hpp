@@ -41,6 +41,8 @@ namespace nob {
 
 				void show(bool toggle = true);
 
+				void draw() const;
+
 			private:
 				struct _data_t {
 					vector3 ctr;
