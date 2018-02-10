@@ -18,6 +18,8 @@
 namespace nob {
 	namespace ui {
 		static constexpr float aspect_ratio = 9.0f / 16.0f;
+		static constexpr float padding_x = 29.0f / 1920.0f;
+		static constexpr float padding_y = 17.0f / 1080.0f;
 
 		struct _item {
 			std::string name;
@@ -230,8 +232,6 @@ namespace nob {
 					return 432.0f / 1080.0f * sr.y / sr.x;
 				}
 
-				static constexpr float left = 29.0f / 1920.0f;
-				static constexpr float top = 17.0f / 1080.0f;
 				static constexpr float title_bg_height = 0.1f;
 				static constexpr float title_font_size = 0.9f;
 				static constexpr float title_font_height = g2d::calc_text_height(title_font_size);

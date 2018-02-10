@@ -104,8 +104,8 @@ namespace nob {
 			_menu::cm_td.load();
 
 			_menu::draw_tsk = task([]() {
-				float x = left;
-				float y = top;
+				float x = padding_x;
+				float y = padding_y;
 				float w = width();
 				float h = title_bg_height;
 				_menu::cm_td.draw("interaction_bgd", x, y, w, h);
