@@ -3,9 +3,8 @@
 
 namespace nob {
 	namespace g3d {
-		void cylinder::color(const rgba<int> &clr) {
-			_data->clr = clr;
-			if (clr.a) {
+		void cylinder::show(bool toggle) {
+			if (toggle) {
 				if (_data->draw_tsk) {
 					return;
 				}

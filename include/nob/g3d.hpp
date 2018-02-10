@@ -29,13 +29,17 @@ namespace nob {
 					_data->cap = toggle;
 				}
 
-				void color(const rgba<int> &);
+				void color(const rgba<int> &clr) {
+					_data->clr = clr;
+				}
 
 				void alpha(float a) {
 					auto clr = _data->clr;
 					clr.a = a;
 					color(clr);
 				}
+
+				void show(bool toggle = true);
 
 			private:
 				struct _data_t {
