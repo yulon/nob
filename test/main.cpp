@@ -175,27 +175,27 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					switch (code) {
 						case 'W': {
 							cmd(down, 0, [](nob::vector3 cam_rot)->nob::vector3 {
-								return nob::player::body().pos().forward(cam_rot, m);
+								return nob::player::body().pos() + m * cam_rot.rotation_to_direction();
 							});
 							return false;
 						}
 						case 'S': {
 							cmd(down, 1, [](nob::vector3 cam_rot)->nob::vector3 {
-								return nob::player::body().pos().forward(cam_rot, -m);
+								return nob::player::body().pos() + (-m * cam_rot.rotation_to_direction());
 							});
 							return false;
 						}
 						case 'A': {
 							cmd(down, 2, [](nob::vector3 cam_rot)->nob::vector3 {
 								cam_rot.z += 90.0f;
-								return nob::player::body().pos().forward(cam_rot, m);
+								return nob::player::body().pos() + m * cam_rot.rotation_to_direction();
 							});
 							return false;
 						}
 						case 'D': {
 							cmd(down, 3, [](nob::vector3 cam_rot)->nob::vector3 {
 								cam_rot.z -= 90.0f;
-								return nob::player::body().pos().forward(cam_rot, m);
+								return nob::player::body().pos() + m * cam_rot.rotation_to_direction();
 							});
 							return false;
 						}

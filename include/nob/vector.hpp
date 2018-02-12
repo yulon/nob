@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include <sstream>
+#include <cstring>
 
 namespace nob {
 	struct vector2_i {
@@ -15,12 +16,16 @@ namespace nob {
 
 		vector2() = default;
 
-		constexpr vector2(float x_val, float y_val) : x(x_val), y(y_val) {}
+		constexpr vector2(float x_val, float y_val = 0.0f) : x(x_val), y(y_val) {}
 
-		constexpr vector2(std::initializer_list<float> vals) :
-			x(vals.size() ? *vals.begin() : 0.0f),
-			y(vals.size() >= 2 ? vals.begin()[1] : 0.0f)
-		{}
+		/*vector2(std::initializer_list<float> vals) {
+			if (vals.size()) {
+				memcpy(&x, vals.begin(), vals.size() * sizeof(float));
+			}
+			if (vals.size() < 2) {
+				memset(&x + vals.size(), 0, (2 - vals.size()) * sizeof(float));
+			}
+		}*/
 
 		float distance(const vector2 &v2) const {
 			return std::sqrt(
@@ -44,14 +49,18 @@ namespace nob {
 
 		vector3() = default;
 
-		constexpr vector3(float x_val, float y_val, float z_val = 0.0f) : vector2(x_val, y_val), z(z_val) {}
+		constexpr vector3(float x_val, float y_val = 0.0f, float z_val = 0.0f) : vector2(x_val, y_val), z(z_val) {}
 
 		constexpr vector3(const vector2 &v2, float z_val = 0.0f) : vector2(v2), z(z_val) {}
 
-		constexpr vector3(std::initializer_list<float> vals) :
-			vector2(vals),
-			z(vals.size() >= 3 ? vals.begin()[2] : 0.0f)
-		{}
+		vector3(std::initializer_list<float> vals) {
+			if (vals.size()) {
+				memcpy(&x, vals.begin(), vals.size() * sizeof(float));
+			}
+			if (vals.size() < 3) {
+				memset(&x + vals.size(), 0, (3 - vals.size()) * sizeof(float));
+			}
+		}
 
 		constexpr vector3(const ntv::Vector3 &nv3) : vector3(nv3.x, nv3.y, nv3.z) {}
 
@@ -59,50 +68,16 @@ namespace nob {
 			return {x, y, z};
 		}
 
-		vector3 rot_to_dir() const {
+		vector3 rotation_to_direction() const {
 			float radians_z = z * 0.0174532924f;
 			float radians_x = x * 0.0174532924f;
 			float num = std::abs((float)std::cos((double)radians_x));
 
-			vector3 dir;
-			dir.x = (float)((double)((float)(-(float)std::sin((double)radians_z))) * (double)num);
-			dir.y = (float)((double)((float)std::cos((double)radians_z)) * (double)num);
-			dir.z = (float)std::sin((double)radians_x);
-			return dir;
-		}
-
-		vector3 operator*(float x) const {
-			vector3 result = *this;
-
-			result.x *= x;
-			result.y *= x;
-			result.z *= x;
-
-			return result;
-		}
-
-		vector3 operator+(const vector3 &v3) const {
-			vector3 result = *this;
-
-			result.x += v3.x;
-			result.y += v3.y;
-			result.z += v3.z;
-
-			return result;
-		}
-
-		vector3 operator-(const vector3 &v3) const {
-			vector3 result = *this;
-
-			result.x -= v3.x;
-			result.y -= v3.y;
-			result.z -= v3.z;
-
-			return result;
-		}
-
-		vector3 forward(const vector3 &rot, float distance = 10.0f) const {
-			return *this + (rot.rot_to_dir() * distance);
+			return {
+				(float)((double)((float)(-(float)std::sin((double)radians_z))) * (double)num),
+				(float)((double)((float)std::cos((double)radians_z)) * (double)num),
+				(float)std::sin((double)radians_x)
+			};
 		}
 
 		float distance(const vector3 &v3) const {
@@ -119,6 +94,54 @@ namespace nob {
 			return ss.str();
 		}
 	};
+
+	static inline vector3 operator*(const vector3 &a, const vector3 &b) {
+		return {a.x * b.x, a.y * b.y, a.z * b.z};
+	}
+
+	static inline vector3 operator*(const vector3 &v3, float n) {
+		return {v3.x * n, v3.y * n, v3.z * n};
+	}
+
+	static inline vector3 operator*(float n, const vector3 &v3) {
+		return {v3.x * n, v3.y * n, v3.z * n};
+	}
+
+	static inline vector3 operator/(const vector3 &a, const vector3 &b) {
+		return {a.x / b.x, a.y / b.y, a.z / b.z};
+	}
+
+	static inline vector3 operator/(const vector3 &v3, float n) {
+		return {v3.x / n, v3.y / n, v3.z / n};
+	}
+
+	static inline vector3 operator/(float n, const vector3 &v3) {
+		return {n / v3.x, n / v3.y, n / v3.z};
+	}
+
+	static inline vector3 operator+(const vector3 &a, const vector3 &b) {
+		return {a.x + b.x, a.y + b.y, a.z + b.z};
+	}
+
+	static inline vector3 operator+(const vector3 &v3, float n) {
+		return {v3.x + n, v3.y + n, v3.z + n};
+	}
+
+	static inline vector3 operator+(float n, const vector3 &v3) {
+		return {v3.x + n, v3.y + n, v3.z + n};
+	}
+
+	static inline vector3 operator-(const vector3 &a, const vector3 &b) {
+		return {a.x - b.x, a.y - b.y, a.z - b.z};
+	}
+
+	static inline vector3 operator-(const vector3 &v3, float n) {
+		return {v3.x - n, v3.y - n, v3.z - n};
+	}
+
+	static inline vector3 operator-(float n, const vector3 &v3) {
+		return {n - v3.x, n - v3.y, n - v3.z};
+	}
 
 	struct vector4 {
 		float x, y, z, w;

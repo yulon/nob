@@ -91,6 +91,8 @@ namespace nob {
 					}
 				}
 
+				marker(std::initializer_list<float> pos) : marker(vector3(pos)) {}
+
 				marker(const vector3 &pos, float radius) : _h(ntv::UI::ADD_BLIP_FOR_RADIUS(pos.x, pos.y, pos.z, radius)) {
 					if (_h) {
 						auto h = _h;

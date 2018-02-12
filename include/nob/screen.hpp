@@ -6,6 +6,7 @@
 #include "player.hpp"
 
 #include <array>
+#include <utility>
 
 namespace nob {
 	namespace screen {
@@ -133,25 +134,20 @@ namespace nob {
 			ntv::GRAPHICS::_STOP_ALL_SCREEN_EFFECTS();
 		}
 
-		inline vector3 forward_world_pos(float distance = 10.0f) {
-			return vector3(ntv::CAM::GET_GAMEPLAY_CAM_COORD()).forward(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), distance);
+		inline vector3 center_point_world_pos(float distance = 500.0f) {
+			return vector3(ntv::CAM::GET_GAMEPLAY_CAM_COORD()) + distance * vector3(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0)).rotation_to_direction();
 		}
 
-		struct world_info_t {
-			vector3 pos;
-			entity obj;
-		};
-
-		inline world_info_t center_point_world_info() {
+		inline std::pair<vector3, entity> center_point_world_collided_pos() {
 			vector3 cam_pos = ntv::CAM::GET_GAMEPLAY_CAM_COORD();
-			vector3 fwd = vector3(cam_pos).forward(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0), 10.0f);
+			vector3 fwd = cam_pos + 500.0f * vector3(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0)).rotation_to_direction();
 			auto ray = ntv::WORLDPROBE::_START_SHAPE_TEST_RAY(cam_pos.x, cam_pos.y, cam_pos.z, fwd.x, fwd.y, fwd.z, -1, player::body(), 7);
 			bool hit;
 			ntv::Vector3 pos;
 			ntv::Vector3 surface_normal;
-			ntv::Entity obj = 0;
-			ntv::WORLDPROBE::GET_SHAPE_TEST_RESULT(ray, &hit, &pos, &surface_normal, &obj);
-			return {pos, obj};
+			ntv::Entity ety = 0;
+			ntv::WORLDPROBE::GET_SHAPE_TEST_RESULT(ray, &hit, &pos, &surface_normal, &ety);
+			return {pos, ety};
 		}
 
 		inline vector2 coords_from_world_pos(const vector3 &wp) {

@@ -9,13 +9,13 @@ namespace nob {
 			float ang_off_half = ang_off / 2.0f;
 			for (size_t i = 0; i < petal_count; ++i) {
 				vector3 rot{0, 0, i * ang_off};
-				auto top = _data->ctr.forward(rot, _data->r);
+				auto top = _data->ctr + _data->r * rot.rotation_to_direction();
 
 				rot.z += ang_off_half;
-				auto ll = _data->ctr.forward(rot, _data->r);
+				auto ll = _data->ctr + _data->r * rot.rotation_to_direction();
 
 				rot.z -= ang_off;
-				auto lr = _data->ctr.forward(rot, _data->r);
+				auto lr = _data->ctr + _data->r * rot.rotation_to_direction();
 
 				ntv::GRAPHICS::DRAW_POLY(
 					top.x, top.y, _data->h,
@@ -32,7 +32,7 @@ namespace nob {
 				);
 
 				rot.z -= ang_off_half;
-				ll = _data->ctr.forward(rot, _data->r);
+				ll = _data->ctr + _data->r * rot.rotation_to_direction();
 
 				ntv::GRAPHICS::DRAW_POLY(
 					top.x, top.y, _data->h,
