@@ -9,6 +9,86 @@
 
 namespace nob {
 	namespace world {
+		// Reference from https://pastebin.com/Tvg2PRHU
+		const std::array<const char *, 45> _scenario_groups {{
+			"ALAMO_PLANES",
+			"ARMENIAN_CATS",
+			"ARMY_GUARD",
+			"ARMY_HELI",
+			"ATTRACT_PAP",
+			"BLIMP",
+			"CHINESE2_HILLBILLIES",
+			"Chinese2_Lunch",
+			"Cinema_Downtown",
+			"Cinema_Morningwood",
+			"Cinema_Textile",
+			"City_Banks",
+			"Countryside_Banks",
+			"DEALERSHIP",
+			"FIB_GROUP_1",
+			"FIB_GROUP_2",
+			"GRAPESEED_PLANES",
+			"Grapeseed_Planes",
+			"KORTZ_SECURITY",
+			"LOST_BIKERS",
+			"LOST_BIKERS",
+			"LOST_BIKERS",
+			"LSA_Planes",
+			"MOVIE_STUDIO_SECURITY",
+			"MOVIE_STUDIO_SECURITY",
+			"MP_POLICE",
+			"Observatory_Bikers",
+			"POLICE_POUND1",
+			"POLICE_POUND2",
+			"POLICE_POUND3",
+			"POLICE_POUND4",
+			"POLICE_POUND5",
+			"PRISON_TOWERS",
+			"QUARRY",
+			"Rampage1",
+			"SANDY_PLANES",
+			"SCRAP_SECURITY",
+			"SEW_MACHINE",
+			"SOLOMON_GATE",
+			"Triathlon_1",
+			"Triathlon_1_Start",
+			"Triathlon_2",
+			"Triathlon_2_Start",
+			"Triathlon_3",
+			"Triathlon_3_Start"
+		}};
+
+		const std::array<const char *, 28> _scenario_types {{
+			"WORLD_MOUNTAIN_LION_REST",
+			"WORLD_MOUNTAIN_LION_WANDER",
+			"DRIVE",
+			"WORLD_VEHICLE_POLICE_BIKE",
+			"WORLD_VEHICLE_POLICE_CAR",
+			"WORLD_VEHICLE_POLICE_NEXT_TO_CAR",
+			"WORLD_VEHICLE_DRIVE_SOLO",
+			"WORLD_VEHICLE_BIKER",
+			"WORLD_VEHICLE_DRIVE_PASSENGERS",
+			"WORLD_VEHICLE_SALTON_DIRT_BIKE",
+			"WORLD_VEHICLE_BICYCLE_MOUNTAIN",
+			"PROP_HUMAN_SEAT_CHAIR",
+			"WORLD_VEHICLE_ATTRACTOR",
+			"WORLD_HUMAN_LEANING",
+			"WORLD_HUMAN_HANG_OUT_STREET",
+			"WORLD_HUMAN_DRINKING",
+			"WORLD_HUMAN_SMOKING",
+			"WORLD_HUMAN_GUARD_STAND",
+			"WORLD_HUMAN_CLIPBOARD",
+			"WORLD_HUMAN_HIKER",
+			"WORLD_VEHICLE_EMPTY",
+			"WORLD_VEHICLE_BIKE_OFF_ROAD_RACE",
+			"WORLD_HUMAN_PAPARAZZI",
+			"WORLD_VEHICLE_PARK_PERPENDICULAR_NOSE_IN",
+			"WORLD_VEHICLE_PARK_PARALLEL",
+			"WORLD_VEHICLE_CONSTRUCTION_SOLO",
+			"WORLD_VEHICLE_CONSTRUCTION_PASSENGERS",
+			"WORLD_VEHICLE_TRUCK_LOGS"
+		}};
+
 		/*
 			Reference from
 				http://gtaforums.com/topic/858699-completely-clean-world/
@@ -16,6 +96,13 @@ namespace nob {
 		*/
 		void no_mans_island(bool toggle) {
 			static task tsk;
+
+			struct gc_t {
+				static constexpr bool native_handle() {
+					return true;
+				}
+			};
+
 			if (toggle) {
 				if (!tsk) {
 					tsk = task([]() {
@@ -46,24 +133,46 @@ namespace nob {
 						ntv::AUDIO::_FORCE_AMBIENT_SIREN(false);
 						ntv::AUDIO::STOP_ALL_ALARMS(true);
 					});
-
-					auto pos = player::body().pos();
-					ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, false, false, false, false);
-					ntv::AUDIO::_DISABLE_POLICE_REPORTS();
-					for (size_t i = 1; i < 16; ++i) {
-						ntv::GAMEPLAY::ENABLE_DISPATCH_SERVICE(i, false);
-					}
-					ntv::PLAYER::SET_WANTED_LEVEL_MULTIPLIER(0.0);
-					ntv::PED::SET_CREATE_RANDOM_COPS(false);
-
-					ntv::AUDIO::SET_AUDIO_FLAG("LoadMPData", true);
-					ntv::AUDIO::SET_AUDIO_FLAG("DisableBarks", true);
-					ntv::AUDIO::SET_AUDIO_FLAG("DisableFlightMusic", true);
-					ntv::AUDIO::SET_AUDIO_FLAG("PoliceScannerDisabled", true);
-					ntv::AUDIO::SET_AUDIO_FLAG("OnlyAllowScriptTriggerPoliceScanner", true);
 				}
+
+				auto pos = player::body().pos();
+
+				ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, false, false, false, false);
+
+				ntv::AUDIO::_DISABLE_POLICE_REPORTS();
+
+				for (size_t i = 1; i < 16; ++i) {
+					ntv::GAMEPLAY::ENABLE_DISPATCH_SERVICE(i, false);
+				}
+
+				ntv::PLAYER::SET_WANTED_LEVEL_MULTIPLIER(0.0f);
+
+				ntv::PED::SET_CREATE_RANDOM_COPS(false);
+
+				ntv::AUDIO::SET_AUDIO_FLAG("LoadMPData", true);
+				ntv::AUDIO::SET_AUDIO_FLAG("DisableBarks", true);
+				ntv::AUDIO::SET_AUDIO_FLAG("DisableFlightMusic", true);
+				ntv::AUDIO::SET_AUDIO_FLAG("PoliceScannerDisabled", true);
+				ntv::AUDIO::SET_AUDIO_FLAG("OnlyAllowScriptTriggerPoliceScanner", true);
+
+				for (auto sg : _scenario_groups) {
+					ntv::AI::SET_SCENARIO_GROUP_ENABLED(sg, false);
+				}
+
+				if (!gc::is_delegated(gc_t())) {
+					auto h = ntv::PED::ADD_SCENARIO_BLOCKING_AREA(-7000.0f, -7000.0f, -100.0f, 7000.0f, 7000.0f, 315.0f, 0, 1, 1, 1);
+					gc::delegate(gc_t(), [h]() {
+						ntv::PED::REMOVE_SCENARIO_BLOCKING_AREA(h, 0);
+					});
+				}
+
+				for (auto st : _scenario_types) {
+					ntv::AI::SET_SCENARIO_TYPE_ENABLED(st, false);
+				}
+
 			} else {
 				tsk.del();
+				gc::free(gc_t());
 			}
 		}
 

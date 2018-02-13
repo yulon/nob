@@ -39,6 +39,18 @@ namespace nob {
 		}
 
 		template <typename T>
+		inline bool is_delegated(const T &obj) {
+			assert(in_task());
+
+			auto &sub_map = _map[typeid(T)];
+			auto it = sub_map.find(hash(obj.native_handle()));
+			if (it == sub_map.end()) {
+				return false;
+			}
+			return true;
+		}
+
+		template <typename T>
 		inline void free(const T &obj) {
 			if (this_script::exiting) {
 				return;
