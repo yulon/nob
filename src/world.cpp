@@ -97,6 +97,12 @@ namespace nob {
 		void no_mans_island(bool toggle) {
 			static task tsk;
 
+			static initer reset([]() {
+				if (tsk) {
+					tsk.del();
+				}
+			});
+
 			struct gc_id_t {
 				static constexpr bool native_handle() {
 					return true;
@@ -104,36 +110,38 @@ namespace nob {
 			};
 
 			if (toggle) {
-				if (!tsk) {
-					tsk = task([]() {
-						ntv::VEHICLE::SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
-						ntv::VEHICLE::SET_RANDOM_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
-						ntv::VEHICLE::SET_PARKED_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
-						ntv::VEHICLE::_SET_SOMETHING_MULTIPLIER_THIS_FRAME(false);
-						ntv::VEHICLE::_SET_SOME_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
-
-						ntv::PED::SET_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
-						ntv::PED::SET_SCENARIO_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0f, 0.0f);
-
-						ntv::DECISIONEVENT::SUPPRESS_SHOCKING_EVENTS_NEXT_FRAME();
-						ntv::DECISIONEVENT::SUPPRESS_AGITATION_EVENTS_NEXT_FRAME();
-
-						ntv::VEHICLE::DELETE_ALL_TRAINS();
-						ntv::PLAYER::SET_MAX_WANTED_LEVEL(0);
-
-						ntv::VEHICLE::SET_GARBAGE_TRUCKS(false);
-						ntv::VEHICLE::SET_RANDOM_BOATS(false);
-						ntv::VEHICLE::SET_RANDOM_TRAINS(false);
-
-						ntv::VEHICLE::SET_NUMBER_OF_PARKED_VEHICLES(-1);
-						ntv::VEHICLE::SET_ALL_LOW_PRIORITY_VEHICLE_GENERATORS_ACTIVE(false);
-						ntv::VEHICLE::SET_FAR_DRAW_VEHICLES(false);
-						ntv::VEHICLE::_DISPLAY_DISTANT_VEHICLES(false);
-
-						ntv::AUDIO::_FORCE_AMBIENT_SIREN(false);
-						ntv::AUDIO::STOP_ALL_ALARMS(true);
-					});
+				if (tsk) {
+					return;
 				}
+
+				tsk = task([]() {
+					ntv::VEHICLE::SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+					ntv::VEHICLE::SET_RANDOM_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+					ntv::VEHICLE::SET_PARKED_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+					ntv::VEHICLE::_SET_SOMETHING_MULTIPLIER_THIS_FRAME(false);
+					ntv::VEHICLE::_SET_SOME_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+
+					ntv::PED::SET_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0f);
+					ntv::PED::SET_SCENARIO_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0f, 0.0f);
+
+					ntv::DECISIONEVENT::SUPPRESS_SHOCKING_EVENTS_NEXT_FRAME();
+					ntv::DECISIONEVENT::SUPPRESS_AGITATION_EVENTS_NEXT_FRAME();
+
+					ntv::VEHICLE::DELETE_ALL_TRAINS();
+					ntv::PLAYER::SET_MAX_WANTED_LEVEL(0);
+
+					ntv::VEHICLE::SET_GARBAGE_TRUCKS(false);
+					ntv::VEHICLE::SET_RANDOM_BOATS(false);
+					ntv::VEHICLE::SET_RANDOM_TRAINS(false);
+
+					ntv::VEHICLE::SET_NUMBER_OF_PARKED_VEHICLES(-1);
+					ntv::VEHICLE::SET_ALL_LOW_PRIORITY_VEHICLE_GENERATORS_ACTIVE(false);
+					ntv::VEHICLE::SET_FAR_DRAW_VEHICLES(false);
+					ntv::VEHICLE::_DISPLAY_DISTANT_VEHICLES(false);
+
+					ntv::AUDIO::_FORCE_AMBIENT_SIREN(false);
+					ntv::AUDIO::STOP_ALL_ALARMS(true);
+				});
 
 				auto pos = player::body().pos();
 
@@ -179,26 +187,33 @@ namespace nob {
 		void disable_ambient_missions(bool toggle) {
 			static task tsk;
 
+			static initer reset([]() {
+				if (tsk) {
+					tsk.del();
+				}
+			});
+
 			if (toggle) {
 				if (!tsk) {
-					tsk = task([]() {
-						if (ntv::GAMEPLAY::IS_STUNT_JUMP_IN_PROGRESS()) {
-							ntv::GAMEPLAY::CANCEL_STUNT_JUMP();
-						}
-
-						if (ntv::GAMEPLAY::GET_MISSION_FLAG()) {
-							ntv::GAMEPLAY::SET_MISSION_FLAG(false);
-						}
-
-						if (ntv::GAMEPLAY::GET_RANDOM_EVENT_FLAG()) {
-							ntv::GAMEPLAY::SET_RANDOM_EVENT_FLAG(false);
-						}
-
-						if (ntv::CUTSCENE::IS_CUTSCENE_ACTIVE()) {
-							ntv::CUTSCENE::STOP_CUTSCENE_IMMEDIATELY();
-						}
-					});
+					return;
 				}
+				tsk = task([]() {
+					if (ntv::GAMEPLAY::IS_STUNT_JUMP_IN_PROGRESS()) {
+						ntv::GAMEPLAY::CANCEL_STUNT_JUMP();
+					}
+
+					if (ntv::GAMEPLAY::GET_MISSION_FLAG()) {
+						ntv::GAMEPLAY::SET_MISSION_FLAG(false);
+					}
+
+					if (ntv::GAMEPLAY::GET_RANDOM_EVENT_FLAG()) {
+						ntv::GAMEPLAY::SET_RANDOM_EVENT_FLAG(false);
+					}
+
+					if (ntv::CUTSCENE::IS_CUTSCENE_ACTIVE()) {
+						ntv::CUTSCENE::STOP_CUTSCENE_IMMEDIATELY();
+					}
+				});
 			} else {
 				tsk.del();
 			}
@@ -1273,8 +1288,35 @@ namespace nob {
 		}
 
 		void snowy(bool toggle) {
-			static void *block_code_addr = nullptr;
 			static uint8_t block_code_bak[20];
+
+			static void *block_code_addr = ([]()->void *{
+				chan<void *> ch;
+
+				std::thread([ch]() mutable {
+					auto bca = program::code.match({
+						// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
+						0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
+					}).data();
+
+					if (bca) {
+						VirtualProtect(bca, 20, PAGE_EXECUTE_READWRITE, nullptr);
+						memcpy(&block_code_bak, bca, 20);
+					} else {
+						log("nob::world::snowy::block_code_addr: not found!");
+					}
+
+					ch << bca;
+				}).detach();
+
+				return ch.get();
+			})();
+
+			static initer reset([]() {
+				if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
+					memcpy(block_code_addr, &block_code_bak, 20);
+				}
+			});
 
 			struct gc_id_t {
 				static constexpr bool native_handle() {
@@ -1284,28 +1326,10 @@ namespace nob {
 
 			if (toggle) {
 				if (!block_code_addr) {
-					chan<void *> ch;
-
-					std::thread([ch]() mutable {
-						auto bca = program::code.match({
-							// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
-							0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
-						}).data();
-
-						if (bca) {
-							VirtualProtect(block_code_addr, 20, PAGE_EXECUTE_READWRITE, nullptr);
-							memcpy(&block_code_bak, bca, 20);
-						} else {
-							log("nob::world::snowy::block_code_addr: not found!");
-						}
-
-						ch << bca;
-					}).detach();
-
-					ch >> block_code_addr;
+					return;
 				}
 
-				if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x74) {
+				if (*reinterpret_cast<uint8_t *>(block_code_addr) == 0x74) {
 					memset(block_code_addr, 0x90, 20);
 				}
 
