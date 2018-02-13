@@ -97,7 +97,7 @@ namespace nob {
 		void no_mans_island(bool toggle) {
 			static task tsk;
 
-			struct gc_t {
+			struct gc_id_t {
 				static constexpr bool native_handle() {
 					return true;
 				}
@@ -159,9 +159,9 @@ namespace nob {
 					ntv::AI::SET_SCENARIO_GROUP_ENABLED(sg, false);
 				}
 
-				if (!gc::is_delegated(gc_t())) {
+				if (!gc::is_delegated(gc_id_t())) {
 					auto h = ntv::PED::ADD_SCENARIO_BLOCKING_AREA(-7000.0f, -7000.0f, -100.0f, 7000.0f, 7000.0f, 315.0f, 0, 1, 1, 1);
-					gc::delegate(gc_t(), [h]() {
+					gc::delegate(gc_id_t(), [h]() {
 						ntv::PED::REMOVE_SCENARIO_BLOCKING_AREA(h, 0);
 					});
 				}
@@ -172,7 +172,7 @@ namespace nob {
 
 			} else {
 				tsk.del();
-				gc::free(gc_t());
+				gc::free(gc_id_t());
 			}
 		}
 
@@ -1275,11 +1275,12 @@ namespace nob {
 		void snowy(bool toggle) {
 			static void *block_code_addr = nullptr;
 			static uint8_t block_code_bak[20];
-			static struct gc_id_t {
-				constexpr bool native_handle() const {
+
+			struct gc_id_t {
+				static constexpr bool native_handle() {
 					return true;
 				}
-			} gc_id;
+			};
 
 			if (toggle) {
 				if (!block_code_addr) {
@@ -1320,7 +1321,7 @@ namespace nob {
 				ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS", true);
 				ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS", true);
 
-				gc::delegate(gc_id, []() {
+				gc::delegate(gc_id_t(), []() {
 					if (*reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
 						memcpy(block_code_addr, &block_code_bak, 20);
 					}
@@ -1337,7 +1338,7 @@ namespace nob {
 				});
 
 			} else if (block_code_addr) {
-				gc::free(gc_id);
+				gc::free(gc_id_t());
 			}
 		}
 	} /* world */
