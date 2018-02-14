@@ -8,7 +8,7 @@ namespace nob {
 				if (tsk) {
 					return;
 				}
-				tsk = nob::task([]() mutable {
+				tsk = nob::task([]() {
 					nob::player::body().invincible(true);
 					nob::sleep(5000);
 				});
