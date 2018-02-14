@@ -82,6 +82,8 @@ namespace nob {
 			ntv::PLAYER::SET_AUTO_GIVE_PARACHUTE_WHEN_ENTER_PLANE(0, toggle);
 		}
 
+		void invincible(bool toggle = true);
+
 		inline void disable_automatic_respawn() {
 			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_DEATH(false);
 			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_ARREST(false);

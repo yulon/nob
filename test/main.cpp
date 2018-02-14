@@ -238,22 +238,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}
 		}),
 		flag("Invincible", [](bool val) {
-			static nob::task tsk;
-			if (val) {
-				tsk = nob::task([]() mutable {
-					auto pb = nob::player::body();
-					pb.invincible(true);
-					/*auto addr = nob::shv::getScriptHandleBaseAddress(pb);
-					if (addr) {
-						nob::log(addr);
-						*(DWORD *)(addr + 0x188) |= (1 << 9);
-					}*/
-					nob::sleep(5000);
-				});
-			} else {
-				tsk.del();
-				nob::player::body().invincible(false);
-			}
+			nob::player::invincible(val);
 		}),
 		flag("Auto Get Parachute in Plane", [](bool val) {
 			nob::player::auto_get_parachute_in_plane(val);
