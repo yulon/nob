@@ -2,7 +2,7 @@
 
 namespace nob {
 	namespace player {
-		void invincible(bool toggle = true) {
+		void invincible(bool toggle) {
 			static nob::task tsk;
 			if (toggle) {
 				if (tsk) {
