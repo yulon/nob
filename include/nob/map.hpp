@@ -142,6 +142,10 @@ namespace nob {
 					return ntv::UI::GET_BLIP_SPRITE(_h);
 				}
 
+				void radius(float r) {
+					ntv::UI::SET_BLIP_SCALE(_h, r);
+				}
+
 				void move(const vector3 &coords) {
 					ntv::UI::SET_BLIP_COORDS(_h, coords.x, coords.y, coords.z);
 				}
