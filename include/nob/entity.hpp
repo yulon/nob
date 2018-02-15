@@ -1070,12 +1070,12 @@ namespace nob {
 				ntv::VEHICLE::SET_VEHICLE_PETROL_TANK_HEALTH(_h, v);
 			}
 
-			void explode() {
-				ntv::VEHICLE::EXPLODE_VEHICLE(_h, true, false);
+			void explode(bool blast_wave = true) {
+				ntv::VEHICLE::EXPLODE_VEHICLE(_h, blast_wave, false);
 			}
 
-			void catches_fire() {
-				ntv::VEHICLE::EXPLODE_VEHICLE(_h, false, false);
+			void explosion_proof(bool toggle = true) {
+				ntv::VEHICLE::SET_VEHICLE_EXPLODES_ON_HIGH_EXPLOSION_DAMAGE(_h, !toggle);
 			}
 
 			bool has(character chr) const {
