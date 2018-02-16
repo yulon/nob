@@ -289,18 +289,14 @@ namespace nob {
 
 			void stop_motion_command();
 
-			inline void into_vehicle(vehicle veh, int seat);
+			inline void get_in_vehicle(vehicle veh, int seat = -1, bool run_to = true);
+
+			inline void into_vehicle(vehicle veh, int seat = -1);
 
 			void leave_vehicle(bool jump = false) {
 				auto veh = ntv::PED::GET_VEHICLE_PED_IS_IN(_h, false);
 				if (veh) {
-					int flag;
-					if (!jump) {
-						flag = 0;
-					} else {
-						flag = 4160;
-					}
-					ntv::AI::TASK_LEAVE_VEHICLE(_h, veh, flag);
+					ntv::AI::TASK_LEAVE_VEHICLE(_h, veh, jump ? 4160 : 0);
 				}
 			}
 
@@ -1158,6 +1154,10 @@ namespace nob {
 
 	inline bool character::is_on_vehicle(vehicle veh) const {
 		return ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(_h, veh);
+	}
+
+	inline void character::get_in_vehicle(vehicle veh, int seat, bool run_to) {
+		ntv::AI::TASK_ENTER_VEHICLE(_h, veh, -1, seat, run_to ? 2.0f : 1.0f, 1, 0);
 	}
 
 	inline void character::into_vehicle(vehicle veh, int seat) {
