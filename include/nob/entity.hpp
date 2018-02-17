@@ -434,22 +434,19 @@ namespace nob {
 
 					auto wpn_grp = arm::weapon_group(wpn);
 
-					if (wpn_grp == "GROUP_THROWN") {
-						thrown_weapon(wpn.hash(), weapon_max_ammo(wpn));
-						continue;
+					if (wpn_grp != "GROUP_THROWN") {
+						add_weapon(wpn);
 					}
-
-					add_weapon(wpn);
 
 					if (wpn_grp == "GROUP_MELEE") {
 						continue;
 					}
 
-					weapon_ammo(wpn, weapon_max_ammo(wpn));
+					weapon_ammo(wpn, weapon_ammo_max(wpn));
 				}
 			}
 
-			void rm_all_weapons() {
+			void clear_armed() {
 				ntv::WEAPON::REMOVE_ALL_PED_WEAPONS(_h, true);
 			}
 
@@ -501,6 +498,26 @@ namespace nob {
 				return is_current_weapon(wpn.hash()) ? true : has_weapon_in_pack(wpn);
 			}
 
+			int weapon_clip_ammo_max(const hasher &wpn) const {
+				return ntv::WEAPON::GET_MAX_AMMO_IN_CLIP(_h, wpn.hash(), true);
+			}
+
+			void weapon_clip_ammo(const hasher &wpn, int total) {
+				ntv::WEAPON::SET_AMMO_IN_CLIP(_h, wpn.hash(), total);
+			}
+
+			int weapon_clip_ammo(const hasher &wpn) const {
+				int total;
+				ntv::WEAPON::GET_AMMO_IN_CLIP(_h, wpn.hash(), &total);
+				return total;
+			}
+
+			int weapon_ammo_max(const hasher &wpn) const {
+				int total;
+				ntv::WEAPON::GET_MAX_AMMO(_h, wpn.hash(), &total);
+				return total;
+			}
+
 			void weapon_ammo(const hasher &wpn, int total) {
 				if (!weapon_ammo(wpn)) {
 					add_weapon_ammo(wpn, total);
@@ -513,6 +530,21 @@ namespace nob {
 				return ntv::WEAPON::GET_AMMO_IN_PED_WEAPON(_h, wpn.hash());
 			}
 
+			void add_weapon_ammo(const hasher &wpn, int count) {
+				if (arm::weapon_group(wpn) == "GROUP_THROWN") {
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn.hash(), count, false, false);
+				}
+				ntv::WEAPON::ADD_AMMO_TO_PED(_h, wpn.hash(), count);
+			}
+
+			hasher weapon_ammo_type(const hasher &wpn) const {
+				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_h, wpn.hash());
+			}
+
+			int ammo_max(const hasher &type) const {
+				return weapon_ammo_max(arm::weapon_from_ammo_type(type));
+			}
+
 			void ammo(const hasher &type, int total) {
 				weapon_ammo(arm::weapon_from_ammo_type(type), total);
 			}
@@ -522,41 +554,18 @@ namespace nob {
 			}
 
 			void add_ammo(const hasher &type, int count) {
+				auto wpn = arm::weapon_from_ammo_type(type);
+				if (arm::weapon_group(wpn) == "GROUP_THROWN") {
+					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn.hash(), count, false, false);
+				}
 				ntv::WEAPON::SET_PED_AMMO_BY_TYPE(_h, type.hash(), count);
 			}
 
-			void add_weapon_ammo(const hasher &wpn, int count) {
-				ntv::WEAPON::ADD_AMMO_TO_PED(_h, wpn.hash(), count);
-			}
-
 			void ammo_no_consumption(bool toggle = true) {
-				ntv::WEAPON::SET_PED_INFINITE_AMMO_CLIP(_h, toggle);
-			}
-
-			hasher weapon_ammo_type(const hasher &wpn) const {
-				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_h, wpn.hash());
-			}
-
-			int weapon_max_ammo(const hasher &wpn) const {
-				int total;
-				ntv::WEAPON::GET_MAX_AMMO(_h, wpn.hash(), &total);
-				return total;
-			}
-
-			void thrown_weapon(const hasher &thr_wpn, int total) {
-				if (!has_weapon(thr_wpn)) {
-					ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn.hash(), total, false, false);
-					return;
+				for (auto type : arm::ammo_types) {
+					ntv::WEAPON::SET_PED_INFINITE_AMMO(_h, toggle, arm::weapon_from_ammo_type(type));
 				}
-				weapon_ammo(thr_wpn, total);
-			}
-
-			int thrown_weapon(const hasher &thr_wpn) const {
-				return ntv::WEAPON::GET_PED_AMMO_TYPE_FROM_WEAPON(_h, thr_wpn.hash());
-			}
-
-			void add_thrown_weapon(const hasher &thr_wpn, int count) {
-				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, thr_wpn.hash(), count, false, false);
+				ntv::WEAPON::SET_PED_INFINITE_AMMO_CLIP(_h, toggle);
 			}
 
 			void print_weapon_info() const {
@@ -623,6 +632,10 @@ namespace nob {
 			void disable_melee(bool toggle = true) {
 				ntv::PED::SET_PED_CONFIG_FLAG(_h, 122, toggle); // PED_FLAG_NO_PLAYER_MELEE
 				ntv::PED::SET_PED_CONFIG_FLAG(_h, 314, toggle); // PED_FLAG_NO_PED_MELEE
+			}
+
+			void disable_attack(bool toggle = true) {
+				ntv::PED::SET_ENABLE_HANDCUFFS(_h, !toggle);
 			}
 
 			void look();
