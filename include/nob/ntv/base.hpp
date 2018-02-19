@@ -38,7 +38,8 @@
 #include <array>
 #include <cstring>
 #include <thread>
-#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 namespace nob {
 	namespace ntv {
@@ -202,7 +203,7 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////////
 
-		// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/include/scrThread.h
+		// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/
 
 		enum class game_state_t : uint8_t {
 			playing = 0,
@@ -215,19 +216,233 @@ namespace nob {
 
 		extern game_state_t *game_state;
 
+		class base_thread_t {
+			public:
+				static base_thread_t **current;
+
+				////////////////////////////////////////////////////////////////
+
+				enum class state_t : uint32_t {
+					idle,
+					running,
+					killed,
+					unk1,
+					unk2
+				};
+
+				// size should be 168
+				struct context_t {
+					uint32_t id;
+					uint32_t fake_script_hash; // + 4 (program id)
+					state_t state; // + 8
+					uint32_t ip; // + 12
+					uint32_t frame_sp; //
+					uint32_t sp; // + 20, aka + 28
+					uint32_t timer1; // + 24
+					uint32_t timer2; // + 28
+					uint32_t timer3; // + 32, aka + 40
+					uint32_t _munk1;
+					uint32_t _munk2;
+					uint32_t _f2c;
+					uint32_t _f30;
+					uint32_t _f34;
+					uint32_t _f38;
+					uint32_t _f3c;
+					uint32_t _f40;
+					uint32_t _f44;
+					uint32_t _f48;
+					uint32_t _f4c;
+					uint32_t _f50; // should be +88 aka +80; stack size?
+
+					uint32_t pad1;
+					uint32_t pad2;
+					uint32_t pad3;
+
+					uint32_t _set1;
+
+					uint32_t pad[68 / 4];
+				};
+
+				static_assert(sizeof(context_t) == 168, "scrthreadcontext has wrong size!");
+
+				context_t context;
+				uintptr_t stack; // should be +176 including vtable
+				uintptr_t pad;
+				uintptr_t pad2;
+
+				// should be +200
+				const char *exit_msg;
+
+				virtual ~base_thread_t() {}
+				virtual state_t reset(uint32_t script_hash, uintptr_t *args, uint32_t arg_count) = 0;
+				virtual state_t join(uint32_t ops_to_execute) = 0;
+				virtual state_t tick(uint32_t ops_to_execute) = 0;
+				virtual void kill() = 0;
+		};
+
+		class base_script_executor_t {
+			public:
+				class handle_t {
+					public:
+						virtual ~handle_t() = 0;
+
+						virtual void m_8() = 0;
+
+						virtual void m_10() = 0;
+
+						// aka 'destroy'
+						virtual void cleanup_object_list() = 0;
+
+						class id_t {
+							public:
+								virtual ~id_t() = 0;
+
+								virtual void m_8() = 0;
+
+								virtual void m_10() = 0;
+
+								virtual void m_18() = 0;
+
+								virtual uint32_t *get(uint32_t *receiver) = 0;
+						};
+
+						virtual id_t *id() = 0;
+
+						virtual id_t *id2() = 0;
+
+						virtual bool is_network_script() = 0;
+
+						virtual void m_38() = 0;
+
+						virtual void m_40() = 0;
+
+						virtual void cleanup_mission_state() = 0;
+
+						virtual void add_script_object() = 0;
+
+						virtual void m_58() = 0;
+
+						virtual void add_script_resource() = 0;
+
+						// ...
+				};
+
+				virtual inline ~base_script_executor_t() {}
+
+				virtual void m1() = 0;
+
+				virtual void m2() = 0;
+
+				virtual void m3() = 0;
+
+				virtual void m4() = 0;
+
+				virtual void m5() = 0;
+
+				virtual void m6() = 0;
+
+				virtual void m7() = 0;
+
+				virtual void m8() = 0;
+
+				virtual void m9() = 0;
+
+				virtual void add(base_thread_t *) = 0;
+
+				virtual void rm(base_thread_t *) = 0;
+		};
+
+		extern base_script_executor_t *script_executor;
+
+		extern uint32_t *fake_script_hash_count;
+
+		template<typename T>
+		class container_t {
+			public:
+				T* data;
+				uint16_t count;
+				uint16_t size;
+
+				T &operator[](uint16_t index) {
+					return data[index];
+				}
+		};
+
+		class thread_t : public base_thread_t {
+			public:
+				static container_t<thread_t *> *pool;
+
+				static uint32_t *id_count;
+
+				static void (*_init)(thread_t *);
+
+				static state_t (*_tick)(thread_t *, uint32_t ops_to_execute);
+
+				static void (*_kill)(thread_t *);
+
+				static bool valid() {
+					return
+						pool &&
+						_init &&
+						_tick &&
+						_kill
+					;
+				}
+
+				////////////////////////////////////////////////////////////////
+
+				thread_t();
+				virtual ~thread_t() {
+					log("~thread_t()");
+				}
+
+				char script_hash_str[16];
+				char pad[48];
+				base_script_executor_t::handle_t *script_handle;
+				char pad2[40];
+				char flag1;
+				char network_flag;
+				uint16_t pad3;
+				char pad4[12];
+				uint8_t can_remove_blips_from_other_scripts;
+				char pad5[7];
+
+				virtual void script_main() = 0;
+
+				virtual state_t reset(uint32_t script_hash, uintptr_t *args, uint32_t arg_count);
+
+				virtual state_t join(uint32_t ops_to_execute);
+
+				virtual state_t tick(uint32_t ops_to_execute) {
+					return _tick(this, ops_to_execute);
+				}
+
+				virtual void kill() {
+					_kill(this);
+				}
+
+				void set_name(const char *name) {
+					std::stringstream ss;
+					ss << std::hex << std::setw(8) << std::setfill('0') << hash(name);
+					strcpy(script_hash_str, ss.str().c_str());
+				}
+		};
+
+		static_assert(sizeof(thread_t) == 344, "GtaThread has wrong size!");
+
 		struct call_context_t;
 
 		typedef void (__cdecl *func_t)(call_context_t &);
 
 		struct call_context_t {
-			static constexpr size_t max_arg_count = 32;
-			static func_t fix_res_fn;
+			static constexpr size_t arg_count_max = 32;
+			static func_t res_fixer;
 
 			uintptr_t *result_ptr;
 			uint32_t arg_count;
 			uintptr_t *args_ptr;
 			uint32_t res_count;
-			Vector3 res_cache[max_arg_count];
+			Vector3 res_cache[arg_count_max];
 
 			template <typename T>
 			void set_arg(size_t i, T v) {
@@ -267,11 +482,7 @@ namespace nob {
 
 			void fix_res() {
 				if (res_count) {
-					if (fix_res_fn) {
-						fix_res_fn(*this);
-					} else {
-						log("nob::ntv::call_context_t::fix_res_fn: is null!");
-					}
+					res_fixer(*this);
 				}
 			}
 
@@ -378,11 +589,11 @@ namespace nob {
 			public:
 				full_call_context_t() {
 					args_ptr = _stack;
-					result_ptr = _stack + max_arg_count;
+					result_ptr = _stack + arg_count_max;
 				}
 
 			private:
-				uintptr_t _stack[2 * max_arg_count];
+				uintptr_t _stack[2 * arg_count_max];
 		};
 
 		extern full_call_context_t _dft_call_ctx;
@@ -411,6 +622,8 @@ namespace nob {
 					return _dft_call_ctx.result<R>();
 				}
 		};
+
+		////////////////////////////////////////////////////////////////////////
 
 		extern uintptr_t (*get_entity_addr)(int handle);
 	} /* ntv */
