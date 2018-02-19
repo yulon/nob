@@ -1,5 +1,6 @@
 #include <nob/window.hpp>
 #include <nob/script.hpp>
+#include <nob/ntv/base.hpp>
 #include <nob/shv.hpp>
 #include <nob/log.hpp>
 
@@ -18,7 +19,8 @@ namespace nob {
 	namespace this_script {
 		void _shv_main();
 		void _ysc_main();
-		bool _exclusive_main();
+		bool _hook_main();
+		bool _td_main();
 
 		void _exit();
 		extern std::atomic<bool> _exited;
@@ -60,9 +62,20 @@ namespace nob {
 				return;
 			}
 
-			this_script::mode = this_script::mode_t::exclusive;
-			_NOB_CALL_INIT_FN(this_script::_exclusive_main);
+			if (ntv::game_state) {
+				auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
+				while (gs && gs < 5) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				}
+			}
 
+			if (this_script::_td_main()) {
+				this_script::mode = this_script::mode_t::sub_thread;
+				return;
+			}
+
+			this_script::mode = this_script::mode_t::main_thread;
+			_NOB_CALL_INIT_FN(this_script::_hook_main);
 		}).detach();
 	}
 

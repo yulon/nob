@@ -14,7 +14,8 @@ namespace nob {
 			invalid,
 			shv,
 			ysc,
-			exclusive
+			main_thread,
+			sub_thread
 		};
 
 		extern mode_t mode;

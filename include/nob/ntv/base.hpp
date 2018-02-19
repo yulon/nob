@@ -38,8 +38,10 @@
 #include <array>
 #include <cstring>
 #include <thread>
+#include <mutex>
 #include <sstream>
 #include <iomanip>
+#include <functional>
 
 namespace nob {
 	namespace ntv {
@@ -263,7 +265,7 @@ namespace nob {
 					uint32_t pad[68 / 4];
 				};
 
-				static_assert(sizeof(context_t) == 168, "scrthreadcontext has wrong size!");
+				RUA_STATIC_ASSERT(sizeof(context_t) == 168);
 
 				context_t context;
 				uintptr_t stack; // should be +176 including vtable
@@ -280,54 +282,54 @@ namespace nob {
 				virtual void kill() = 0;
 		};
 
-		class base_script_executor_t {
+		class tls_t {
 			public:
-				class handle_t {
+				virtual ~tls_t() = 0;
+
+				virtual void m_8() = 0;
+
+				virtual void m_10() = 0;
+
+				// aka 'destroy'
+				virtual void cleanup_object_list() = 0;
+
+				class id_t {
 					public:
-						virtual ~handle_t() = 0;
+						virtual ~id_t() = 0;
 
 						virtual void m_8() = 0;
 
 						virtual void m_10() = 0;
 
-						// aka 'destroy'
-						virtual void cleanup_object_list() = 0;
+						virtual void m_18() = 0;
 
-						class id_t {
-							public:
-								virtual ~id_t() = 0;
-
-								virtual void m_8() = 0;
-
-								virtual void m_10() = 0;
-
-								virtual void m_18() = 0;
-
-								virtual uint32_t *get(uint32_t *receiver) = 0;
-						};
-
-						virtual id_t *id() = 0;
-
-						virtual id_t *id2() = 0;
-
-						virtual bool is_network_script() = 0;
-
-						virtual void m_38() = 0;
-
-						virtual void m_40() = 0;
-
-						virtual void cleanup_mission_state() = 0;
-
-						virtual void add_script_object() = 0;
-
-						virtual void m_58() = 0;
-
-						virtual void add_script_resource() = 0;
-
-						// ...
+						virtual uint32_t *get(uint32_t *receiver) = 0;
 				};
 
-				virtual inline ~base_script_executor_t() {}
+				virtual id_t *id() = 0;
+
+				virtual id_t *id2() = 0;
+
+				virtual bool is_network_script() = 0;
+
+				virtual void m_38() = 0;
+
+				virtual void m_40() = 0;
+
+				virtual void cleanup_mission_state() = 0;
+
+				virtual void add_script_object() = 0;
+
+				virtual void m_58() = 0;
+
+				virtual void add_script_resource() = 0;
+
+				// ...
+		};
+
+		class base_tls_mgr_t {
+			public:
+				virtual inline ~base_tls_mgr_t() {}
 
 				virtual void m1() = 0;
 
@@ -348,23 +350,25 @@ namespace nob {
 				virtual void m9() = 0;
 
 				virtual void add(base_thread_t *) = 0;
-
-				virtual void rm(base_thread_t *) = 0;
 		};
 
-		extern base_script_executor_t *script_executor;
+		extern base_tls_mgr_t *tls_mgr;
 
 		extern uint32_t *fake_script_hash_count;
 
 		template<typename T>
 		class container_t {
 			public:
-				T* data;
+				T *data;
 				uint16_t count;
 				uint16_t size;
 
 				T &operator[](uint16_t index) {
 					return data[index];
+				}
+
+				operator bool() const {
+					return data;
 				}
 		};
 
@@ -376,9 +380,9 @@ namespace nob {
 
 				static void (*_init)(thread_t *);
 
-				static state_t (*_tick)(thread_t *, uint32_t ops_to_execute);
+				static state_t (__thiscall *_tick)(thread_t *, uint32_t ops_to_execute);
 
-				static void (*_kill)(thread_t *);
+				static void (__thiscall *_kill)(thread_t *);
 
 				static bool valid() {
 					return
@@ -391,14 +395,17 @@ namespace nob {
 
 				////////////////////////////////////////////////////////////////
 
+				thread_t(std::nullptr_t) : _orig_owner(nullptr) {}
+
 				thread_t();
+
 				virtual ~thread_t() {
-					log("~thread_t()");
+					kill();
 				}
 
 				char script_hash_str[16];
 				char pad[48];
-				base_script_executor_t::handle_t *script_handle;
+				tls_t *tls;
 				char pad2[40];
 				char flag1;
 				char network_flag;
@@ -407,28 +414,27 @@ namespace nob {
 				uint8_t can_remove_blips_from_other_scripts;
 				char pad5[7];
 
-				virtual void script_main() = 0;
+				virtual void on_frame() = 0;
 
 				virtual state_t reset(uint32_t script_hash, uintptr_t *args, uint32_t arg_count);
 
 				virtual state_t join(uint32_t ops_to_execute);
 
-				virtual state_t tick(uint32_t ops_to_execute) {
-					return _tick(this, ops_to_execute);
+				virtual state_t tick(uint32_t) {
+					return context.state;
 				}
 
-				virtual void kill() {
-					_kill(this);
-				}
+				virtual void kill();
 
 				void set_name(const char *name) {
 					std::stringstream ss;
 					ss << std::hex << std::setw(8) << std::setfill('0') << hash(name);
 					strcpy(script_hash_str, ss.str().c_str());
 				}
-		};
 
-		static_assert(sizeof(thread_t) == 344, "GtaThread has wrong size!");
+			private:
+				thread_t *_orig_owner = nullptr;
+		};
 
 		struct call_context_t;
 

@@ -55,6 +55,16 @@ namespace nob {
 		std::atomic<bool> exiting(false);
 		std::atomic<bool> _exited(false);
 
+		class _main_td_t : public ntv::thread_t {
+			public:
+				_main_td_t(std::nullptr_t) : ntv::thread_t(nullptr) {}
+				_main_td_t() : ntv::thread_t() {}
+
+				virtual void on_frame();
+		};
+
+		std::unique_ptr<ntv::thread_t> _main_td;
+
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
 			gameplay_id = ntv::GAMEPLAY::GET_FRAME_COUNT();
@@ -75,6 +85,26 @@ namespace nob {
 				(*rit)();
 			}
 			_exited = true;
+		}
+
+		size_t _last_fc = 0;
+
+		void _main_td_t::on_frame() {
+			if (exiting) {
+				_exit();
+				return;
+			}
+
+			size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
+
+			if (!_last_fc || cur_fc - _last_fc > 1) {
+				this_script::_init();
+			}
+
+			_last_fc = cur_fc;
+
+			_flush_inputs();
+			tasks->handle();
 		}
 
 		void _shv_main() {
@@ -104,16 +134,9 @@ namespace nob {
 			}
 		}
 
-		bool _exclusive_main() {
+		bool _hook_main() {
 			if (!ntv::func_table) {
 				return false;
-			}
-
-			if (ntv::game_state) {
-				auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
-				while (gs && gs < 5) {
-					Sleep(500);
-				}
 			}
 
 			static rua::hooked<ntv::func_t> wait_hkd;
@@ -121,7 +144,7 @@ namespace nob {
 			ntv::func_t wait_fp;
 
 			for (wait_fp = ntv::SYSTEM::WAIT.target(); !wait_fp; wait_fp = ntv::SYSTEM::WAIT.target()) {
-				Sleep(500);
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				if (*ntv::game_state == ntv::game_state_t::playing) {
 					wait_fp = ntv::SYSTEM::WAIT.target();
 					if (wait_fp) {
@@ -140,14 +163,13 @@ namespace nob {
 			if (!wait_hkd.hook(
 				wait_fp,
 				[](ntv::call_context_t &cc) {
-					static size_t last_fc = 0;
 					size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
-					if (cur_fc > last_fc && strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
-						if (cur_fc - last_fc > 1) {
+					if ((!_last_fc || cur_fc > _last_fc) && strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
+						if (cur_fc - _last_fc > 1) {
 							_init();
 						}
 
-						last_fc = cur_fc;
+						_last_fc = cur_fc;
 
 						if (exiting) {
 							_exit();
@@ -166,6 +188,19 @@ namespace nob {
 			}
 
 			return true;
+		}
+
+		bool _td_main() {
+			#ifdef NOB_USING_NTV_SCR_THRD
+				if (ntv::thread_t::pool) {
+					while (!*ntv::thread_t::pool) {
+						Sleep(500);
+					}
+					_main_td.reset(new _main_td_t());
+					return true;
+				}
+			#endif
+			return false;
 		}
 	} /* this_script */
 

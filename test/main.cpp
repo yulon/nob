@@ -117,7 +117,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::player::body().add_all_weapons();
 		}),
 		action("Remove All", []() {
-			nob::player::body().rm_all_weapons();
+			nob::player::body().clear_armed();
 		}),
 		list("Get", [](list li) {
 			for (auto &wpn : nob::arm::weapons) {
@@ -128,18 +128,15 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					auto pb = nob::player::body();
 					auto wpn_grp = nob::arm::weapon_group(wpn);
 
-					if (wpn_grp == "GROUP_THROWN") {
-						pb.thrown_weapon(wpn, pb.weapon_max_ammo(wpn));
-						return;
+					if (wpn_grp != "GROUP_THROWN") {
+						pb.add_weapon(wpn);
 					}
-
-					pb.add_weapon(wpn);
 
 					if (wpn_grp == "GROUP_MELEE") {
 						return;
 					}
 
-					pb.weapon_ammo(wpn, pb.weapon_max_ammo(wpn));
+					pb.weapon_ammo(wpn, pb.weapon_ammo_max(wpn));
 				}));
 			}
 		})
@@ -369,32 +366,42 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}*/
 		}),
 		action("Other", []() {
-			static nob::g3d::cylinder c;
-			c.move({0, 0, 0});
-			c.height(1000);
-			c.radius(100);
-			c.color({255, 0, 0, 255});
-			c.draw();
-/*			static auto pb = nob::player::body();
-			auto pos = pb.pos({0, 5, 0});
-			//static auto veh = nob::vehicle("cargoplane", pb.pos({0, 15, 0}));
-			//veh.invincible();
+			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
+			nob::log(nob::ntv::GAMEPLAY::GET_FRAME_COUNT());
+			nob::log(nob::ntv::GAMEPLAY::GET_ALLOCATED_STACK_SIZE());
+/*			nob::player::damage_modifier(0);
+
+			static auto pb = nob::player::body();
+			//auto pos = pb.pos({0, 5, 0});
+
+
+			//pb.ammo("AMMO_PISTOL", 101);
+			pb.add_weapon("WEAPON_PISTOL");
+			nob::ntv::WEAPON::SET_PED_INFINITE_AMMO(pb, true, nob::hash("WEAPON_PISTOL"));
+			//
+			//nob::log(pb.ammo("AMMO_PISTOL"));
+			static auto veh = nob::vehicle("kuruma", pb.pos({0, 15, 0}));
+			//pb.into_vehicle(veh, 0);
 			//static auto chr = nob::character("mp_m_freemode_01", nob::world::ground_pos(pb.pos({0, 5, 0})), true);
+
+			static nob::task tsk([]() {
+				static int s;
+				if (rua::set_when_changing(s, pb.trying_to_enter_vehicle_seat())) {
+					nob::log(s);
+				}
+			});
+
+			pb.get_in_vehicle(veh, 2);
+
+			//veh.invincible();
+
 			nob::task([]() {
 				nob::ntv::PLAYER::RESET_PLAYER_STAMINA(0);
 			});
 
 			nob::ntv::OBJECT::CREATE_AMBIENT_PICKUP((nob::hash_t)nob::ntv::ePickupType::WeaponRPG, pos.x, pos.y, pos.z, 0, 0, nob::arm::get_model("AMMO_RIFLE").load(), 1, 0);
 
-			static rua::observer<bool> ob(nullptr, nullptr, [](const bool &val) {
-				nob::log(val);
-			});
 
-			ob = false;
-
-			nob::task([]() {
-				ob = nob::ntv::PED::IS_PED_INJURED(chr);
-			});
 
 			nob::sleep(5000);
 			for (size_t i = 0; i < 25; ++i) {

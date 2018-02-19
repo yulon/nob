@@ -1,6 +1,7 @@
 #include <nob/ntv/base.hpp>
 #include <nob/program.hpp>
 #include <nob/hash.hpp>
+#include <nob/script.hpp>
 #include <nob/log.hpp>
 
 namespace nob {
@@ -8,16 +9,24 @@ namespace nob {
 		thread_t::thread_t() {
 			int i;
 			for (i = 0; i < pool->count && (*pool)[i]->context.id; ++i);
+
 			if (i == pool->count) {
 				return;
 			}
 
-			reset((*fake_script_hash_count)++, nullptr, 0);
+			auto fake_script_hash = ++(*fake_script_hash_count);
 
+			reset(fake_script_hash, nullptr, 0);
+
+			if (!*id_count) {
+				++(*id_count);
+			}
 			context.id = (*id_count)++;
+
+			_orig_owner = (*pool)[i];
 			(*pool)[i] = this;
 
-			script_executor->add(this);
+			tls_mgr->add(this);
 		}
 
 		thread_t::state_t thread_t::reset(uint32_t fake_script_hash, uintptr_t *, uint32_t) {
@@ -41,14 +50,38 @@ namespace nob {
 			return context.state;
 		}
 
-		thread_t::state_t thread_t::join(uint32_t){
-			auto old = *base_thread_t::current;
+		std::recursive_mutex _thread_t_mtx;
+
+		thread_t::state_t thread_t::join(uint32_t) {
+			std::scoped_lock<std::recursive_mutex> lock(_thread_t_mtx);
+
+			auto cur = *base_thread_t::current;
 			*base_thread_t::current = this;
 			if (context.state != state_t::killed) {
-				script_main();
+				on_frame();
 			}
-			*base_thread_t::current = old;
+			*base_thread_t::current = cur;
 			return context.state;
+		}
+
+		void thread_t::kill() {
+			std::scoped_lock<std::recursive_mutex> lock(_thread_t_mtx);
+
+			if (!_orig_owner) {
+				return;
+			}
+
+			context.state = state_t::killed;
+
+			for (int i = 0; i < pool->count; ++i) {
+				if ((*pool)[i] == this) {
+					(*pool)[i] = _orig_owner;
+					_orig_owner = nullptr;
+					return;
+				}
+			}
+
+			_orig_owner = nullptr;
 		}
 
 		template <typename T>
@@ -149,7 +182,7 @@ namespace nob {
 
 		uintptr_t (*get_entity_addr)(int handle);
 
-		base_script_executor_t *script_executor;
+		base_tls_mgr_t *tls_mgr;
 
 		uint32_t *fake_script_hash_count;
 
@@ -161,9 +194,9 @@ namespace nob {
 
 		void (*thread_t::_init)(thread_t *);
 
-		thread_t::state_t (*thread_t::_tick)(thread_t *, uint32_t ops_to_execute);
+		thread_t::state_t (__thiscall *thread_t::_tick)(thread_t *, uint32_t ops_to_execute);
 
-		void (*thread_t::_kill)(thread_t *);
+		void (__thiscall *thread_t::_kill)(thread_t *);
 
 		bool _find_addrs() {
 			auto finded = true;
@@ -237,116 +270,135 @@ namespace nob {
 				//finded = false;
 			}
 
-			if (program::version >= 757) {
+			#ifdef NOB_USING_NTV_SCR_THRD
 
-				if (program::version >= 1290) {
-					thread_t::id_count = program::code.match_rel_ptr({
-						0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0xFF, 0xC2
+				if (program::version >= 757) {
+
+					if (program::version >= 1290) {
+						thread_t::id_count = program::code.match_rel_ptr({
+							0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0xFF, 0xC2
+						});
+					} else {
+						thread_t::id_count = program::code.match_rel_ptr({
+							0x89, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x0C, 0xD8
+						});
+					}
+
+					if (!thread_t::id_count) {
+						log("nob::ntv::thread_t::id_count: not found!");
+						//finded = false;
+					}
+
+					fake_script_hash_count = program::code.match_rel_ptr({
+						0xFF, 0x0D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xF9
 					});
+
+					if (!fake_script_hash_count) {
+						log("nob::ntv::fake_script_hash_count: not found!");
+						//finded = false;
+					}
+
 				} else {
-					thread_t::id_count = program::code.match_rel_ptr({
-						0x89, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x0C, 0xD8
-					});
+
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L381
+
+					auto addr = program::code.match({
+						0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
+					}).data();
+
+					if (addr) {
+						thread_t::id_count = rua::bin_ref(addr).match_rel_ptr({
+							0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
+						});
+						addr = addr - 9;
+						fake_script_hash_count = (addr + *addr.to<int32_t *>() + 4);
+					} else {
+						thread_t::id_count = nullptr;
+						fake_script_hash_count = nullptr;
+						log("nob::ntv::thread_t::id_count: not found!");
+						log("nob::ntv::fake_script_hash_count: not found!");
+						//finded = false;
+					}
 				}
 
-				if (!thread_t::id_count) {
-					log("nob::ntv::thread_t::id_count: not found!");
+				if (this_script::mode != this_script::mode_t::shv) {
+					auto code_block_1 = program::code.match({
+						// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/ScriptHandlerMgr.cpp#L33
+						0x80, 0x78, 0x32, 0x00, 0x75, 0x34, 0xB1, 0x01, 0xE8
+					});
+					if (code_block_1) {
+						auto addr = code_block_1.data() + 4;
+						DWORD op;
+						VirtualProtect(addr, 2, PAGE_EXECUTE_READWRITE, &op);
+						*(addr).to<uint8_t *>() = 0xEB;
+						VirtualProtect(addr, 2, op, nullptr);
+					} else {
+						log("nob::ntv::_find_addrs::code_block_1: not found!");
+					}
+				}
+
+				tls_mgr = program::code.match_rel_ptr({
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L393
+					0x74, 0x17, 0x48, 0x8B, 0xC8, 0xE8, 1111, 1111, 1111, 1111, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
+				}, 1);
+
+				if (!tls_mgr) {
+					log("nob::ntv::tls_mgr: not found!");
 					//finded = false;
 				}
 
-				fake_script_hash_count = program::code.match_rel_ptr({
-					0xFF, 0x0D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xF9
+				uintptr_t module_tls = *(uintptr_t *)__readgsqword(88);
+
+				base_thread_t::current = program::code.match_ptr({
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L379
+					1111, 1111, 1111, 1111, 0x48, 0x8B, 0x04, 0xD0, 0x4A, 0x8B, 0x14, 0x00, 0x48, 0x8B, 0x01, 0xF3, 0x44, 0x0F, 0x2C, 0x42, 0x20
+				}) + module_tls;
+
+				if (!base_thread_t::current) {
+					log("nob::ntv::base_thread_t::current: not found!");
+					//finded = false;
+				}
+
+				thread_t::pool = program::code.match_rel_ptr({
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L357
+					0x48, 0x8B, 0xC8, 0xEB, 0x03, 0x48, 0x8B, 0xCB, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111
 				});
 
-				if (!fake_script_hash_count) {
-					log("nob::ntv::fake_script_hash_count: not found!");
+				if (!thread_t::pool) {
+					log("nob::ntv::thread_t::pool: not found!");
 					//finded = false;
 				}
 
-			} else {
+				thread_t::_init = reinterpret_cast<decltype(thread_t::_init)>(program::code.match({
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L77
+					0x83, 0x89, 0x38, 0x01, 0x00, 0x00, 0xFF, 0x83, 0xA1, 0x50, 0x01, 0x00, 0x00, 0xF0
+				}).data().value());
 
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L381
+				if (!thread_t::_init) {
+					log("nob::ntv::thread_t::_init: not found!");
+					//finded = false;
+				}
 
-				auto addr = program::code.match({
-					0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
+				/*thread_t::_tick = program::code.match({
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L40
+					0x80, 0xB9, 0x46, 0x01, 0x00, 0x00, 0x00, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x74, 0x05
 				}).data();
 
-				if (addr) {
-					thread_t::id_count = rua::bin_ref(addr).match_rel_ptr({
-						0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
-					});
-					addr = addr - 9;
-					fake_script_hash_count = (addr + *addr.to<int32_t *>() + 4);
-				} else {
-					thread_t::id_count = nullptr;
-					fake_script_hash_count = nullptr;
-					log("nob::ntv::thread_t::id_count: not found!");
-					log("nob::ntv::fake_script_hash_count: not found!");
+				if (!thread_t::_tick) {
+					log("nob::ntv::thread_t::_tick: not found!");
 					//finded = false;
 				}
-			}
 
-			script_executor = program::code.match_rel_ptr({
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L393
-				0x74, 0x17, 0x48, 0x8B, 0xC8, 0xE8, 1111, 1111, 1111, 1111, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
-			}, 1);
+				thread_t::_kill = program::code.match({
+					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L50
+					0x48, 0x83, 0xEC, 0x20, 0x48, 0x83, 0xB9, 0x10, 0x01, 0x00, 0x00, 0x00, 0x48, 0x8B, 0xD9, 0x74, 0x14
+				}).data();
 
-			if (!script_executor) {
-				log("nob::ntv::script_executor: not found!");
-				//finded = false;
-			}
-
-			uintptr_t module_tls = *(uintptr_t *)__readgsqword(88);
-
-			base_thread_t::current = program::code.match_ptr({
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L379
-				1111, 1111, 1111, 1111, 0x48, 0x8B, 0x04, 0xD0, 0x4A, 0x8B, 0x14, 0x00, 0x48, 0x8B, 0x01, 0xF3, 0x44, 0x0F, 0x2C, 0x42, 0x20
-			}) + module_tls;
-
-			if (!base_thread_t::current) {
-				log("nob::ntv::base_thread_t::current: not found!");
-				//finded = false;
-			}
-
-			thread_t::pool = program::code.match_rel_ptr({
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L357
-				0x48, 0x8B, 0xC8, 0xEB, 0x03, 0x48, 0x8B, 0xCB, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111
-			});
-
-			if (!thread_t::pool) {
-				log("nob::ntv::thread_t::pool: not found!");
-				//finded = false;
-			}
-
-			thread_t::_init = program::code.match({
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L77
-				0x83, 0x89, 0x38, 0x01, 0x00, 0x00, 0xFF, 0x83, 0xA1, 0x50, 0x01, 0x00, 0x00, 0xF0
-			}).data();
-
-			if (!thread_t::_init) {
-				log("nob::ntv::thread_t::_init: not found!");
-				//finded = false;
-			}
-
-			thread_t::_tick = program::code.match({
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L40
-				0x80, 0xB9, 0x46, 0x01, 0x00, 0x00, 0x00, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x74, 0x05
-			}).data();
-
-			if (!thread_t::_tick) {
-				log("nob::ntv::thread_t::_tick: not found!");
-				//finded = false;
-			}
-
-			thread_t::_kill = program::code.match({
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L50
-				0x48, 0x83, 0xEC, 0x20, 0x48, 0x83, 0xB9, 0x10, 0x01, 0x00, 0x00, 0x00, 0x48, 0x8B, 0xD9, 0x74, 0x14
-			}).data();
-
-			if (!thread_t::_kill) {
-				log("nob::ntv::thread_t::_kill: not found!");
-				//finded = false;
-			}
+				if (!thread_t::_kill) {
+					log("nob::ntv::thread_t::_kill: not found!");
+					//finded = false;
+				}*/
+			#endif
 
 			return finded;
 		}
