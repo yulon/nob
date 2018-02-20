@@ -1290,14 +1290,14 @@ namespace nob {
 		void snowy(bool toggle) {
 			static uint8_t block_code_bak[20];
 
-			static void *block_code_addr = ([]()->void *{
-				chan<void *> ch;
+			static uint8_t *block_code_addr = ([]()->uint8_t *{
+				chan<uint8_t *> ch;
 
 				std::thread([ch]() mutable {
 					auto bca = program::code.match({
 						// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
 						0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
-					}).data();
+					}).base();
 
 					if (bca) {
 						VirtualProtect(bca, 20, PAGE_EXECUTE_READWRITE, nullptr);
@@ -1313,7 +1313,7 @@ namespace nob {
 			})();
 
 			static initer reset([]() {
-				if (block_code_addr && *reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
+				if (block_code_addr && *block_code_addr == 0x90) {
 					memcpy(block_code_addr, &block_code_bak, 20);
 				}
 			});
@@ -1329,7 +1329,7 @@ namespace nob {
 					return;
 				}
 
-				if (*reinterpret_cast<uint8_t *>(block_code_addr) == 0x74) {
+				if (*block_code_addr == 0x74) {
 					memset(block_code_addr, 0x90, 20);
 				}
 
@@ -1346,7 +1346,7 @@ namespace nob {
 				ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS", true);
 
 				gc::delegate(gc_id_t(), []() {
-					if (*reinterpret_cast<uint8_t *>(block_code_addr) == 0x90) {
+					if (*block_code_addr == 0x90) {
 						memcpy(block_code_addr, &block_code_bak, 20);
 					}
 

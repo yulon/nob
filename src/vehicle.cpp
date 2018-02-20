@@ -86,7 +86,7 @@ namespace nob {
 				auto addr = rua::bin_ref(
 					sc_inf.code_pages[i],
 					sc_inf.code_page_length(i)
-				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).data();
+				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).base();
 				if (!addr) {
 					continue;
 				}
