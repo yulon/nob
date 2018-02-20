@@ -405,7 +405,7 @@ namespace nob {
 				/*thread_t::_tick = program::code.match({
 					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L40
 					0x80, 0xB9, 0x46, 0x01, 0x00, 0x00, 0x00, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x74, 0x05
-				}).data();
+				}).data() - 0xF;
 
 				if (!thread_t::_tick) {
 					log("nob::ntv::thread_t::_tick: not found!");
@@ -415,7 +415,7 @@ namespace nob {
 				thread_t::_kill = program::code.match({
 					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L50
 					0x48, 0x83, 0xEC, 0x20, 0x48, 0x83, 0xB9, 0x10, 0x01, 0x00, 0x00, 0x00, 0x48, 0x8B, 0xD9, 0x74, 0x14
-				}).data();
+				}).data() - 6;
 
 				if (!thread_t::_kill) {
 					log("nob::ntv::thread_t::_kill: not found!");
