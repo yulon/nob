@@ -193,9 +193,6 @@ namespace nob {
 		bool _td_main() {
 			#ifdef NOB_USING_NTV_SCR_THRD
 				if (ntv::thread_t::pool) {
-					while (!*ntv::thread_t::pool) {
-						Sleep(500);
-					}
 					_main_td.reset(new _main_td_t());
 					return true;
 				}

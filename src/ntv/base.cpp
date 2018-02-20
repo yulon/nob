@@ -6,27 +6,39 @@
 
 namespace nob {
 	namespace ntv {
-		thread_t::thread_t() {
-			int i;
-			for (i = 0; i < pool->count && (*pool)[i]->context.id; ++i);
-
-			if (i == pool->count) {
+		thread_t::thread_t() : thread_t(nullptr) {
+			if (!pool) {
 				return;
 			}
 
-			auto fake_script_hash = ++(*fake_script_hash_count);
-
-			reset(fake_script_hash, nullptr, 0);
-
-			if (!*id_count) {
-				++(*id_count);
+			while (!*ntv::thread_t::pool) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			}
-			context.id = (*id_count)++;
 
-			_orig_owner = (*pool)[i];
-			(*pool)[i] = this;
+			for (size_t i = 0; i < pool->count; ++i) {
+				if (!(*pool)[i]->context.id) {
+					auto fake_script_hash = ++(*fake_script_hash_count);
 
-			tls_mgr->add(this);
+					reset(fake_script_hash, nullptr, 0);
+					if (!context.stack_size) {
+						stack = new uint8_t[2048];
+						context.stack_size = 2048;
+					}
+
+					if (!*id_count) {
+						++(*id_count);
+					}
+					context.id = (*id_count)++;
+
+					_orig_owner = (*pool)[i];
+					(*pool)[i] = this;
+
+					if (tls_mgr) {
+						tls_mgr->add(this);
+					}
+					return;
+				}
+			}
 		}
 
 		thread_t::state_t thread_t::reset(uint32_t fake_script_hash, uintptr_t *, uint32_t) {
@@ -82,6 +94,12 @@ namespace nob {
 			}
 
 			_orig_owner = nullptr;
+
+			if (stack) {
+				delete[] stack;
+				stack = nullptr;
+				context.stack_size = 0;
+			}
 		}
 
 		template <typename T>
@@ -341,6 +359,11 @@ namespace nob {
 					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L393
 					0x74, 0x17, 0x48, 0x8B, 0xC8, 0xE8, 1111, 1111, 1111, 1111, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
 				}, 1);
+
+				//tls_mgr = program::code.match_rel_ptr({
+				//	// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L393
+				//	0x48, 0x8D, 0x55, 0x17, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111, 0xFF
+				//});
 
 				if (!tls_mgr) {
 					log("nob::ntv::tls_mgr: not found!");

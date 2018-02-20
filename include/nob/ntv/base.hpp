@@ -254,7 +254,7 @@ namespace nob {
 					uint32_t _f44;
 					uint32_t _f48;
 					uint32_t _f4c;
-					uint32_t _f50; // should be +88 aka +80; stack size?
+					uint32_t stack_size; // should be +88 aka +80; stack size?
 
 					uint32_t pad1;
 					uint32_t pad2;
@@ -262,13 +262,13 @@ namespace nob {
 
 					uint32_t _set1;
 
-					uint32_t pad[68 / 4];
+					uint8_t pad[68];
 				};
 
 				RUA_STATIC_ASSERT(sizeof(context_t) == 168);
 
 				context_t context;
-				uintptr_t stack; // should be +176 including vtable
+				uint8_t *stack; // should be +176 including vtable
 				uintptr_t pad;
 				uintptr_t pad2;
 
@@ -329,7 +329,7 @@ namespace nob {
 
 		class base_tls_mgr_t {
 			public:
-				virtual inline ~base_tls_mgr_t() {}
+				virtual ~base_tls_mgr_t() {}
 
 				virtual void m1() = 0;
 
@@ -395,7 +395,11 @@ namespace nob {
 
 				////////////////////////////////////////////////////////////////
 
-				thread_t(std::nullptr_t) : _orig_owner(nullptr) {}
+				thread_t(std::nullptr_t) : _orig_owner(nullptr) {
+					context.state = state_t::killed;
+					stack = nullptr;
+					context.stack_size = 0;
+				}
 
 				thread_t();
 
