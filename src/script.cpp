@@ -54,16 +54,7 @@ namespace nob {
 		std::atomic<size_t> gameplay_id(0);
 		std::atomic<bool> exiting(false);
 		std::atomic<bool> _exited(false);
-
-		class _main_td_t : public ntv::thread_t {
-			public:
-				_main_td_t(std::nullptr_t) : ntv::thread_t(nullptr) {}
-				_main_td_t() : ntv::thread_t() {}
-
-				virtual void on_frame();
-		};
-
-		std::unique_ptr<ntv::thread_t> _main_td;
+		size_t _last_fc = 0;
 
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
@@ -85,26 +76,6 @@ namespace nob {
 				(*rit)();
 			}
 			_exited = true;
-		}
-
-		size_t _last_fc = 0;
-
-		void _main_td_t::on_frame() {
-			if (exiting) {
-				_exit();
-				return;
-			}
-
-			size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
-
-			if (!_last_fc || cur_fc - _last_fc > 1) {
-				this_script::_init();
-			}
-
-			_last_fc = cur_fc;
-
-			_flush_inputs();
-			tasks->handle();
 		}
 
 		void _shv_main() {
@@ -168,12 +139,12 @@ namespace nob {
 						if (cur_fc - _last_fc > 1) {
 							_init();
 						}
-
 						_last_fc = cur_fc;
 
 						if (exiting) {
 							_exit();
 							wait_hkd(cc);
+							wait_hkd.unhook();
 							return;
 						}
 
@@ -190,14 +161,31 @@ namespace nob {
 			return true;
 		}
 
+		std::unique_ptr<ntv::script_thread_t> _main_td;
+
 		bool _td_main() {
-			#ifdef NOB_USING_NTV_SCR_THRD
-				if (ntv::thread_t::pool) {
-					_main_td.reset(new _main_td_t());
-					return true;
+			_main_td.reset(new ntv::script_thread_t([]() {
+				if (exiting) {
+					_exit();
+					_main_td.reset();
+					return;
 				}
-			#endif
-			return false;
+
+				size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
+				if (!_last_fc || cur_fc - _last_fc > 1) {
+					_init();
+				}
+				_last_fc = cur_fc;
+
+				_flush_inputs();
+				tasks->handle();
+			}));
+
+			if (!*_main_td) {
+				_main_td.reset();
+			}
+
+			return _main_td.get();
 		}
 	} /* this_script */
 

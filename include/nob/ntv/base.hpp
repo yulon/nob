@@ -33,6 +33,8 @@
 	}
 #endif
 
+#include <intrin.h>
+
 #include <cstdint>
 #include <cassert>
 #include <array>
@@ -218,18 +220,59 @@ namespace nob {
 
 		extern game_state_t *game_state;
 
-		class base_thread_t {
+		extern uint32_t *fake_script_hash_count;
+
+		template<typename T>
+		class container_t {
 			public:
-				static base_thread_t **current;
+				T *data;
+				uint16_t count;
+				uint16_t size;
 
-				////////////////////////////////////////////////////////////////
+				T &operator[](uint16_t index) {
+					return data[index];
+				}
 
+				operator bool() const {
+					return data;
+				}
+		};
+
+		class script_thread_t {
+			public:
 				enum class state_t : uint32_t {
 					idle,
 					running,
 					killed,
 					unk1,
 					unk2
+				};
+
+				static container_t<script_thread_t *> *pool;
+
+				static uint32_t tls_off;
+
+				static script_thread_t *&current() {
+					return *reinterpret_cast<script_thread_t **>(*(uintptr_t *)__readgsqword(88) + tls_off);
+				}
+
+				static uint32_t *id_count;
+
+				static void (*init_gta_data)(script_thread_t *);
+
+				// known: call 'join()'.
+				static state_t (*default_tick)(script_thread_t *, uint32_t ops_to_execute);
+
+				// known: set 'context.state' to 'state_t::killed', and dealloc 'script_context'.
+				static void (*default_kill)(script_thread_t *);
+
+				struct vtable_t {
+					void (*_dtor)(script_thread_t *);
+
+					state_t (*reset)(script_thread_t *, uint32_t script_hash, uintptr_t *args, uint32_t arg_count);
+					state_t (*join)(script_thread_t *, uint32_t ops_to_execute);
+					state_t (*tick)(script_thread_t *, uint32_t ops_to_execute);
+					void (*kill)(script_thread_t *);
 				};
 
 				// size should be 168
@@ -267,168 +310,42 @@ namespace nob {
 
 				RUA_STATIC_ASSERT(sizeof(context_t) == 168);
 
+				////////////////////////////////////////////////////////////////
+
+				// rage thread class base
+				vtable_t *vtable;
 				context_t context;
-				uint8_t *stack; // should be +176 including vtable
+				uint8_t *stack;
 				uintptr_t pad;
 				uintptr_t pad2;
-
-				// should be +200
 				const char *exit_msg;
 
-				virtual ~base_thread_t() {}
-				virtual state_t reset(uint32_t script_hash, uintptr_t *args, uint32_t arg_count) = 0;
-				virtual state_t join(uint32_t ops_to_execute) = 0;
-				virtual state_t tick(uint32_t ops_to_execute) = 0;
-				virtual void kill() = 0;
-		};
-
-		class tls_t {
-			public:
-				virtual ~tls_t() = 0;
-
-				virtual void m_8() = 0;
-
-				virtual void m_10() = 0;
-
-				// aka 'destroy'
-				virtual void cleanup_object_list() = 0;
-
-				class id_t {
-					public:
-						virtual ~id_t() = 0;
-
-						virtual void m_8() = 0;
-
-						virtual void m_10() = 0;
-
-						virtual void m_18() = 0;
-
-						virtual uint32_t *get(uint32_t *receiver) = 0;
-				};
-
-				virtual id_t *id() = 0;
-
-				virtual id_t *id2() = 0;
-
-				virtual bool is_network_script() = 0;
-
-				virtual void m_38() = 0;
-
-				virtual void m_40() = 0;
-
-				virtual void cleanup_mission_state() = 0;
-
-				virtual void add_script_object() = 0;
-
-				virtual void m_58() = 0;
-
-				virtual void add_script_resource() = 0;
-
-				// ...
-		};
-
-		class base_tls_mgr_t {
-			public:
-				virtual ~base_tls_mgr_t() {}
-
-				virtual void m1() = 0;
-
-				virtual void m2() = 0;
-
-				virtual void m3() = 0;
-
-				virtual void m4() = 0;
-
-				virtual void m5() = 0;
-
-				virtual void m6() = 0;
-
-				virtual void m7() = 0;
-
-				virtual void m8() = 0;
-
-				virtual void m9() = 0;
-
-				virtual void add(base_thread_t *) = 0;
-		};
-
-		extern base_tls_mgr_t *tls_mgr;
-
-		extern uint32_t *fake_script_hash_count;
-
-		template<typename T>
-		class container_t {
-			public:
-				T *data;
-				uint16_t count;
-				uint16_t size;
-
-				T &operator[](uint16_t index) {
-					return data[index];
-				}
-
-				operator bool() const {
-					return data;
-				}
-		};
-
-		class thread_t : public base_thread_t {
-			public:
-				static container_t<thread_t *> *pool;
-
-				static uint32_t *id_count;
-
-				static void (*_init)(thread_t *);
-
-				static state_t (__thiscall *_tick)(thread_t *, uint32_t ops_to_execute);
-
-				static void (__thiscall *_kill)(thread_t *);
-
-				static bool valid() {
-					return
-						pool &&
-						_init &&
-						_tick &&
-						_kill
-					;
-				}
+				// gta thread class base
+				char script_hash_str[16]; // 208
+				char unk[48];
+				void *script_context; // 272
+				char unk2[40];
+				char flag1;
+				char network_flag;
+				uint16_t unk3;
+				char unk4[12];
+				uint8_t can_remove_blips_from_other_scripts;
+				char unk5[7];
 
 				////////////////////////////////////////////////////////////////
 
-				thread_t(std::nullptr_t) : _orig_owner(nullptr) {
+				script_thread_t() : stack(nullptr), script_context(nullptr), _orig_owner(nullptr) {
 					context.state = state_t::killed;
-					stack = nullptr;
 					context.stack_size = 0;
 				}
 
-				thread_t();
+				script_thread_t(void (*on_frame)());
 
-				virtual ~thread_t() {
+				~script_thread_t() {
 					kill();
 				}
 
-				char script_hash_str[16];
-				char pad[48];
-				tls_t *tls;
-				char pad2[40];
-				char flag1;
-				char network_flag;
-				uint16_t pad3;
-				char pad4[12];
-				uint8_t can_remove_blips_from_other_scripts;
-				char pad5[7];
-
-				virtual void on_frame() = 0;
-
-				virtual state_t reset(uint32_t script_hash, uintptr_t *args, uint32_t arg_count);
-
-				virtual state_t join(uint32_t ops_to_execute);
-
-				virtual state_t tick(uint32_t) {
-					return context.state;
-				}
-
-				virtual void kill();
+				void kill();
 
 				void set_name(const char *name) {
 					std::stringstream ss;
@@ -436,9 +353,40 @@ namespace nob {
 					strcpy(script_hash_str, ss.str().c_str());
 				}
 
+				operator bool() const {
+					return context.state != state_t::killed;
+				}
+
 			private:
-				thread_t *_orig_owner = nullptr;
+				uintptr_t _nob_thread_class_pad[10];
+
+				script_thread_t *_orig_owner;
+				void (*_on_frame)();
+				vtable_t _vtab_impl;
 		};
+
+		class script_context_pool_t {
+			public:
+				struct vtable_t {
+					void (*_dtor)(script_context_pool_t *);
+
+					uintptr_t othr[9];
+					void (*alloc)(script_context_pool_t *, script_thread_t *);
+					void (*dealloc)(script_context_pool_t *, script_thread_t *);
+				};
+
+				vtable_t *vtable;
+
+				void alloc(script_thread_t *td) {
+					vtable->alloc(this, td);
+				}
+
+				void dealloc(script_thread_t *td) {
+					vtable->dealloc(this, td);
+				}
+		};
+
+		extern script_context_pool_t *script_context_pool;
 
 		struct call_context_t;
 
