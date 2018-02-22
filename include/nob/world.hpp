@@ -129,14 +129,14 @@ namespace nob {
 			load_ilp_with_marker(ilp::mp_heist_carrier);
 		}
 
-		struct door {
+		struct door_info_t {
 			hasher type;
 			vector3 coords;
 		};
 
-		extern const std::array<door, 487> doors;
+		extern const std::array<door_info_t, 487> doors;
 
-		inline void lock_door(const door &dr, bool toggle = true) {
+		inline void lock_door(const door_info_t &dr, bool toggle = true) {
 			ntv::OBJECT::_DOOR_CONTROL(dr.type, dr.coords.x, dr.coords.y, dr.coords.z, toggle, 0.0f, 0.0f, -1.0f);
 		}
 
@@ -147,5 +147,15 @@ namespace nob {
 		}
 
 		void snowy(bool toggle = true);
+
+		namespace pickup {
+			struct info_t {
+				vector3 pos, rot;
+			};
+
+			extern const std::array<info_t, 76> healths;
+			extern const std::array<info_t, 19> armours;
+			extern const std::array<info_t, 45> petrolcans;
+		}
 	}
 } /* nob */
