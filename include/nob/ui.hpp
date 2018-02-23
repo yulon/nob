@@ -5,7 +5,7 @@
 #include "screen.hpp"
 #include "vector.hpp"
 #include "script.hpp"
-#include "keyboard.hpp"
+#include "input.hpp"
 
 #include <rua/obj.hpp>
 

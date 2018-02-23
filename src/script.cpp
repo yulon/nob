@@ -33,7 +33,7 @@ namespace nob {
 		_exiters->push_back(std::move(handler));
 	}
 
-	std::queue<std::function<void()>> _inputs;
+	extern std::queue<std::function<void()>> _inputs;
 
 	static inline void _clear_inputs() {
 		while (_inputs.size()) {

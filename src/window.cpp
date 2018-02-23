@@ -1,4 +1,4 @@
-#include <nob/keyboard.hpp>
+//#include <nob/input.hpp>
 #include <nob/script.hpp>
 #include <nob/ntv/base.hpp>
 #include <nob/vector.hpp>
@@ -9,15 +9,15 @@
 #include <cstdio>
 
 namespace nob {
-	namespace keyboard {
-		void _send(int, bool);
-		void _reset();
+	namespace _kl {
+		void send(int, bool);
+		void reset();
 	}
 
-	namespace mouse {
-		void _send(int, bool);
-		void _reset();
-		extern vector2_i _coords;
+	namespace _ml {
+		void send(int, bool);
+		void reset();
+		extern vector2_i pos;
 	}
 
 	namespace window {
@@ -46,56 +46,56 @@ namespace nob {
 			if (*ntv::game_state == ntv::game_state_t::playing) {
 				switch (uMsg) {
 					case WM_MOUSEMOVE:
-						mouse::_coords.x = GET_X_LPARAM(lParam);
-						mouse::_coords.y = GET_Y_LPARAM(lParam);
+						_ml::pos.x = GET_X_LPARAM(lParam);
+						_ml::pos.y = GET_Y_LPARAM(lParam);
 						break;
 
 					case WM_LBUTTONDOWN:
-						mouse::_send(0, true);
+						_ml::send(0, true);
 						break;
 
 					case WM_LBUTTONUP:
-						mouse::_send(0, false);
+						_ml::send(0, false);
 						break;
 
 					case WM_RBUTTONDOWN:
-						mouse::_send(1, true);
+						_ml::send(1, true);
 						break;
 
 					case WM_RBUTTONUP:
-						mouse::_send(1, false);
+						_ml::send(1, false);
 						break;
 
 					case WM_MBUTTONDOWN:
-						mouse::_send(2, true);
+						_ml::send(2, true);
 						break;
 
 					case WM_MBUTTONUP:
-						mouse::_send(2, false);
+						_ml::send(2, false);
 						break;
 
 					case WM_MOUSEWHEEL: {
 						auto val = (short)HIWORD(wParam);
 						if (val < 0) {
-							mouse::_send(3, true);
+							_ml::send(3, true);
 						} else if (val > 0) {
-							mouse::_send(3, false);
+							_ml::send(3, false);
 						}
 						break;
 					}
 
 					case WM_KEYDOWN:
-						keyboard::_send(wParam, true);
+						_kl::send(wParam, true);
 						break;
 
 					case WM_KEYUP:
-						keyboard::_send(wParam, false);
+						_kl::send(wParam, false);
 						break;
 
 					case WM_ACTIVATE:
 						if (!wParam) {
-							mouse::_reset();
-							keyboard::_reset();
+							_ml::reset();
+							_kl::reset();
 						}
 				}
 			}

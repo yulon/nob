@@ -11,27 +11,27 @@
 namespace nob {
 	namespace ui {
 		void disable_sp_features(bool toggle) {
-			static task tsk;
+			static hotkey_blocker hkb;
 
 			if (toggle) {
-				if (!tsk) {
-					tsk = task([]() {
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::MultiplayerInfo, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::CharacterWheel, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::SelectCharacterMichael, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::SelectCharacterFranklin, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::SelectCharacterTrevor, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::SelectCharacterMultiplayer, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::SpecialAbilityPC, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::Phone, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::CinematicSlowMo, true);
-						ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)ntv::eControl::VehicleSlowMoUpDown, true);
-					});
+				if (!hkb) {
+					hkb = {
+						hotkey_t::MultiplayerInfo,
+						hotkey_t::CharacterWheel,
+						hotkey_t::SelectCharacterMichael,
+						hotkey_t::SelectCharacterFranklin,
+						hotkey_t::SelectCharacterTrevor,
+						hotkey_t::SelectCharacterMultiplayer,
+						hotkey_t::SpecialAbilityPC,
+						hotkey_t::Phone,
+						hotkey_t::CinematicSlowMo,
+						hotkey_t::VehicleSlowMoUpDown
+					};
 
 					ntv::MOBILE::DESTROY_MOBILE_PHONE();
 				}
 			} else {
-				tsk.del();
+				hkb.del();
 			}
 		}
 
@@ -70,8 +70,8 @@ namespace nob {
 		namespace _menu {
 			std::shared_ptr<menu::_data_t> cur(nullptr);
 			task draw_tsk;
-			keyboard::blocker kb_bkr;
-			keyboard::listener kb_lnr;
+			hotkey_blocker hkb;
+			key_listener kl;
 			g2d::texture_dict cm_td("CommonMenu");
 			initer reset(menu::close_any);
 		}
@@ -196,13 +196,13 @@ namespace nob {
 				}
 			});
 
-			_menu::kb_bkr = {
-				keyboard::block_t::interaction_menu,
-				keyboard::block_t::phone,
-				keyboard::block_t::frontend_menu_esc
+			_menu::hkb = {
+				hotkey_t::InteractionMenu,
+				hotkey_t::Phone,
+				hotkey_t::FrontendPauseAlternate
 			};
 
-			_menu::kb_lnr = keyboard::listener([](int code, bool down)->bool {
+			_menu::kl = key_listener([](int code, bool down)->bool {
 				switch (code) {
 					case VK_BACK:
 						if (down) {
@@ -219,11 +219,11 @@ namespace nob {
 							if (_menu::cur->_li_stack.size() > 1) {
 								_menu::cur->_li_stack.pop();
 							} else if (_menu::cur->_edchk) {
-								static keyboard::listener esc_uper;
+								static key_listener esc_uper;
 								if (esc_uper) {
 									return false;
 								}
-								esc_uper = keyboard::listener([](int code, bool down)->bool {
+								esc_uper = key_listener([](int code, bool down)->bool {
 									if (code == VK_ESCAPE && !down) {
 										close_any();
 										esc_uper.del();
@@ -288,8 +288,8 @@ namespace nob {
 				return;
 			}
 			_menu::draw_tsk.del();
-			_menu::kb_lnr.del();
-			_menu::kb_bkr.del();
+			_menu::kl.del();
+			_menu::hkb.del();
 			_menu::cm_td.free();
 			_menu::cur.reset();
 		}
@@ -299,8 +299,8 @@ namespace nob {
 				return;
 			}
 			_menu::draw_tsk.del();
-			_menu::kb_lnr.del();
-			_menu::kb_bkr.del();
+			_menu::kl.del();
+			_menu::hkb.del();
 			_menu::cm_td.free();
 			_menu::cur.reset();
 		}
@@ -361,26 +361,26 @@ namespace nob {
 		bool _fm_pause = true;
 
 		void takeover_frontend_menu(bool toggle) {
-			static keyboard::blocker kb_bkr;
-			static keyboard::listener kb_lnr;
+			static hotkey_blocker hkb;
+			static key_listener kl;
 			if (toggle) {
-				if (kb_bkr) {
+				if (hkb) {
 					return;
 				}
-				kb_bkr = {
-					keyboard::block_t::frontend_menu_esc,
-					keyboard::block_t::frontend_menu_pause
+				hkb = {
+					hotkey_t::FrontendPause,
+					hotkey_t::FrontendPauseAlternate
 				};
-				kb_lnr = keyboard::listener([](int code, bool down)->bool {
+				kl = key_listener([](int code, bool down)->bool {
 					switch (code) {
 						case 'P':
 						case VK_ESCAPE:
 							if (down) {
-								static keyboard::listener kb_bk_all;
+								static key_listener kb_bk_all;
 								if (kb_bk_all) {
 									return false;
 								}
-								kb_bk_all = keyboard::listener([](int code, bool down)->bool {
+								kb_bk_all = key_listener([](int code, bool down)->bool {
 									if (code == 'P' && down && ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
 										ntv::UI::SET_FRONTEND_ACTIVE(false);
 									}
@@ -403,9 +403,9 @@ namespace nob {
 					}
 					return true;
 				});
-			} else if (kb_bkr) {
-				kb_lnr.del();
-				kb_bkr.del();
+			} else if (hkb) {
+				kl.del();
+				hkb.del();
 			}
 		}
 

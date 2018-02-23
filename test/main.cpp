@@ -147,13 +147,13 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::log("{ ", pos.x, ", ", pos.y, ", ", pos.z, " }");
 		}),
 		flag("Direct Move", [](bool val) {
-			static nob::keyboard::listener kl;
+			static nob::key_listener kl;
 			static nob::task tsks[6];
 
 			auto pb = nob::player::body();
 			if (val) {
 				nob::ntv::ENTITY::FREEZE_ENTITY_POSITION(pb, true);
-				kl = nob::keyboard::listener([](int code, bool down)->bool {
+				kl = nob::key_listener([](int code, bool down)->bool {
 					static float m = 1.0f;
 					static auto cmd = [](bool down, size_t ti, nob::vector3 (*dest)(nob::vector3)) {
 						if (down) {
@@ -367,8 +367,16 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		}),
 		action("Other", []() {
 			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
-			nob::log(nob::ntv::GAMEPLAY::GET_FRAME_COUNT());
-			nob::log(nob::ntv::GAMEPLAY::GET_ALLOCATED_STACK_SIZE());
+			nob::sleep(5000);
+			nob::log("\n");
+			nob::log("{ \"E\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 51, 0), "\" }");
+			nob::log("{ \"enter\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 201, 0), "\" }");
+			nob::log("{ \"esc\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 202, 0), "\" }");
+			nob::log("{ \"space\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 55, 0), "\" }");
+			nob::log("{ \"alt\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 19, 0), "\" }");
+			nob::log("{ \"insert\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 121, 0), "\" }");
+			nob::log("{ \"insert\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 121, 0), "\" }");
+
 /*			nob::player::damage_modifier(0);
 
 			static auto pb = nob::player::body();
@@ -565,9 +573,9 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 	})
 }));
 
-nob::keyboard::blocker ntv_ia_menu_blocker(nob::keyboard::block_t::interaction_menu);
+nob::hotkey_blocker ntv_ia_menu_hotkey_blocker(nob::hotkey_t::InteractionMenu);
 
-nob::keyboard::listener ia_menu_hotkey([](int code, bool down)->bool {
+nob::key_listener ia_menu_hotkey([](int code, bool down)->bool {
 	if (code == 'M') {
 		if (down) {
 			ia_menu.toggle();
