@@ -60,33 +60,9 @@ namespace nob {
 			std::vector<int> _hks;
 	};
 
-	////////////////////////////////////////////////////////////////////////////
-
-	class mouse_listener {
-		public:
-			mouse_listener();
-
-			mouse_listener(std::function<bool(int button, bool down)>);
-
-			mouse_listener(mouse_listener &&);
-
-			mouse_listener &operator=(mouse_listener &&);
-
-			~mouse_listener() {
-				del();
-			}
-
-			void del();
-
-			operator bool() const;
-
-		private:
-			std::list<std::shared_ptr<std::function<bool(int, bool)>>>::iterator _it;
-	};
-
 	vector2 mouse_pos();
 
 	vector2_i mouse_pos_i();
 
-	bool is_mouse_botton_down(int button);
+	const char *key_code_to_str(int code);
 } /* nob */

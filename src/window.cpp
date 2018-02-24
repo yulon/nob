@@ -14,11 +14,7 @@ namespace nob {
 		void reset();
 	}
 
-	namespace _ml {
-		void send(int, bool);
-		void reset();
-		extern vector2_i pos;
-	}
+	extern vector2_i _mouse_pos;
 
 	namespace window {
 		HWND _handle = nullptr;
@@ -46,40 +42,40 @@ namespace nob {
 			if (*ntv::game_state == ntv::game_state_t::playing) {
 				switch (uMsg) {
 					case WM_MOUSEMOVE:
-						_ml::pos.x = GET_X_LPARAM(lParam);
-						_ml::pos.y = GET_Y_LPARAM(lParam);
+						_mouse_pos.x = GET_X_LPARAM(lParam);
+						_mouse_pos.y = GET_Y_LPARAM(lParam);
 						break;
 
 					case WM_LBUTTONDOWN:
-						_ml::send(0, true);
+						_kl::send(VK_LBUTTON, true);
 						break;
 
 					case WM_LBUTTONUP:
-						_ml::send(0, false);
+						_kl::send(VK_LBUTTON, false);
 						break;
 
 					case WM_RBUTTONDOWN:
-						_ml::send(1, true);
+						_kl::send(VK_RBUTTON, true);
 						break;
 
 					case WM_RBUTTONUP:
-						_ml::send(1, false);
+						_kl::send(VK_RBUTTON, false);
 						break;
 
 					case WM_MBUTTONDOWN:
-						_ml::send(2, true);
+						_kl::send(VK_MBUTTON, true);
 						break;
 
 					case WM_MBUTTONUP:
-						_ml::send(2, false);
+						_kl::send(VK_MBUTTON, false);
 						break;
 
 					case WM_MOUSEWHEEL: {
 						auto val = (short)HIWORD(wParam);
 						if (val < 0) {
-							_ml::send(3, true);
+							_kl::send(WM_MOUSEWHEEL, true);
 						} else if (val > 0) {
-							_ml::send(3, false);
+							_kl::send(WM_MOUSEWHEEL, false);
 						}
 						break;
 					}
@@ -94,7 +90,7 @@ namespace nob {
 
 					case WM_ACTIVATE:
 						if (!wParam) {
-							_ml::reset();
+							_kl::reset();
 							_kl::reset();
 						}
 				}
