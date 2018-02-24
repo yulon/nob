@@ -5,16 +5,16 @@
 
 #include <windows.h>
 
-#include <map>
 #include <queue>
 #include <unordered_set>
+#include <unordered_map>
 #include <cstring>
 
 namespace nob {
 	std::queue<std::function<void()>> _inputs;
 
 	namespace _kl {
-		std::unordered_set<size_t> downs;
+		std::unordered_set<int> downs;
 
 		initer _clear_downs([]() {
 			downs.clear();
@@ -39,14 +39,14 @@ namespace nob {
 			}
 			_inputs.push([code, down]() {
 				std::queue<std::weak_ptr<std::function<bool(int, bool)>>> qu;
-				for (auto &hdr_sp : *li) {
-					qu.emplace(hdr_sp);
+				for (auto &lnr_sp : *li) {
+					qu.emplace(lnr_sp);
 				}
 				while (qu.size()) {
-					auto hdr_sp = qu.front().lock();
+					auto lnr_sp = qu.front().lock();
 					qu.pop();
-					if (hdr_sp) {
-						if (!(*hdr_sp)(code, down)) {
+					if (lnr_sp) {
+						if (!(*lnr_sp)(code, down)) {
 							return;
 						}
 					}
@@ -59,14 +59,14 @@ namespace nob {
 				for (auto code : downs) {
 					_inputs.push([code]() {
 						std::queue<std::weak_ptr<std::function<bool(int, bool)>>> qu;
-						for (auto &hdr_sp : *li) {
-							qu.emplace(hdr_sp);
+						for (auto &lnr_sp : *li) {
+							qu.emplace(lnr_sp);
 						}
 						while (qu.size()) {
-							auto hdr_sp = qu.front().lock();
+							auto lnr_sp = qu.front().lock();
 							qu.pop();
-							if (hdr_sp) {
-								if (!(*hdr_sp)(code, false)) {
+							if (lnr_sp) {
+								if (!(*lnr_sp)(code, false)) {
 									return;
 								}
 							}
@@ -82,7 +82,7 @@ namespace nob {
 		if (!_kl::li) {
 			_kl::li.reset(new std::list<std::shared_ptr<std::function<bool(int, bool)>>>);
 		}
-		_it = _kl::li->end();
+		_lnr_it = _kl::li->end();
 	}
 
 	key_listener::key_listener(std::function<bool(int, bool)> key_listener) {
@@ -90,34 +90,34 @@ namespace nob {
 			_kl::li.reset(new std::list<std::shared_ptr<std::function<bool(int, bool)>>>);
 		}
 		_kl::li->emplace_front(std::make_shared<std::function<bool(int, bool)>>(std::move(key_listener)));
-		_it = _kl::li->begin();
+		_lnr_it = _kl::li->begin();
 	}
 
-	key_listener::key_listener(key_listener &&src) : _it(src._it) {
-		if (src._it != _kl::li->end()) {
-			src._it = _kl::li->end();
+	key_listener::key_listener(key_listener &&src) : _lnr_it(src._lnr_it) {
+		if (src._lnr_it != _kl::li->end()) {
+			src._lnr_it = _kl::li->end();
 		}
 	}
 
 	key_listener &key_listener::operator=(key_listener &&src) {
 		del();
-		if (src._it != _kl::li->end()) {
-			_it = src._it;
-			src._it = _kl::li->end();
+		if (src._lnr_it != _kl::li->end()) {
+			_lnr_it = src._lnr_it;
+			src._lnr_it = _kl::li->end();
 		}
 		return *this;
 	}
 
 	key_listener::operator bool() const {
-		return _kl::li && _it != _kl::li->end();
+		return _kl::li && _lnr_it != _kl::li->end();
 	}
 
 	void key_listener::del() {
 		if (!*this) {
 			return;
 		}
-		_kl::li->erase(_it);
-		_it = _kl::li->end();
+		_kl::li->erase(_lnr_it);
+		_lnr_it = _kl::li->end();
 	}
 
 	bool is_key_down(int code) {
@@ -130,65 +130,115 @@ namespace nob {
 
 	//const char *key_code_to_str(int code);
 
-	namespace _hkbr {
-		std::unique_ptr<std::map<int, size_t>> map;
-		task tsk;
+	namespace _hkl {
+		std::unordered_map<int, bool /* is_prevent_default */> downs;
+		std::unique_ptr<std::unordered_map<int, std::list<std::shared_ptr<std::function<bool(hotkey_t, bool)>>>>> map;
+
+		void recv() {
+			if (!_hkl::map) {
+				return;
+			}
+			for (auto &pr : *_hkl::map) {
+				bool down;
+				auto it = downs.find(pr.first);
+				if (ntv::CONTROLS::IS_CONTROL_PRESSED(0, pr.first) || ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, pr.first)) {
+					if (it != downs.end()) {
+						if (it->second) {
+							ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, pr.first, true);
+						}
+						continue;
+					}
+					downs[pr.first] = false;
+					down = true;
+				} else if (it != downs.end()) {
+					downs.erase(it);
+					down = false;
+				} else {
+					continue;
+				}
+				auto hk_val = pr.first;
+				go([hk_val, down]() {
+					auto it = _hkl::map->find(hk_val);
+					if (it == _hkl::map->end()) {
+						return;
+					}
+					std::queue<std::weak_ptr<std::function<bool(hotkey_t, bool)>>> qu;
+					for (auto &lnr_sp : it->second) {
+						qu.emplace(lnr_sp);
+					}
+					while (qu.size()) {
+						auto lnr_sp = qu.front().lock();
+						qu.pop();
+						if (lnr_sp) {
+							if (!(*lnr_sp)(static_cast<hotkey_t>(hk_val), down)) {
+								if (down) {
+									downs[hk_val] = true;
+									ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, hk_val, true);
+								}
+								return;
+							}
+						}
+					}
+				});
+			}
+		}
 	}
 
-	hotkey_blocker::hotkey_blocker(std::initializer_list<hotkey_t> hks) {
+	hotkey_listener::hotkey_listener(std::initializer_list<hotkey_t> hks, std::function<bool(hotkey_t, bool)> lnr) {
 		if (!hks.size()) {
 			return;
 		}
-		if (!_hkbr::map) {
-			_hkbr::map.reset(new std::map<int, size_t>);
+		if (!_hkl::map) {
+			_hkl::map.reset(new std::unordered_map<int, std::list<std::shared_ptr<std::function<bool(hotkey_t, bool)>>>>);
 		}
+		std::shared_ptr<std::function<bool(hotkey_t, bool)>> lnr_sp(
+			std::make_shared<std::function<bool(hotkey_t, bool)>>(
+				lnr ?
+				std::move(lnr) :
+				[](hotkey_t, bool)->bool {
+					return false;
+				}
+			)
+		);
 		for (auto hk : hks) {
 			auto b = static_cast<int>(hk);
 			_hks.emplace_back(b);
-			auto it = _hkbr::map->find(b);
-			if (it == _hkbr::map->end()) {
-				_hkbr::map->emplace(b, 1);
-			} else {
-				++it->second;
-			}
-		}
-		if (!_hkbr::tsk) {
-			_hkbr::tsk = task([]() {
-				for (auto &pr : *_hkbr::map) {
-					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, pr.first, true);
-				}
-			});
+			auto &lnrs = (*_hkl::map)[b];
+			lnrs.emplace_back(lnr_sp);
+			_lnr_its.emplace_back(--lnrs.end());
 		}
 	}
 
-	hotkey_blocker::hotkey_blocker(hotkey_t hk) : hotkey_blocker({hk}) {}
+	hotkey_listener::hotkey_listener(hotkey_t hk, std::function<bool(hotkey_t, bool)> lnr) : hotkey_listener({hk}, lnr) {}
 
-	hotkey_blocker::hotkey_blocker(hotkey_blocker &&src) : _hks(std::move(src._hks)) {}
+	hotkey_listener::hotkey_listener(hotkey_listener &&src) : _hks(std::move(src._hks)), _lnr_its(std::move(src._lnr_its)) {}
 
-	hotkey_blocker &hotkey_blocker::operator=(hotkey_blocker &&src) {
+	hotkey_listener &hotkey_listener::operator=(hotkey_listener &&src) {
 		del();
 		_hks = std::move(src._hks);
+		_lnr_its = std::move(src._lnr_its);
 		return *this;
 	}
 
-	hotkey_blocker::operator bool() const {
-		return _hkbr::map && _hks.size();
+	hotkey_listener::operator bool() const {
+		return _hkl::map && _hks.size();
 	}
 
-	void hotkey_blocker::del() {
+	void hotkey_listener::del() {
 		if (!*this) {
 			return;
 		}
-		for (auto hk : _hks) {
-			auto it = _hkbr::map->find(hk);
-			if (it != _hkbr::map->end() && !--it->second) {
-				_hkbr::map->erase(it);
+		for (size_t i = 0; i < _hks.size(); ++i) {
+			auto it = _hkl::map->find(_hks[i]);
+			if (it != _hkl::map->end()) {
+				it->second.erase(_lnr_its[i]);
+				if (it->second.empty()) {
+					_hkl::map->erase(it);
+				}
 			}
 		}
-		if (_hkbr::map->empty() && !this_script::exiting) {
-			_hkbr::tsk.del();
-		}
 		_hks.clear();
+		_lnr_its.clear();
 	}
 
 	vector2_i _mouse_pos;

@@ -29,26 +29,26 @@ namespace nob {
 			operator bool() const;
 
 		private:
-			std::list<std::shared_ptr<std::function<bool(int, bool)>>>::iterator _it;
+			std::list<std::shared_ptr<std::function<bool(int, bool)>>>::iterator _lnr_it;
 	};
 
 	bool is_key_down(int code);
 
 	using hotkey_t = ntv::eControl;
 
-	class hotkey_blocker {
+	class hotkey_listener {
 		public:
-			hotkey_blocker() = default;
+			hotkey_listener() = default;
 
-			hotkey_blocker(hotkey_t);
+			hotkey_listener(hotkey_t, std::function<bool(hotkey_t, bool)> lnr = nullptr);
 
-			hotkey_blocker(std::initializer_list<hotkey_t>);
+			hotkey_listener(std::initializer_list<hotkey_t>, std::function<bool(hotkey_t, bool)> lnr = nullptr);
 
-			hotkey_blocker(hotkey_blocker &&);
+			hotkey_listener(hotkey_listener &&);
 
-			hotkey_blocker &operator=(hotkey_blocker &&);
+			hotkey_listener &operator=(hotkey_listener &&);
 
-			~hotkey_blocker() {
+			~hotkey_listener() {
 				del();
 			}
 
@@ -58,6 +58,13 @@ namespace nob {
 
 		private:
 			std::vector<int> _hks;
+			std::vector<
+				std::list<
+					std::shared_ptr<
+						std::function<bool(hotkey_t, bool)>
+					>
+				>::iterator
+			> _lnr_its;
 	};
 
 	vector2 mouse_pos();

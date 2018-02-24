@@ -367,7 +367,8 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		}),
 		action("Other", []() {
 			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
-			nob::sleep(5000);
+
+/*			nob::sleep(5000);
 			nob::log("\n");
 			nob::log("{ \"E\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 51, 0), "\" }");
 			nob::log("{ \"enter\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 201, 0), "\" }");
@@ -377,7 +378,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::log("{ \"insert\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 121, 0), "\" }");
 			nob::log("{ \"insert\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 121, 0), "\" }");
 
-/*			nob::player::damage_modifier(0);
+			nob::player::damage_modifier(0);
 
 			static auto pb = nob::player::body();
 			//auto pos = pb.pos({0, 5, 0});
@@ -573,14 +574,9 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 	})
 }));
 
-nob::hotkey_blocker ntv_ia_menu_hotkey_blocker(nob::hotkey_t::InteractionMenu);
-
-nob::key_listener ia_menu_hotkey([](int code, bool down)->bool {
-	if (code == 'M') {
-		if (down) {
-			ia_menu.toggle();
-		}
-		return false;
+nob::hotkey_listener ia_menu_hotkey(nob::hotkey_t::InteractionMenu, [](nob::hotkey_t, bool down)->bool {
+	if (down) {
+		ia_menu.toggle();
 	}
-	return true;
+	return false;
 });

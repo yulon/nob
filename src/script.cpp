@@ -48,6 +48,10 @@ namespace nob {
 		}
 	}
 
+	namespace _hkl {
+		void recv();
+	}
+
 	namespace this_script {
 		mode_t mode = mode_t::invalid;
 		std::thread::id thread_id;
@@ -78,31 +82,43 @@ namespace nob {
 			_exited = true;
 		}
 
-		void _shv_main() {
-			_init();
-			for (;;) {
-				if (exiting) {
-					_exit();
-					return;
+		static inline bool _run(bool auto_init = true, bool need_init = false) {
+			_hkl::recv();
+
+			if (auto_init) {
+				size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
+				if (!_last_fc || cur_fc - _last_fc > 1) {
+					need_init = true;
 				}
+				_last_fc = cur_fc;
+			}
+
+			if (need_init) {
+				_init();
+			} else {
 				_flush_inputs();
-				tasks->handle();
+			}
+
+			if (exiting) {
+				_exit();
+				return false;
+			}
+
+			tasks->handle();
+			return true;
+		}
+
+		void _shv_main() {
+			while (_run()) {
 				shv::WAIT(0);
 			}
 		}
 
 		void _ysc_main() {
-			_init();
-			for (;;) {
-				if (exiting) {
-					_exit();
-					ntv::SCRIPT::TERMINATE_THIS_THREAD();
-					return;
-				}
-				_flush_inputs();
-				tasks->handle();
+			while (_run()) {
 				ntv::SYSTEM::WAIT(0);
 			}
+			ntv::SCRIPT::TERMINATE_THIS_THREAD();
 		}
 
 		bool _hook_main() {
@@ -134,22 +150,12 @@ namespace nob {
 			if (!wait_hkd.hook(
 				wait_fp,
 				[](ntv::call_context_t &cc) {
-					size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
-					if ((!_last_fc || cur_fc > _last_fc) && strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
-						if (cur_fc - _last_fc > 1) {
-							_init();
-						}
-						_last_fc = cur_fc;
-
-						if (exiting) {
-							_exit();
+					if (strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
+						if (!_run()) {
 							wait_hkd(cc);
 							wait_hkd.unhook();
 							return;
 						}
-
-						_flush_inputs();
-						tasks->handle();
 					}
 					wait_hkd(cc);
 				}
@@ -165,20 +171,9 @@ namespace nob {
 
 		bool _td_main() {
 			_main_td.reset(new ntv::script_thread_t([]() {
-				if (exiting) {
-					_exit();
+				if (!_run()) {
 					_main_td.reset();
-					return;
 				}
-
-				size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
-				if (!_last_fc || cur_fc - _last_fc > 1) {
-					_init();
-				}
-				_last_fc = cur_fc;
-
-				_flush_inputs();
-				tasks->handle();
 			}));
 
 			if (!*_main_td) {

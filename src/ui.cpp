@@ -11,7 +11,7 @@
 namespace nob {
 	namespace ui {
 		void disable_sp_features(bool toggle) {
-			static hotkey_blocker hkb;
+			static hotkey_listener hkb;
 
 			if (toggle) {
 				if (!hkb) {
@@ -70,7 +70,7 @@ namespace nob {
 		namespace _menu {
 			std::shared_ptr<menu::_data_t> cur(nullptr);
 			task draw_tsk;
-			hotkey_blocker hkb;
+			hotkey_listener hkb;
 			key_listener kl;
 			g2d::texture_dict cm_td("CommonMenu");
 			initer reset(menu::close_any);
@@ -361,7 +361,7 @@ namespace nob {
 		bool _fm_pause = true;
 
 		void takeover_frontend_menu(bool toggle) {
-			static hotkey_blocker hkb;
+			static hotkey_listener hkb;
 			static key_listener kl;
 			if (toggle) {
 				if (hkb) {
