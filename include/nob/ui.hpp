@@ -181,10 +181,10 @@ namespace nob {
 				menu(
 					const std::string &title,
 					const list &li,
-					bool enable_default_close_hotkeys = true
+					bool can_be_close = true
 				) : _data(std::make_shared<_data_t>()) {
 					_data->_tit = title;
-					_data->_edchk = enable_default_close_hotkeys;
+					_data->_can_cls = can_be_close;
 					_data->_li_stack.push(li);
 				}
 
@@ -245,7 +245,7 @@ namespace nob {
 				struct _data_t {
 					std::string _tit;
 					std::stack<list> _li_stack;
-					bool _edchk;
+					bool _can_cls;
 				};
 
 			private:

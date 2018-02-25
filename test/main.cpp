@@ -368,6 +368,16 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Other", []() {
 			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
 
+			nob::task([]() {
+				if (
+					nob::ntv::CONTROLS::IS_CONTROL_PRESSED(0, (int)nob::hotkey_t::MeleeAttackLight) ||
+					nob::ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, (int)nob::hotkey_t::MeleeAttackLight)
+				) {
+					nob::log("n ", nob::ntv::GAMEPLAY::GET_FRAME_COUNT());
+					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::hotkey_t::MeleeAttackLight, true);
+				}
+			});
+
 /*			nob::sleep(5000);
 			nob::log("\n");
 			nob::log("{ \"E\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 51, 0), "\" }");
@@ -574,9 +584,26 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 	})
 }));
 
-nob::hotkey_listener ia_menu_hotkey(nob::hotkey_t::InteractionMenu, [](nob::hotkey_t, bool down)->bool {
-	if (down) {
-		ia_menu.toggle();
+nob::hotkey_listener ia_menu_open_hotkey(
+	nob::hotkey_t::InteractionMenu,
+	[](nob::hotkey_t, bool down)->bool {
+		static nob::hotkey_listener ia_menu_close_hotkey;
+		if (down) {
+			ia_menu.open();
+
+			// Because menu's internal hotkey_listener will cancel bubble for hotkey_t::InteractionMenu,
+			// so need ia_menu_close_hotkey override it.
+			ia_menu_close_hotkey = nob::hotkey_listener(
+				nob::hotkey_t::InteractionMenu,
+				[](nob::hotkey_t, bool down)->bool {
+					if (down) {
+						ia_menu.close();
+						ia_menu_close_hotkey.del();
+					}
+					return false;
+				}
+			);
+		}
+		return false;
 	}
-	return false;
-});
+);

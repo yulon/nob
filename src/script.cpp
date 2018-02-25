@@ -50,6 +50,7 @@ namespace nob {
 
 	namespace _hkl {
 		void recv();
+		void prevent_defaults();
 	}
 
 	namespace this_script {
@@ -105,6 +106,8 @@ namespace nob {
 			}
 
 			tasks->handle();
+
+			_hkl::prevent_defaults();
 			return true;
 		}
 

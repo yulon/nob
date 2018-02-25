@@ -132,55 +132,87 @@ namespace nob {
 
 	namespace _hkl {
 		std::unordered_map<int, bool /* is_prevent_default */> downs;
+
+		initer clear_downs([]() {
+			downs.clear();
+		});
+
 		std::unique_ptr<std::unordered_map<int, std::list<std::shared_ptr<std::function<bool(hotkey_t, bool)>>>>> map;
+
+		void handle(int hk_val, bool down) {
+			auto it = _hkl::map->find(hk_val);
+			if (it == _hkl::map->end()) {
+				return;
+			}
+
+			std::queue<std::weak_ptr<std::function<bool(hotkey_t, bool)>>> qu;
+			for (auto &lnr_sp : it->second) {
+				qu.emplace(lnr_sp);
+			}
+
+			int fc;
+			if (down) {
+				fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
+			}
+
+			while (qu.size()) {
+				auto lnr_sp = qu.front().lock();
+				qu.pop();
+				if (lnr_sp) {
+					if (!(*lnr_sp)(static_cast<hotkey_t>(hk_val), down)) {
+						return;
+					}
+				}
+			}
+
+			if (down && ntv::GAMEPLAY::GET_FRAME_COUNT() == fc) {
+				downs[hk_val] = false;
+			}
+		}
+
+		void go_handle(int hk_val, bool down) {
+			go([hk_val, down]() {
+				handle(hk_val, down);
+			});
+		}
 
 		void recv() {
 			if (!_hkl::map) {
 				return;
 			}
 			for (auto &pr : *_hkl::map) {
-				bool down;
 				auto it = downs.find(pr.first);
-				if (ntv::CONTROLS::IS_CONTROL_PRESSED(0, pr.first) || ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, pr.first)) {
-					if (it != downs.end()) {
-						if (it->second) {
-							ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, pr.first, true);
-						}
-						continue;
+				if (
+					ntv::CONTROLS::IS_CONTROL_PRESSED(0, pr.first) ||
+					ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, pr.first)
+				) {
+					if (it == downs.end()) {
+						downs[pr.first] = true;
+						go_handle(pr.first, true);
 					}
-					downs[pr.first] = false;
-					down = true;
 				} else if (it != downs.end()) {
 					downs.erase(it);
-					down = false;
-				} else {
-					continue;
+					go_handle(pr.first, false);
 				}
+			}
+		}
+
+		void prevent_defaults() {
+			for (auto &pr : downs) {
+				if (pr.second) {
+					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, pr.first, true);
+				}
+			}
+		}
+
+		void reset() {
+			for (auto &pr : downs) {
 				auto hk_val = pr.first;
-				go([hk_val, down]() {
-					auto it = _hkl::map->find(hk_val);
-					if (it == _hkl::map->end()) {
-						return;
-					}
-					std::queue<std::weak_ptr<std::function<bool(hotkey_t, bool)>>> qu;
-					for (auto &lnr_sp : it->second) {
-						qu.emplace(lnr_sp);
-					}
-					while (qu.size()) {
-						auto lnr_sp = qu.front().lock();
-						qu.pop();
-						if (lnr_sp) {
-							if (!(*lnr_sp)(static_cast<hotkey_t>(hk_val), down)) {
-								if (down) {
-									downs[hk_val] = true;
-									ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, hk_val, true);
-								}
-								return;
-							}
-						}
-					}
+				_inputs.emplace([hk_val]() {
+					handle(hk_val, false);
 				});
 			}
+			downs.clear();
 		}
 	}
 
@@ -204,8 +236,8 @@ namespace nob {
 			auto b = static_cast<int>(hk);
 			_hks.emplace_back(b);
 			auto &lnrs = (*_hkl::map)[b];
-			lnrs.emplace_back(lnr_sp);
-			_lnr_its.emplace_back(--lnrs.end());
+			lnrs.emplace_front(lnr_sp);
+			_lnr_its.emplace_back(lnrs.begin());
 		}
 	}
 

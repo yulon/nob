@@ -14,6 +14,10 @@ namespace nob {
 		void reset();
 	}
 
+	namespace _hkl {
+		void reset();
+	}
+
 	extern vector2_i _mouse_pos;
 
 	namespace window {
@@ -89,9 +93,11 @@ namespace nob {
 						break;
 
 					case WM_ACTIVATE:
+
 						if (!wParam) {
 							_kl::reset();
 							_kl::reset();
+							_hkl::reset();
 						}
 				}
 			}

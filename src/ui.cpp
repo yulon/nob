@@ -11,11 +11,11 @@
 namespace nob {
 	namespace ui {
 		void disable_sp_features(bool toggle) {
-			static hotkey_listener hkb;
+			static hotkey_listener hk_lnr;
 
 			if (toggle) {
-				if (!hkb) {
-					hkb = {
+				if (!hk_lnr) {
+					hk_lnr = {
 						hotkey_t::MultiplayerInfo,
 						hotkey_t::CharacterWheel,
 						hotkey_t::SelectCharacterMichael,
@@ -31,7 +31,7 @@ namespace nob {
 					ntv::MOBILE::DESTROY_MOBILE_PHONE();
 				}
 			} else {
-				hkb.del();
+				hk_lnr.del();
 			}
 		}
 
@@ -70,8 +70,7 @@ namespace nob {
 		namespace _menu {
 			std::shared_ptr<menu::_data_t> cur(nullptr);
 			task draw_tsk;
-			hotkey_listener hkb;
-			key_listener kl;
+			hotkey_listener hk_lnr;
 			g2d::texture_dict cm_td("CommonMenu");
 			initer reset(menu::close_any);
 		}
@@ -196,91 +195,80 @@ namespace nob {
 				}
 			});
 
-			_menu::hkb = {
-				hotkey_t::InteractionMenu,
-				hotkey_t::Phone,
-				hotkey_t::FrontendPauseAlternate
-			};
+			_menu::hk_lnr = hotkey_listener(
+				{
+					hotkey_t::InteractionMenu,
+					hotkey_t::Phone,
+					hotkey_t::FrontendPauseAlternate,
 
-			_menu::kl = key_listener([](int code, bool down)->bool {
-				switch (code) {
-					case VK_BACK:
-						if (down) {
-							if (_menu::cur->_li_stack.size() > 1) {
-								_menu::cur->_li_stack.pop();
-							} else if (_menu::cur->_edchk) {
-								close_any();
-							}
-						}
-						return false;
-
-					case VK_ESCAPE:
-						if (down) {
-							if (_menu::cur->_li_stack.size() > 1) {
-								_menu::cur->_li_stack.pop();
-							} else if (_menu::cur->_edchk) {
-								static key_listener esc_uper;
-								if (esc_uper) {
-									return false;
+					hotkey_t::FrontendCancel,
+					hotkey_t::FrontendDown,
+					hotkey_t::FrontendUp,
+					hotkey_t::FrontendAccept
+				},
+				[](hotkey_t hk, bool down)->bool {
+					switch (hk) {
+						case hotkey_t::FrontendCancel:
+							if (down) {
+								if (_menu::cur->_li_stack.size() > 1) {
+									_menu::cur->_li_stack.pop();
+								} else if (_menu::cur->_can_cls) {
+									close_any();
 								}
-								esc_uper = key_listener([](int code, bool down)->bool {
-									if (code == VK_ESCAPE && !down) {
-										close_any();
-										esc_uper.del();
-									}
-									return false;
-								});
 							}
-						}
-						return false;
+							break;
 
-					case VK_DOWN:
-						if (down) {
-							_menu::cur->_li_stack.top()->next();
-						}
-						return false;
+						case hotkey_t::FrontendDown:
+							if (down) {
+								_menu::cur->_li_stack.top()->next();
+							}
+							break;
 
-					case VK_UP:
-						if (down) {
-							_menu::cur->_li_stack.top()->prev();
-						}
-						return false;
+						case hotkey_t::FrontendUp:
+							if (down) {
+								_menu::cur->_li_stack.top()->prev();
+							}
+							break;
 
-					case VK_RETURN:
-						if (down) {
-							auto cur_li = _menu::cur->_li_stack.top();
-							if (cur_li->items.size()) {
-								auto cur_it = cur_li->items[cur_li->selected];
+						case hotkey_t::FrontendAccept:
+							if (down) {
+								auto cur_li = _menu::cur->_li_stack.top();
+								if (cur_li->items.size()) {
+									auto cur_it = cur_li->items[cur_li->selected];
 
-								if (cur_it.type_is<action>()) {
-									auto a = cur_it.to<action>();
-									if (a->handler) {
-										a->handler();
-									}
-								} else
+									if (cur_it.type_is<action>()) {
+										auto a = cur_it.to<action>();
+										if (a->handler) {
+											a->handler();
+										}
+									} else
 
-								if (cur_it.type_is<list>()) {
-									cur_li = cur_it.to<list>();
-									if (cur_li->on_show) {
-										cur_li->on_show(cur_li);
-										cur_li->fix();
-									}
-									_menu::cur->_li_stack.push(cur_li);
-								} else
+									if (cur_it.type_is<list>()) {
+										cur_li = cur_it.to<list>();
+										if (cur_li->on_show) {
+											cur_li->on_show(cur_li);
+											cur_li->fix();
+										}
+										_menu::cur->_li_stack.push(cur_li);
+									} else
 
-								if (cur_it.type_is<flag>()) {
-									auto flg = cur_it.to<flag>();
-									flg->value = !flg->value;
-									if (flg->on_change) {
-										flg->on_change(flg->value);
+									if (cur_it.type_is<flag>()) {
+										auto flg = cur_it.to<flag>();
+										flg->value = !flg->value;
+										if (flg->on_change) {
+											flg->on_change(flg->value);
+										}
 									}
 								}
 							}
-						}
-						return false;
+							break;
+
+						default:
+							break;
+					}
+					return false;
 				}
-				return true;
-			});
+			);
 		}
 
 		void menu::close() {
@@ -288,8 +276,7 @@ namespace nob {
 				return;
 			}
 			_menu::draw_tsk.del();
-			_menu::kl.del();
-			_menu::hkb.del();
+			_menu::hk_lnr.del();
 			_menu::cm_td.free();
 			_menu::cur.reset();
 		}
@@ -299,8 +286,7 @@ namespace nob {
 				return;
 			}
 			_menu::draw_tsk.del();
-			_menu::kl.del();
-			_menu::hkb.del();
+			_menu::hk_lnr.del();
 			_menu::cm_td.free();
 			_menu::cur.reset();
 		}
@@ -361,13 +347,13 @@ namespace nob {
 		bool _fm_pause = true;
 
 		void takeover_frontend_menu(bool toggle) {
-			static hotkey_listener hkb;
+			static hotkey_listener hk_lnr;
 			static key_listener kl;
 			if (toggle) {
-				if (hkb) {
+				if (hk_lnr) {
 					return;
 				}
-				hkb = {
+				hk_lnr = {
 					hotkey_t::FrontendPause,
 					hotkey_t::FrontendPauseAlternate
 				};
@@ -403,9 +389,9 @@ namespace nob {
 					}
 					return true;
 				});
-			} else if (hkb) {
+			} else if (hk_lnr) {
 				kl.del();
-				hkb.del();
+				hk_lnr.del();
 			}
 		}
 
