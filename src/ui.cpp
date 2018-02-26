@@ -11,11 +11,11 @@
 namespace nob {
 	namespace ui {
 		void disable_sp_features(bool toggle) {
-			static hotkey_listener hk_lnr;
+			static hotkey_listener hk_bkr;
 
 			if (toggle) {
-				if (!hk_lnr) {
-					hk_lnr = {
+				if (!hk_bkr) {
+					hk_bkr = {
 						hotkey_t::MultiplayerInfo,
 						hotkey_t::CharacterWheel,
 						hotkey_t::SelectCharacterMichael,
@@ -31,7 +31,7 @@ namespace nob {
 					ntv::MOBILE::DESTROY_MOBILE_PHONE();
 				}
 			} else {
-				hk_lnr.del();
+				hk_bkr.del();
 			}
 		}
 
@@ -70,9 +70,17 @@ namespace nob {
 		namespace _menu {
 			std::shared_ptr<menu::_data_t> cur(nullptr);
 			task draw_tsk;
-			hotkey_listener hk_lnr;
+			hotkey_listener hk_lnr, hk_bkr;
 			g2d::texture_dict cm_td("CommonMenu");
 			initer reset(menu::close_any);
+
+			static inline void del_res() {
+				draw_tsk.del();
+				hk_lnr.del();
+				hk_bkr.del();
+				cm_td.free();
+				cur.reset();
+			}
 		}
 
 		bool menu::is_opened() const {
@@ -195,12 +203,15 @@ namespace nob {
 				}
 			});
 
+			_menu::hk_bkr = {
+				hotkey_t::InteractionMenu,
+				hotkey_t::Phone,
+				hotkey_t::FrontendPauseAlternate,
+				hotkey_t::MeleeAttackLight
+			};
+
 			_menu::hk_lnr = hotkey_listener(
 				{
-					hotkey_t::InteractionMenu,
-					hotkey_t::Phone,
-					hotkey_t::FrontendPauseAlternate,
-
 					hotkey_t::FrontendCancel,
 					hotkey_t::FrontendDown,
 					hotkey_t::FrontendUp,
@@ -275,20 +286,14 @@ namespace nob {
 			if (!is_opened()) {
 				return;
 			}
-			_menu::draw_tsk.del();
-			_menu::hk_lnr.del();
-			_menu::cm_td.free();
-			_menu::cur.reset();
+			_menu::del_res();
 		}
 
 		void menu::close_any() {
 			if (!is_opened_any()) {
 				return;
 			}
-			_menu::draw_tsk.del();
-			_menu::hk_lnr.del();
-			_menu::cm_td.free();
-			_menu::cur.reset();
+			_menu::del_res();
 		}
 
 		int _bnr_sf;
@@ -346,59 +351,78 @@ namespace nob {
 
 		bool _fm_pause = true;
 
-		void takeover_frontend_menu(bool toggle) {
-			static hotkey_listener hk_lnr;
-			static key_listener kl;
+		void _takeover_frontend_menu(bool toggle) {
+			static hotkey_listener hk_lnr, hk_bkr;
+
 			if (toggle) {
 				if (hk_lnr) {
 					return;
 				}
-				hk_lnr = {
-					hotkey_t::FrontendPause,
-					hotkey_t::FrontendPauseAlternate
-				};
-				kl = key_listener([](int code, bool down)->bool {
-					switch (code) {
-						case 'P':
-						case VK_ESCAPE:
-							if (down) {
-								static key_listener kb_bk_all;
-								if (kb_bk_all) {
+				hk_lnr = hotkey_listener(
+					{
+						hotkey_t::FrontendPause,
+						hotkey_t::FrontendPauseAlternate
+					},
+					[](hotkey_t hk, bool down)->bool {
+						switch (hk) {
+							case hotkey_t::FrontendPause:
+							case hotkey_t::FrontendPauseAlternate: {
+								static bool opening = false;
+								if (opening) {
 									return false;
 								}
-								kb_bk_all = key_listener([](int code, bool down)->bool {
-									if (code == 'P' && down && ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
-										ntv::UI::SET_FRONTEND_ACTIVE(false);
+								if (!down) {
+									opening = true;
+									if (!_fm_pause) {
+										hk_bkr = hotkey_listener(
+											{
+												hotkey_t::FrontendDown,
+												hotkey_t::FrontendUp,
+												hotkey_t::FrontendCancel,
+												hotkey_t::FrontendAccept
+											},
+											[](hotkey_t, bool)->bool {
+												return false;
+											}
+										);
+										ntv::UI::ACTIVATE_FRONTEND_MENU(-1171018317, false, -1);
+										while (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
+											yield();
+										}
+										hk_lnr.prevent_default(false);
+										while (ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
+											yield();
+										}
+										hk_bkr.del();
+										hk_lnr.prevent_default();
+									} else {
+										ntv::UI::ACTIVATE_FRONTEND_MENU(-1171018317, true, -1);
 									}
-									return false;
-								});
-								ntv::UI::ACTIVATE_FRONTEND_MENU(-1171018317, _fm_pause, -1);
-								while (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
-									yield();
+									opening = false;
 								}
-								task([]() {
-									if (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
-										kb_bk_all.del();
-										this_task::del();
-									}
-								});
+								return false;
 							}
-							return false;
-						default:
-							return true;
-					}
-					return true;
-				});
+							default:
+								break;
+						}
+						return false;
+					},
+					true
+				);
 			} else if (hk_lnr) {
-				kl.del();
 				hk_lnr.del();
+				if (hk_bkr) {
+					hk_bkr.del();
+				}
 			}
 		}
 
-		void frontend_menu_cant_be_pause_game(bool toggle) {
-			_fm_pause = !toggle;
+		void enable_online_frontend_menu(bool toggle) {
 			if (toggle) {
-				takeover_frontend_menu(true);
+				_fm_pause = !toggle;
+				_takeover_frontend_menu(true);
+			} else {
+				_takeover_frontend_menu(false);
 			}
 		}
 

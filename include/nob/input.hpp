@@ -40,9 +40,13 @@ namespace nob {
 		public:
 			hotkey_listener() = default;
 
-			hotkey_listener(hotkey_t, std::function<bool(hotkey_t, bool)> lnr = nullptr);
+			hotkey_listener(std::initializer_list<hotkey_t>, std::function<bool(hotkey_t, bool)> lnr, bool is_prevent_default = false);
 
-			hotkey_listener(std::initializer_list<hotkey_t>, std::function<bool(hotkey_t, bool)> lnr = nullptr);
+			hotkey_listener(std::initializer_list<hotkey_t> hks) : hotkey_listener(hks, nullptr, true) {}
+
+			hotkey_listener(hotkey_t hk, std::function<bool(hotkey_t, bool)> lnr, bool is_prevent_default = false) : hotkey_listener({hk}, lnr, is_prevent_default) {}
+
+			hotkey_listener(hotkey_t hk) : hotkey_listener({hk}, nullptr, true) {}
 
 			hotkey_listener(hotkey_listener &&);
 
@@ -52,9 +56,11 @@ namespace nob {
 				del();
 			}
 
-			void del();
-
 			operator bool() const;
+
+			void prevent_default(bool toggle = true);
+
+			void del();
 
 		private:
 			std::vector<int> _hks;
@@ -65,6 +71,7 @@ namespace nob {
 					>
 				>::iterator
 			> _lnr_its;
+			bool _pd;
 	};
 
 	vector2 mouse_pos();

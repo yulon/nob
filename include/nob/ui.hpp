@@ -349,8 +349,7 @@ namespace nob {
 			}
 		}
 
-		void takeover_frontend_menu(bool toggle = true);
-		void frontend_menu_cant_be_pause_game(bool toggle = true);
+		void enable_online_frontend_menu(bool toggle = true);
 
 		inline void loading_screen(bool toggle = true, int fade_duration = 500) {
 			if (toggle) {

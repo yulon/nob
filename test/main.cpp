@@ -368,17 +368,17 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Other", []() {
 			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
 
-			nob::task([]() {
+/*			nob::task([]() {
 				if (
-					nob::ntv::CONTROLS::IS_CONTROL_PRESSED(0, (int)nob::hotkey_t::MeleeAttackLight) ||
-					nob::ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, (int)nob::hotkey_t::MeleeAttackLight)
+					nob::ntv::CONTROLS::IS_CONTROL_PRESSED(0, (int)nob::hotkey_t::FrontendDown) ||
+					nob::ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, (int)nob::hotkey_t::FrontendDown)
 				) {
 					nob::log("n ", nob::ntv::GAMEPLAY::GET_FRAME_COUNT());
-					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::hotkey_t::MeleeAttackLight, true);
+					nob::ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, (int)nob::hotkey_t::FrontendDown, true);
 				}
 			});
 
-/*			nob::sleep(5000);
+			nob::sleep(5000);
 			nob::log("\n");
 			nob::log("{ \"E\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 51, 0), "\" }");
 			nob::log("{ \"enter\", \"", nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, 201, 0), "\" }");
@@ -553,6 +553,9 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 		flag("Disable Story Features", [](bool val) {
 			nob::ui::disable_sp_features(val);
 		}),
+		flag("Enable Online Frontend Menu", [](bool val) {
+			nob::ui::enable_online_frontend_menu(val);
+		}),
 		flag("Disable Wheel Slowmo", [](bool val) {
 			nob::ui::disable_wheel_slowmo(val);
 		})
@@ -587,23 +590,10 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 nob::hotkey_listener ia_menu_open_hotkey(
 	nob::hotkey_t::InteractionMenu,
 	[](nob::hotkey_t, bool down)->bool {
-		static nob::hotkey_listener ia_menu_close_hotkey;
 		if (down) {
-			ia_menu.open();
-
-			// Because menu's internal hotkey_listener will cancel bubble for hotkey_t::InteractionMenu,
-			// so need ia_menu_close_hotkey override it.
-			ia_menu_close_hotkey = nob::hotkey_listener(
-				nob::hotkey_t::InteractionMenu,
-				[](nob::hotkey_t, bool down)->bool {
-					if (down) {
-						ia_menu.close();
-						ia_menu_close_hotkey.del();
-					}
-					return false;
-				}
-			);
+			ia_menu.toggle();
 		}
 		return false;
-	}
+	},
+	true
 );
