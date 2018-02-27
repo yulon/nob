@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ntv/consts.hpp"
+#include "ntv.hpp"
 #include "vector.hpp"
 
 #include <functional>
@@ -74,7 +74,13 @@ namespace nob {
 			bool _pd;
 	};
 
+	bool is_hotkey_down(hotkey_t);
+
 	vector2 mouse_pos();
+
+	inline void mouse_pos(const vector2 &pos) {
+		ntv::CONTROLS::_SET_CURSOR_LOCATION(pos.x, pos.y);
+	}
 
 	vector2_i mouse_pos_i();
 

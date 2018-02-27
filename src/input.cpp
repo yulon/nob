@@ -298,6 +298,13 @@ namespace nob {
 		_lnr_its.clear();
 	}
 
+	bool is_hotkey_down(hotkey_t hk) {
+		return
+			ntv::CONTROLS::IS_CONTROL_PRESSED(0, static_cast<int>(hk)) ||
+			ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, static_cast<int>(hk))
+		;
+	}
+
 	vector2_i _mouse_pos;
 
 	vector2 mouse_pos() {
