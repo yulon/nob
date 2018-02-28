@@ -207,8 +207,7 @@ namespace nob {
 				{
 					hotkey_t::InteractionMenu,
 					hotkey_t::Phone,
-					hotkey_t::FrontendPauseAlternate,
-					hotkey_t::MeleeAttackLight
+					hotkey_t::FrontendPauseAlternate
 				},
 				[](hotkey_t, bool)->bool {
 					return false;
@@ -224,13 +223,22 @@ namespace nob {
 					hotkey_t::FrontendAccept
 				},
 				[](hotkey_t hk, bool down)->bool {
+					if (!_menu::cur.get()) {
+						if (hk == hotkey_t::FrontendCancel && !down) {
+							_menu::hk_lnr.del();
+							_menu::hk_bkr.del();
+						}
+						return false;
+					}
 					switch (hk) {
 						case hotkey_t::FrontendCancel:
 							if (down) {
 								if (_menu::cur->_li_stack.size() > 1) {
 									_menu::cur->_li_stack.pop();
 								} else if (_menu::cur->_can_cls) {
-									close_any();
+									_menu::draw_tsk.del();
+									_menu::cm_td.free();
+									_menu::cur.reset();
 								}
 							}
 							break;
@@ -313,45 +321,107 @@ namespace nob {
 		});
 
 		void banner(const std::string &text) {
-			clear_banner();
-
-			_bnr_tsk = task([text]() {
-				if (!_bnr_sf) {
-					_bnr_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("MP_BIG_MESSAGE_FREEMODE");
-					while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
-						yield();
-					}
-
-					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "SHOW_MISSION_PASSED_MESSAGE");
-					if (text.empty()) {
-						ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("M_FB4P3_P");
-					} else {
-						ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
-						ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
-					}
-
-					ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
-					ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("M_FB4P3");
-					ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
-					ntv::GRAPHICS::_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(100);
-					ntv::GRAPHICS::_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(true);
-					ntv::GRAPHICS::_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(0);
-					ntv::GRAPHICS::_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(true);
-					ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+			if (!_bnr_sf) {
+				_bnr_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("MP_BIG_MESSAGE_FREEMODE");
+				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
+					yield();
 				}
-				nob::ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_bnr_sf, 255, 255, 255, 255, 0);
+			}
+
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "SHOW_MISSION_PASSED_MESSAGE");
+			if (text.empty()) {
+				ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("M_FB4P3_P");
+			} else {
+				ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+				ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
+			}
+
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("M_FB4P3");
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(100);
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(true);
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(0);
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(true);
+			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
+			_bnr_tsk = task([]() {
+				ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_bnr_sf, 255, 255, 255, 255, 0);
 			});
 		}
 
 		void clear_banner() {
-			if (_bnr_tsk) {
-				_bnr_tsk.del();
-			}
 			if (_bnr_sf) {
 				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
+					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "TRANSITION_OUT");
+					ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+					sleep(500);
 					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
 				}
 				_bnr_sf = 0;
+			}
+			if (_bnr_tsk) {
+				_bnr_tsk.del();
+			}
+		}
+
+		int _btn_bar_sf;
+		task _btn_bar_tsk;
+
+		initer _reset_btn_bar_sf([]() {
+			_btn_bar_sf = 0;
+			if (_btn_bar_tsk) {
+				_btn_bar_tsk.del();
+			}
+		});
+
+		void button_bar(std::vector<std::pair<std::string, std::vector<hotkey_t>>> buttons) {
+			if (!_btn_bar_sf) {
+				_btn_bar_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("instructional_buttons");
+				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
+					yield();
+				}
+			}
+
+			ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CLEAR_ALL");
+
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "TOGGLE_MOUSE_BUTTONS");
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(false);
+			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
+			ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CREATE_CONTAINER");
+
+			for (size_t i = 0; i < buttons.size(); ++i) {
+				auto &pr = buttons[buttons.size() - 1 - i];
+				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "SET_DATA_SLOT");
+				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(i);
+				for (auto it = pr.second.rbegin(); it != pr.second.rend(); ++it) {
+					ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME(
+						ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, static_cast<int>(*it), 0)
+					);
+				}
+				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING(pr.first.c_str());
+				ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+			}
+
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "DRAW_INSTRUCTIONAL_BUTTONS");
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(-1);
+			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
+			_btn_bar_tsk = task([]() {
+				ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_btn_bar_sf, 255, 255, 255, 255, 0);
+			});
+		}
+
+		void clear_button_bar() {
+			if (_btn_bar_sf) {
+				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
+					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_btn_bar_sf);
+				}
+				_btn_bar_sf = 0;
+			}
+			if (_btn_bar_tsk) {
+				_btn_bar_tsk.del();
 			}
 		}
 

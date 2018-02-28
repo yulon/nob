@@ -5,7 +5,7 @@
 			"params": [
 				{
 					"type": "Player",
-					"name": "playerid"
+					"name": "playerID"
 				}
 			],
 			"results": "Ped",
@@ -86,7 +86,7 @@
 		"0x407C7F91DDB46C16": {
 			"name": "GET_NUMBER_OF_PLAYERS",
 			"params": [],
-			"results": "Vehicle",
+			"results": "int",
 			"jhash": "0x4C1B8867"
 		},
 		"0x37039302F4E0A008": {
@@ -156,16 +156,16 @@
 					"name": "player"
 				},
 				{
-					"type": "Player",
-					"name": "position"
+					"type": "float",
+					"name": "x"
 				},
 				{
-					"type": "Vehicle",
-					"name": "p2"
+					"type": "float",
+					"name": "y"
 				},
 				{
-					"type": "Ped*",
-					"name": "p3"
+					"type": "float",
+					"name": "z"
 				}
 			],
 			"results": "void",
@@ -365,7 +365,7 @@
 			"name": "SET_POLICE_RADAR_BLIPS",
 			"params": [
 				{
-					"type": "BOOL",
+					"type": "Any",
 					"name": "toggle"
 				}
 			],
@@ -1047,11 +1047,11 @@
 			"name": "IS_PLAYER_FREE_FOR_AMBIENT_TASK",
 			"params": [
 				{
-					"type": "Player",
+					"type": "Vehicle",
 					"name": "player"
 				}
 			],
-			"results": "BOOL",
+			"results": "Player",
 			"jhash": "0x85C7E232"
 		},
 		"0x4F8644AF03D0E0D6": {
@@ -1149,7 +1149,7 @@
 			"name": "SET_PLAYER_MAY_NOT_ENTER_ANY_VEHICLE",
 			"params": [
 				{
-					"type": "Player",
+					"type": "Player*",
 					"name": "player"
 				}
 			],
@@ -2780,7 +2780,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p1"
+					"name": "p2"
 				}
 			],
 			"results": "BOOL",
@@ -4282,7 +4282,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p17"
+					"name": "teleport"
 				},
 				{
 					"type": "int",
@@ -5123,8 +5123,8 @@
 					"name": "p1"
 				},
 				{
-					"type": "Any",
-					"name": "p2"
+					"type": "Hash",
+					"name": "relationshipHash"
 				}
 			],
 			"results": "void",
@@ -5167,7 +5167,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "drownProof"
+					"name": "p8"
 				}
 			],
 			"results": "void",
@@ -5341,8 +5341,8 @@
 					"name": "alphaLevel"
 				},
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "skin"
 				}
 			],
 			"results": "void",
@@ -8374,7 +8374,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p2"
+					"name": "armorFirst"
 				}
 			],
 			"results": "void",
@@ -16981,8 +16981,8 @@
 			"name": "GET_TOTAL_DURATION_OF_VEHICLE_RECORDING_ID",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "recordingID"
 				}
 			],
 			"results": "float",
@@ -17098,8 +17098,8 @@
 			"name": "STOP_PLAYBACK_RECORDED_VEHICLE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Vehicle",
+					"name": "vehicle"
 				}
 			],
 			"results": "void",
@@ -17131,8 +17131,8 @@
 			"name": "IS_PLAYBACK_GOING_ON_FOR_VEHICLE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Vehicle",
+					"name": "vehicle"
 				}
 			],
 			"results": "BOOL",
@@ -17153,11 +17153,11 @@
 			"name": "GET_CURRENT_PLAYBACK_FOR_VEHICLE",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Vehicle",
+					"name": "vehicle"
 				}
 			],
-			"results": "Any",
+			"results": "int",
 			"jhash": "0xA3F44390"
 		},
 		"0xAB8E2EDA0C0A5883": {
@@ -17876,14 +17876,14 @@
 			"params": [
 				{
 					"type": "Vehicle",
-					"name": "vehicle"
+					"name": "v"
 				},
 				{
 					"type": "int",
-					"name": "doorIndex"
+					"name": "rwing"
 				}
 			],
-			"results": "BOOL",
+			"results": "Vehicle",
 			"jhash": "0xC2385B6F"
 		},
 		"0x2497C4717C8B881E": {
@@ -21664,16 +21664,16 @@
 			"name": "_SET_CARGOBOB_HOOK_POSITION",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Vehicle",
+					"name": "cargobob"
 				},
 				{
 					"type": "float",
-					"name": "p1"
+					"name": "xOffset"
 				},
 				{
 					"type": "float",
-					"name": "p2"
+					"name": "yOffset"
 				},
 				{
 					"type": "int",
@@ -27116,12 +27116,12 @@
 					"name": "targetEntity"
 				},
 				{
-					"type": "int",
-					"name": "drivingStyle"
-				},
-				{
 					"type": "float",
 					"name": "speed"
+				},
+				{
+					"type": "int",
+					"name": "drivingStyle"
 				},
 				{
 					"type": "int",
@@ -31058,7 +31058,7 @@
 			"params": [
 				{
 					"type": "int",
-					"name": "stackSize"
+					"name": "threadId"
 				}
 			],
 			"results": "int",
@@ -35876,16 +35876,16 @@
 			"name": "ADD_PED_TO_CONVERSATION",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "int",
+					"name": "pedIndex"
 				},
 				{
-					"type": "Any",
+					"type": "Ped",
 					"name": "ped"
 				},
 				{
 					"type": "char*",
-					"name": "p2"
+					"name": "name"
 				}
 			],
 			"results": "void",
@@ -40882,7 +40882,7 @@
 				},
 				{
 					"type": "int",
-					"name": "p9"
+					"name": "transitionType"
 				}
 			],
 			"results": "void",
@@ -41028,7 +41028,7 @@
 					"name": "cam"
 				}
 			],
-			"results": "BOOL",
+			"results": "int",
 			"jhash": "0xF8AEB6BD"
 		},
 		"0x83B8201ED82A9A2D": {
@@ -43570,11 +43570,11 @@
 			"params": [
 				{
 					"type": "Any",
-					"name": "p0"
+					"name": "ammoType"
 				},
 				{
-					"type": "Any",
-					"name": "p1"
+					"type": "int",
+					"name": "ammo"
 				}
 			],
 			"results": "void",
@@ -46603,7 +46603,7 @@
 				},
 				{
 					"type": "BOOL",
-					"name": "p1"
+					"name": "showInBrief"
 				}
 			],
 			"results": "int",
@@ -47093,7 +47093,7 @@
 				},
 				{
 					"type": "int",
-					"name": "shape"
+					"name": "duration"
 				}
 			],
 			"results": "void",
@@ -49017,8 +49017,8 @@
 			"name": "",
 			"params": [
 				{
-					"type": "Any",
-					"name": "p0"
+					"type": "Blip",
+					"name": "blip"
 				},
 				{
 					"type": "BOOL",
@@ -49029,7 +49029,7 @@
 			"jhash": "0x1D99F676"
 		},
 		"0x74513EA3E505181E": {
-			"name": "_SET_BLIP_CHECKED",
+			"name": "SHOW_TICK_ON_BLIP",
 			"params": [
 				{
 					"type": "Blip",
@@ -56949,7 +56949,7 @@
 			"jhash": "0x516862EB"
 		},
 		"0xC3D0841A0CC546A6": {
-			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_INT",
+			"name": "_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT",
 			"params": [
 				{
 					"type": "int",
@@ -56960,7 +56960,7 @@
 			"jhash": "0x716777CB"
 		},
 		"0xD69736AAE04DB51A": {
-			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_FLOAT",
+			"name": "_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_FLOAT",
 			"params": [
 				{
 					"type": "float",
@@ -56971,7 +56971,7 @@
 			"jhash": "0x9A01FFDA"
 		},
 		"0xC58424BA936EB458": {
-			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL",
+			"name": "_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL",
 			"params": [
 				{
 					"type": "BOOL",
@@ -57005,7 +57005,7 @@
 			"jhash": "0x2E80DB52"
 		},
 		"0xBA7148484BD90365": {
-			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING",
+			"name": "_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING",
 			"params": [
 				{
 					"type": "char*",
@@ -57016,7 +57016,7 @@
 			"jhash": "0x4DAAD55B"
 		},
 		"0xE83A3E3557A56640": {
-			"name": "_ADD_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME",
+			"name": "_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME",
 			"params": [
 				{
 					"type": "char*",
@@ -65324,7 +65324,7 @@
 					"name": "z"
 				},
 				{
-					"type": "float",
+					"type": "float*",
 					"name": "height"
 				}
 			],
@@ -65907,7 +65907,7 @@
 			"name": "_SHAPE_TEST_RESULT_ENTITY",
 			"params": [
 				{
-					"type": "Entity",
+					"type": "Hash",
 					"name": "entityHit"
 				}
 			],
@@ -66904,7 +66904,7 @@
 		"0xBA416D68C631496A": {
 			"name": "NETWORK_SESSION_IS_VISIBLE",
 			"params": [],
-			"results": "Any",
+			"results": "BOOL",
 			"jhash": "0x4977AC28"
 		},
 		"0xA73667484D7037C3": {
@@ -68109,7 +68109,7 @@
 			"jhash": "0xF49C1533"
 		},
 		"0x796A87B3B68D1F3D": {
-			"name": "",
+			"name": "_NETWORK_CHECK_DATA_MANAGER_FOR_HANDLE",
 			"params": [
 				{
 					"type": "Any*",
@@ -70366,11 +70366,11 @@
 			"jhash": "0x966C90FD"
 		},
 		"0x5835D9CD92E83184": {
-			"name": "",
+			"name": "_NETWORK_GET_PLAYER_CREW_EMBLEM_TXD_NAME",
 			"params": [
 				{
-					"type": "Any*",
-					"name": "p0"
+					"type": "Player*",
+					"name": "player"
 				},
 				{
 					"type": "Any*",
@@ -73102,7 +73102,7 @@
 			"jhash": "0x0D35DD93"
 		},
 		"0xCD67AD041A394C9C": {
-			"name": "_GET_CONTENT_USER_ID",
+			"name": "GET_PLAYER_ADVANCED_MODIFIER_PRIVILEGES",
 			"params": [
 				{
 					"type": "int",
@@ -77683,7 +77683,7 @@
 			"name": "",
 			"params": [
 				{
-					"type": "BOOL",
+					"type": "BOOL*",
 					"name": "p0"
 				}
 			],
@@ -77749,7 +77749,7 @@
 			"params": [
 				{
 					"type": "Hash",
-					"name": "hash"
+					"name": "itemHash"
 				},
 				{
 					"type": "Hash",

@@ -14,6 +14,7 @@
 #include <vector>
 #include <stack>
 #include <initializer_list>
+#include <utility>
 
 namespace nob {
 	namespace ui {
@@ -300,6 +301,9 @@ namespace nob {
 
 		void banner(const std::string &text);
 		void clear_banner();
+
+		void button_bar(std::vector<std::pair<std::string, std::vector<hotkey_t>>>);
+		void clear_button_bar();
 
 		void disable_sp_features(bool toggle = true);
 		void disable_wheel_slowmo(bool toggle = true);

@@ -368,6 +368,8 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Other", []() {
 			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
 
+			nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, static_cast<int>(nob::hotkey_t::FrontendCancel), 0));
+
 /*			nob::task([]() {
 				if (
 					nob::ntv::CONTROLS::IS_CONTROL_PRESSED(0, (int)nob::hotkey_t::FrontendDown) ||
@@ -595,7 +597,24 @@ nob::hotkey_listener ia_menu_open_hotkey(
 	nob::hotkey_t::InteractionMenu,
 	[](nob::hotkey_t, bool down)->bool {
 		if (down) {
-			ia_menu.toggle();
+			ia_menu.open();
+
+			// Because menu's internal hotkey_listener will cancel bubble for hotkey_t::InteractionMenu,
+			// so need ia_menu_close_hotkey override it.
+			static nob::hotkey_listener ia_menu_close_hotkey;
+			ia_menu_close_hotkey = nob::hotkey_listener(
+				nob::hotkey_t::InteractionMenu,
+				[](nob::hotkey_t, bool down)->bool {
+					if (down) {
+						ia_menu_close_hotkey.del();
+						if (ia_menu.is_opened()) {
+							ia_menu.close();
+							return false;
+						}
+					}
+					return true; // Bubble to ia_menu_open_hotkey.
+				}
+			);
 		}
 		return false;
 	},
