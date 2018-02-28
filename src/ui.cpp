@@ -366,12 +366,16 @@ namespace nob {
 		}
 
 		int _btn_bar_sf;
+		std::vector<std::pair<std::string, std::vector<hotkey_t>>> _btn_bar_data;
 		task _btn_bar_tsk;
 
 		initer _reset_btn_bar_sf([]() {
 			_btn_bar_sf = 0;
 			if (_btn_bar_tsk) {
 				_btn_bar_tsk.del();
+			}
+			if (_btn_bar_data.size()) {
+				_btn_bar_data.clear();
 			}
 		});
 
@@ -381,34 +385,37 @@ namespace nob {
 				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
 					yield();
 				}
-			}
+				ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CLEAR_ALL");
 
-			ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CLEAR_ALL");
-
-			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "TOGGLE_MOUSE_BUTTONS");
-			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(false);
-			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
-
-			ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CREATE_CONTAINER");
-
-			for (size_t i = 0; i < buttons.size(); ++i) {
-				auto &pr = buttons[buttons.size() - 1 - i];
-				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "SET_DATA_SLOT");
-				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(i);
-				for (auto it = pr.second.rbegin(); it != pr.second.rend(); ++it) {
-					ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME(
-						ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, static_cast<int>(*it), 0)
-					);
-				}
-				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING(pr.first.c_str());
+				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "TOGGLE_MOUSE_BUTTONS");
+				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(false);
 				ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
+				ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CREATE_CONTAINER");
 			}
 
-			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "DRAW_INSTRUCTIONAL_BUTTONS");
-			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(-1);
-			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+			_btn_bar_data = std::move(buttons);
 
+			if (_btn_bar_tsk) {
+				return;
+			}
 			_btn_bar_tsk = task([]() {
+				for (size_t i = 0; i < _btn_bar_data.size(); ++i) {
+					auto &pr = _btn_bar_data[_btn_bar_data.size() - 1 - i];
+					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "SET_DATA_SLOT");
+					ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(i);
+					for (auto it = pr.second.rbegin(); it != pr.second.rend(); ++it) {
+						ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME(
+							ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, static_cast<int>(*it), 0)
+						);
+					}
+					ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING(pr.first.c_str());
+					ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+				}
+				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "DRAW_INSTRUCTIONAL_BUTTONS");
+				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(-1);
+				ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
 				ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_btn_bar_sf, 255, 255, 255, 255, 0);
 			});
 		}
