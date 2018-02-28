@@ -299,7 +299,7 @@ namespace nob {
 			}, dur * 15000);
 		};
 
-		void banner(const std::string &text);
+		void banner(const std::string &title, const std::string &sub_title = "");
 		void clear_banner();
 
 		void button_bar(std::vector<std::pair<std::string, std::vector<hotkey_t>>>);

@@ -313,14 +313,20 @@ namespace nob {
 		int _bnr_sf;
 		task _bnr_tsk;
 
-		initer _reset_bnr_sf([]() {
+		initer _reset_bnr([]() {
 			_bnr_sf = 0;
 			if (_bnr_tsk) {
 				_bnr_tsk.del();
 			}
 		});
 
-		void banner(const std::string &text) {
+		exiter _free_bnr([]() {
+			if (_bnr_sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
+				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
+			}
+		});
+
+		void banner(const std::string &title, const std::string &sub_title) {
 			if (!_bnr_sf) {
 				_bnr_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("MP_BIG_MESSAGE_FREEMODE");
 				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
@@ -328,21 +334,24 @@ namespace nob {
 				}
 			}
 
-			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "SHOW_MISSION_PASSED_MESSAGE");
-			if (text.empty()) {
-				ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("M_FB4P3_P");
-			} else {
-				ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
-				ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
-			}
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "SHOW_SHARD_WASTED_MP_MESSAGE");
 
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(title.c_str());
 			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
-			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("M_FB4P3");
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(sub_title.c_str());
 			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
 			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(100);
 			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(true);
 			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(0);
 			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(true);
+
+			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "TRANSITION_UP");
 			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 
 			_bnr_tsk = task([]() {
@@ -369,7 +378,7 @@ namespace nob {
 		std::vector<std::pair<std::string, std::vector<hotkey_t>>> _btn_bar_data;
 		task _btn_bar_tsk;
 
-		initer _reset_btn_bar_sf([]() {
+		initer _reset_btn_bar([]() {
 			_btn_bar_sf = 0;
 			if (_btn_bar_tsk) {
 				_btn_bar_tsk.del();
@@ -379,9 +388,15 @@ namespace nob {
 			}
 		});
 
+		exiter _free_btn_bar([]() {
+			if (_btn_bar_sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
+				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_btn_bar_sf);
+			}
+		});
+
 		void button_bar(std::vector<std::pair<std::string, std::vector<hotkey_t>>> buttons) {
 			if (!_btn_bar_sf) {
-				_btn_bar_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("instructional_buttons");
+				_btn_bar_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE_INSTANCE("instructional_buttons");
 				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
 					yield();
 				}

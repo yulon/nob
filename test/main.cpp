@@ -368,9 +368,11 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Other", []() {
 			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
 
-			nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, static_cast<int>(nob::hotkey_t::FrontendCancel), 0));
+			//nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 1));
+			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
 
-/*			nob::task([]() {
+/*
+			nob::task([]() {
 				if (
 					nob::ntv::CONTROLS::IS_CONTROL_PRESSED(0, (int)nob::hotkey_t::FrontendDown) ||
 					nob::ntv::CONTROLS::IS_DISABLED_CONTROL_PRESSED(0, (int)nob::hotkey_t::FrontendDown)
@@ -548,6 +550,23 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			);
 
 			ia_menu.toggle();
+		}),
+		flag("Banner", [](bool val) {
+			if (val) {
+				nob::ui::banner("~r~~h~wanted", "you are noob.");
+			} else {
+				nob::ui::clear_banner();
+			}
+		}),
+		flag("Button Bar", [](bool val) {
+			if (val) {
+				nob::ui::button_bar({
+					{ "first", { nob::hotkey_t::FrontendCancel } },
+					{ "second", { nob::hotkey_t::FrontendUp, nob::hotkey_t::FrontendDown } }
+				});
+			} else {
+				nob::ui::clear_button_bar();
+			}
 		}),
 		flag("Show Cursor", [](bool val) {
 			if (val) {
