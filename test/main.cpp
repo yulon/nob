@@ -548,13 +548,17 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 			ia_menu.toggle();
 		}),
 		flag("Show Cursor", [](bool val) {
-			nob::ui::show_cursor(val);
+			if (val) {
+				nob::ui::show_cursor();
+			} else {
+				nob::ui::hide_cursor();
+			}
 		}),
 		flag("Disable Story Features", [](bool val) {
 			nob::ui::disable_sp_features(val);
 		}),
-		flag("Enable Online Frontend Menu", [](bool val) {
-			nob::ui::enable_online_frontend_menu(val);
+		flag("Enable MP Frontend Menu", [](bool val) {
+			nob::ui::enable_mp_frontend_menu(val);
 		}),
 		flag("Disable Wheel Slowmo", [](bool val) {
 			nob::ui::disable_wheel_slowmo(val);
