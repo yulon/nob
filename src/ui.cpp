@@ -417,7 +417,7 @@ namespace nob {
 			}
 		}
 
-		void enable_online_frontend_menu(bool toggle) {
+		void enable_mp_frontend_menu(bool toggle) {
 			if (toggle) {
 				_fm_pause = !toggle;
 				_takeover_frontend_menu(true);
@@ -443,14 +443,18 @@ namespace nob {
 			}
 		}
 
-		void show_cursor(bool toggle) {
-			static task tsk;
-			if (toggle) {
-				if (!tsk) {
-					tsk = task(ntv::UI::_SHOW_CURSOR_THIS_FRAME);
-				}
-			} else if (tsk) {
-				tsk.del();
+		task _cursor_tsk;
+
+		void show_cursor(cursor_icon_t ico) {
+			ntv::UI::_SET_CURSOR_SPRITE(static_cast<int>(ico));
+			if (!_cursor_tsk) {
+				_cursor_tsk = task(ntv::UI::_SHOW_CURSOR_THIS_FRAME);
+			}
+		}
+
+		void hide_cursor() {
+			if (_cursor_tsk) {
+				_cursor_tsk.del();
 			}
 		}
 	} /* ui */

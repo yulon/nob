@@ -349,7 +349,7 @@ namespace nob {
 			}
 		}
 
-		void enable_online_frontend_menu(bool toggle = true);
+		void enable_mp_frontend_menu(bool toggle = true);
 
 		inline void loading_screen(bool toggle = true, int fade_duration = 500) {
 			if (toggle) {
@@ -391,6 +391,23 @@ namespace nob {
 			ntv::UI::_REMOVE_LOADING_PROMPT();
 		}
 
-		void show_cursor(bool toggle = true);
+		enum class cursor_icon_t : int {
+			none = 0,
+			normal = 1,
+			transparent_normal = 2,
+			pre_grab = 3,
+			grab = 4,
+			middle_finger = 5,
+			left_arrow = 6,
+			right_arrow = 7,
+			up_arrow = 8,
+			down_arrow = 9,
+			horizontal_expand = 10,
+			add = 11,
+			remove = 12
+		};
+
+		void show_cursor(cursor_icon_t ico = cursor_icon_t::normal);
+		void hide_cursor();
 	} /* ui */
 } /* nob */
