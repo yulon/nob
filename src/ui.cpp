@@ -203,12 +203,18 @@ namespace nob {
 				}
 			});
 
-			_menu::hk_bkr = {
-				hotkey_t::InteractionMenu,
-				hotkey_t::Phone,
-				hotkey_t::FrontendPauseAlternate,
-				hotkey_t::MeleeAttackLight
-			};
+			_menu::hk_bkr = hotkey_listener(
+				{
+					hotkey_t::InteractionMenu,
+					hotkey_t::Phone,
+					hotkey_t::FrontendPauseAlternate,
+					hotkey_t::MeleeAttackLight
+				},
+				[](hotkey_t, bool)->bool {
+					return false;
+				},
+				true
+			);
 
 			_menu::hk_lnr = hotkey_listener(
 				{
@@ -349,10 +355,10 @@ namespace nob {
 			}
 		}
 
-		bool _fm_pause = true;
+		bool _fm_opened = false;
 
-		void _takeover_frontend_menu(bool toggle) {
-			static hotkey_listener hk_lnr, hk_bkr;
+		void enable_mp_frontend_menu(bool toggle) {
+			static hotkey_listener hk_lnr;
 
 			if (toggle) {
 				if (hk_lnr) {
@@ -363,47 +369,20 @@ namespace nob {
 						hotkey_t::FrontendPause,
 						hotkey_t::FrontendPauseAlternate
 					},
-					[](hotkey_t hk, bool down)->bool {
-						switch (hk) {
-							case hotkey_t::FrontendPause:
-							case hotkey_t::FrontendPauseAlternate: {
-								static bool opening = false;
-								if (opening) {
-									return false;
-								}
-								if (!down) {
-									opening = true;
-									if (!_fm_pause) {
-										hk_bkr = hotkey_listener(
-											{
-												hotkey_t::FrontendDown,
-												hotkey_t::FrontendUp,
-												hotkey_t::FrontendCancel,
-												hotkey_t::FrontendAccept
-											},
-											[](hotkey_t, bool)->bool {
-												return false;
-											}
-										);
-										ntv::UI::ACTIVATE_FRONTEND_MENU(-1171018317, false, -1);
-										while (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
-											yield();
-										}
-										hk_lnr.prevent_default(false);
-										while (ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
-											yield();
-										}
-										hk_bkr.del();
-										hk_lnr.prevent_default();
-									} else {
-										ntv::UI::ACTIVATE_FRONTEND_MENU(-1171018317, true, -1);
-									}
-									opening = false;
-								}
+					[](hotkey_t, bool down)->bool {
+						if (!down) {
+							if (_fm_opened) {
 								return false;
 							}
-							default:
-								break;
+							_fm_opened = true;
+							ntv::UI::ACTIVATE_FRONTEND_MENU(-1171018317, false, -1);
+							while (!ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
+								yield();
+							}
+							while (ntv::UI::IS_PAUSE_MENU_ACTIVE()) {
+								yield();
+							}
+							_fm_opened = false;
 						}
 						return false;
 					},
@@ -411,18 +390,6 @@ namespace nob {
 				);
 			} else if (hk_lnr) {
 				hk_lnr.del();
-				if (hk_bkr) {
-					hk_bkr.del();
-				}
-			}
-		}
-
-		void enable_mp_frontend_menu(bool toggle) {
-			if (toggle) {
-				_fm_pause = !toggle;
-				_takeover_frontend_menu(true);
-			} else {
-				_takeover_frontend_menu(false);
 			}
 		}
 

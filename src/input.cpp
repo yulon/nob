@@ -131,6 +131,10 @@ namespace nob {
 
 	//const char *key_code_to_str(int code);
 
+	namespace ui {
+		extern bool _fm_opened;
+	}
+
 	namespace _hkl {
 		std::unordered_set<int> downs;
 
@@ -170,7 +174,7 @@ namespace nob {
 		}
 
 		void recv() {
-			if (!lnr_li_map) {
+			if (!lnr_li_map || ui::_fm_opened) {
 				return;
 			}
 			for (auto &pr : *lnr_li_map) {
@@ -191,6 +195,9 @@ namespace nob {
 		}
 
 		void prevent_defaults() {
+			if (!blk_map || ui::_fm_opened) {
+				return;
+			}
 			for (auto &pr : *blk_map) {
 				if (pr.second) {
 					ntv::CONTROLS::DISABLE_CONTROL_ACTION(0, pr.first, true);
