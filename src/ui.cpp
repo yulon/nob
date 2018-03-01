@@ -111,8 +111,8 @@ namespace nob {
 			_menu::cm_td.load();
 
 			_menu::draw_tsk = task([]() {
-				float x = padding_x;
-				float y = padding_y;
+				float x = padding.left;
+				float y = padding.top;
 				float w = width();
 				float h = title_bg_height;
 				_menu::cm_td.draw("interaction_bgd", x, y, w, h);
@@ -423,6 +423,8 @@ namespace nob {
 						ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME(
 							ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(0, static_cast<int>(*it), 0)
 						);
+						//ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(false);
+						//ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(358);
 					}
 					ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING(pr.first.c_str());
 					ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();

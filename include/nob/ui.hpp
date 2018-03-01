@@ -19,8 +19,10 @@
 namespace nob {
 	namespace ui {
 		static constexpr float aspect_ratio = 9.0f / 16.0f;
-		static constexpr float padding_x = 29.0f / 1920.0f;
-		static constexpr float padding_y = 17.0f / 1080.0f;
+		static constexpr vector2 padding_size { 29.0f / 1920.0f, 17.0f / 1080.0f };
+		static constexpr struct { float left, top, right, bottom; } padding {
+			padding_size.x, padding_size.y, 1.0f - padding_size.x, 1.0f - padding_size.y
+		};
 
 		struct _item {
 			std::string name;

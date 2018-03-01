@@ -371,6 +371,12 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 1));
 			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
 
+			nob::ntv::PED::SET_PED_TO_RAGDOLL(nob::player::body(), -1, -1, 0, false, false, false);
+			nob::sleep(5000);
+			nob::ntv::PED::RESET_PED_RAGDOLL_TIMER(nob::player::body());
+			nob::ntv::PLAYER::SET_PLAYER_CONTROL(0, true, 0);
+			nob::ntv::GAMEPLAY::_RESET_LOCALPLAYER_STATE();
+
 /*
 			nob::task([]() {
 				if (
@@ -553,7 +559,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 		}),
 		flag("Banner", [](bool val) {
 			if (val) {
-				nob::ui::banner("~r~~h~wanted", "you are noob.");
+				nob::ui::banner("~r~~h~wasted", "you are noob.");
 			} else {
 				nob::ui::clear_banner();
 			}
