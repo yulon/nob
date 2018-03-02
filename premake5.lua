@@ -25,7 +25,7 @@ workspace "nob"
 			"src/ntv/fhtt/*.inc"
 		}
 
-		configuration { "gmake" }
+		configuration { "gmake*" }
 			targetprefix "lib"
 			targetextension ".a"
 
