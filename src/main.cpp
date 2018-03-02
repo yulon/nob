@@ -44,11 +44,11 @@ namespace nob {
 
 	void _main(HMODULE hinstDLL) {
 		std::thread([hinstDLL]() {
-			for (
-				bool ok = window::native_handle() && IsWindowVisible(window::native_handle());
-				!ok;
-				ok = window::native_handle() && IsWindowVisible(window::native_handle())
-			) {
+			while (!window::native_handle()) {
+				std::this_thread::sleep_for(std::chrono::seconds(1));
+			}
+
+			while (!IsWindowVisible(window::native_handle())) {
 				std::this_thread::sleep_for(std::chrono::seconds(1));
 			}
 
