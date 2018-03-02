@@ -13,7 +13,7 @@
 
 namespace nob {
 	namespace ntv {
-		bool _find_addrs();
+		bool _init();
 	}
 
 	namespace this_script {
@@ -54,7 +54,7 @@ namespace nob {
 
 			log.alloc_console();
 
-			_NOB_CALL_INIT_FN(ntv::_find_addrs);
+			_NOB_CALL_INIT_FN(ntv::_init);
 
 			if (shv::_init()) {
 				this_script::mode = this_script::mode_t::shv;

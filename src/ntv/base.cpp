@@ -255,7 +255,7 @@ namespace nob {
 
 		void (*script_thread_t::default_kill)(script_thread_t *);
 
-		bool _find_addrs() {
+		bool _init() {
 			auto finded = true;
 
 			auto cur_fhtt_it = fhtt.find(program::version);
