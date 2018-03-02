@@ -43,12 +43,14 @@ namespace nob {
 			}
 
 			operator bool() const {
-				return tasks->has(_cp_tsk);
+				return _cp_tsk && tasks && tasks->has(_cp_tsk);
 			}
 
 			void del() {
-				tasks->erase(_cp_tsk);
-				_cp_tsk.reset();
+				if (*this) {
+					tasks->erase(_cp_tsk);
+					_cp_tsk.reset();
+				}
 			}
 
 			void reset_dol(duration timeout = duration::disposable) {

@@ -46,8 +46,11 @@ workspace "nob"
 		libdirs { "lib" }
 		links { "nob", "psapi", "version", "MinHook" }
 
-		configuration { "gmake" }
+		configuration { "gmake*" }
 			linkoptions { "-Wl,--exclude-all-symbols", "-static" }
+
+		configuration { "vs*" }
+			linkoptions { "/include:DllMain" }
 
 		configuration "Debug"
 			defines { "DEBUG" }

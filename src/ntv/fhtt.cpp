@@ -1,35 +1,37 @@
 #include <nob/ntv/fhtt.hpp>
 #include <nob/program.hpp>
 
+#include <array>
+
 namespace nob {
 	namespace ntv {
-		const std::unordered_map<uint16_t, const std::unordered_map<uint64_t, uint64_t>> fhtt {
+		const std::unordered_map<uint64_t, uint64_t> _fhtt_1103 {
+			#include "fhtt/1103.inc"
+		};
+
+		const std::unordered_map<uint64_t, uint64_t> _fhtt_1180 {
+			#include "fhtt/1180.inc"
+		};
+
+		const std::unordered_map<uint64_t, uint64_t> _fhtt_1290 {
+			#include "fhtt/1290.inc"
+		};
+
+		const std::map<uint16_t, const std::unordered_map<uint64_t, uint64_t> &> fhtt {
 			{
 				1290,
-				{
-					#include "fhtt/1290.inc"
-				}
+				_fhtt_1290
 			},
 			{
 				1180,
-				{
-					#include "fhtt/1180.inc"
-				}
+				_fhtt_1180
 			},
 			{
 				1103,
-				{
-					#include "fhtt/1103.inc"
-				}
+				_fhtt_1103
 			}
 		};
 
-		const std::unordered_map<uint64_t, uint64_t> *const cur_fhtt_ptr = ([]()->const std::unordered_map<uint64_t, uint64_t> * {
-			auto cur_fhtt_it = fhtt.find(program::version);
-			if (cur_fhtt_it == fhtt.end()) {
-				return nullptr;
-			}
-			return &cur_fhtt_it->second;
-		})();
+		const std::unordered_map<uint64_t, uint64_t> *cur_fhtt_ptr = nullptr;
 	}
 }

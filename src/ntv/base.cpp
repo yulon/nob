@@ -1,4 +1,5 @@
 #include <nob/ntv/base.hpp>
+#include <nob/ntv/fhtt.hpp>
 #include <nob/program.hpp>
 #include <nob/hash.hpp>
 #include <nob/log.hpp>
@@ -256,6 +257,14 @@ namespace nob {
 
 		bool _find_addrs() {
 			auto finded = true;
+
+			auto cur_fhtt_it = fhtt.find(program::version);
+			if (cur_fhtt_it != fhtt.end()) {
+				cur_fhtt_ptr = &cur_fhtt_it->second;
+			} else {
+				log("nob::ntv::cur_fhtt_ptr: not found!");
+				//finded = false;
+			}
 
 			global_table._segments = program::code.match_sub({
 				// Reference from https://github.com/zorg93/EnableMpCars-GTAV
