@@ -167,11 +167,11 @@ namespace nob {
 				return ntv::ENTITY::IS_ENTITY_ON_SCREEN(_h);
 			}
 
-			float health() {
+			int health() {
 				return ntv::ENTITY::GET_ENTITY_HEALTH(_h);
 			}
 
-			float max_health() {
+			int max_health() {
 				return ntv::ENTITY::GET_ENTITY_MAX_HEALTH(_h);
 			}
 
@@ -409,11 +409,10 @@ namespace nob {
 			};
 
 			movement_t movement() const {
-				/*movement_t mm;
+				movement_t mm;
 				static_cast<entity::movement_t &>(mm) = entity::movement();
 				mm.motion_state = motion_state();
-				return mm;*/
-				return {entity::movement(), motion_state()};
+				return mm;
 			}
 
 			void movement(const movement_t &);

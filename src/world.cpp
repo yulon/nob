@@ -227,10 +227,10 @@ namespace nob {
 			switch (i) {
 				case ilp::bahama_mamas:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-1388.0013427734375, -618.419677734375, 30.819599151611328), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-1388.0013427734375f, -618.419677734375f, 30.819599151611328f), false);
 						ntv::STREAMING::REQUEST_IPL("v_bahama");
 					} else {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-1388.0013427734375, -618.419677734375, 30.819599151611328), true);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-1388.0013427734375f, -618.419677734375f, 30.819599151611328f), true);
 						ntv::STREAMING::REMOVE_IPL("v_bahama");
 					}
 					return {-1388.0013427734375, -618.419677734375, 30.819599151611328};
@@ -269,13 +269,13 @@ namespace nob {
 
 				case ilp::comedy_club:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-447.4833068847656, 280.3197021484375, 77.52149963378906), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-447.4833068847656f, 280.3197021484375f, 77.52149963378906f), false);
 						ntv::STREAMING::REQUEST_IPL("v_comedy");
 					} else {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-447.4833068847656, 280.3197021484375, 77.52149963378906), true);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-447.4833068847656f, 280.3197021484375f, 77.52149963378906f), true);
 						ntv::STREAMING::REMOVE_IPL("v_comedy");
 					}
-					return {-447.4833068847656, 280.3197021484375, 77.52149963378906};
+					return {-447.4833068847656f, 280.3197021484375f, 77.52149963378906f};
 
 				case ilp::fame_or_shame_stadium:
 					if (toggle) {
@@ -306,7 +306,7 @@ namespace nob {
 					return {105.7607f, -746.646f, 46.18266f};
 
 				case ilp::foundry: {
-					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1087.1951904296875, -1988.4449462890625, 28.649);
+					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1087.1951904296875f, -1988.4449462890625f, 28.649f);
 					if (toggle) {
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
 						ntv::INTERIOR::DISABLE_INTERIOR(intr, false);
@@ -329,7 +329,7 @@ namespace nob {
 					return {-1149.709f, -1521.088f, 10.78267f};
 
 				case ilp::epsilon: {
-					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(245.15640258789062, 370.21099853515625, 104.73819732666016);
+					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(245.15640258789062f, 370.21099853515625f, 104.73819732666016f);
 					if (toggle) {
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
 						ntv::INTERIOR::DISABLE_INTERIOR(intr, false);
@@ -383,7 +383,7 @@ namespace nob {
 
 				case ilp::jewel_store:
 					if (toggle) {
-						auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-630.4, -236.7, 40.0);
+						auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-630.4f, -236.7f, 40.0f);
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
 						ntv::INTERIOR::UNPIN_INTERIOR(intr);
 						ntv::INTERIOR::DISABLE_INTERIOR(intr, false);
@@ -397,7 +397,7 @@ namespace nob {
 
 				case ilp::lab:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(3522.84521484375, 3707.96533203125, 19.9918), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(3522.84521484375f, 3707.96533203125f, 19.9918f), false);
 						ntv::STREAMING::REQUEST_IPL("v_lab");
 						//ntv::OBJECT::_DOOR_CONTROL(-1081024910, 3620.843f, 3751.527f, 27.69009f, false, 0.0f, 0.0f, -1.0f);
 						//ntv::OBJECT::_DOOR_CONTROL(-1081024910, 3627.713f, 3746.716f, 27.69009f, false, 0.0f, 0.0f, -1.0f);
@@ -416,15 +416,15 @@ namespace nob {
 						ntv::STREAMING::REQUEST_IPL("facelobbyfake");
 						//ntv::OBJECT::_DOOR_CONTROL(-340230128, -1042.518, -240.6915, 38.11796, true, 0.0f, 0.0f, 0.0f);
 					}
-					return {-1042.518, -240.6915, 38.11796};
+					return {-1042.518f, -240.6915f, 38.11796f};
 
 				case ilp::Lesters_house:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1274.933837890625, -1714.7255859375, 53.77149963378906), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1274.933837890625f, -1714.7255859375f, 53.77149963378906f), false);
 						ntv::STREAMING::REQUEST_IPL("v_lesters");
 						//ntv::OBJECT::_DOOR_CONTROL(1145337974, 1273.816f, -1720.697f, 54.92143f, false, 0.0f, 0.0f, 0.0f);
 					} else {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1274.933837890625, -1714.7255859375, 53.77149963378906), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1274.933837890625f, -1714.7255859375f, 53.77149963378906f), false);
 						ntv::STREAMING::REMOVE_IPL("v_lesters");
 						//ntv::OBJECT::_DOOR_CONTROL(1145337974, 1273.816f, -1720.697f, 54.92143f, true, 0.0f, 0.0f, 0.0f);
 					}
@@ -455,13 +455,13 @@ namespace nob {
 
 				case ilp::morgue:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-447.4833068847656, 280.3197021484375, 77.52149963378906), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-447.4833068847656f, 280.3197021484375f, 77.52149963378906f), false);
 						ntv::STREAMING::REQUEST_IPL("Coroner_Int_on");
 						ntv::STREAMING::REMOVE_IPL("Coroner_Int_off");
 						//teleport coords 275.1f,  -1360.6f,  24.5f
 						//teleport2 coords 240.8f, -1379.5f, 33.74f
 					}
-					return {-447.4833068847656, 280.3197021484375, 77.52149963378906};
+					return {-447.4833068847656f, 280.3197021484375f, 77.52149963378906f};
 
 				case ilp::o_neil_ranch:
 					if (toggle) {
@@ -489,13 +489,13 @@ namespace nob {
 
 				case ilp::psycheoffice:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-1906.7857666015625, -573.7576293945312, 19.077299118041992), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-1906.7857666015625f, -573.7576293945312f, 19.077299118041992f), false);
 						ntv::STREAMING::REQUEST_IPL("v_psycheoffice");
 					}
-					return {-1906.7857666015625, -573.7576293945312, 19.077299118041992};
+					return {-1906.7857666015625f, -573.7576293945312f, 19.077299118041992f};
 
 				case ilp::ranch: {
-					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1399.9730224609375, 1148.755859375, 113.33360290527344);
+					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1399.9730224609375f, 1148.755859375f, 113.33360290527344f);
 					if (toggle) {
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
 						ntv::INTERIOR::DISABLE_INTERIOR(intr, false);
@@ -510,7 +510,7 @@ namespace nob {
 				}
 
 				case ilp::rogers_salvage_and_scrap: {
-					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-598.6378784179688, -1608.3985595703125, 26.010799407958984);
+					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-598.6378784179688f, -1608.3985595703125f, 26.010799407958984f);
 					if (toggle) {
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
 						ntv::INTERIOR::UNPIN_INTERIOR(intr);
@@ -533,14 +533,14 @@ namespace nob {
 
 				case ilp::sheriff_office_paleto:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-444.89068603515625, 6013.5869140625, 30.7164), false);
-						ntv::INTERIOR::CAP_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-444.89068603515625, 6013.5869140625, 30.7164), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-444.89068603515625f, 6013.5869140625f, 30.7164f), false);
+						ntv::INTERIOR::CAP_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-444.89068603515625f, 6013.5869140625f, 30.7164f), false);
 						ntv::STREAMING::REQUEST_IPL("v_sheriff2");
 						ntv::STREAMING::REMOVE_IPL("cs1_16_sheriff_cap");
 						//ntv::OBJECT::_DOOR_CONTROL(-1501157055, -444.4985f, 6017.06f, 31.86633f, false, 0.0f, 0.0f, 0.0f);
 						//ntv::OBJECT::_DOOR_CONTROL(-1501157055, -442.66f, 6015.222f, 31.86633f, false, 0.0f, 0.0f, 0.0f);
 					} else {
-						ntv::INTERIOR::CAP_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-444.89068603515625, 6013.5869140625, 30.7164), true);
+						ntv::INTERIOR::CAP_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-444.89068603515625f, 6013.5869140625f, 30.7164f), true);
 						ntv::STREAMING::REMOVE_IPL("v_sheriff2");
 						ntv::STREAMING::REQUEST_IPL("cs1_16_sheriff_cap");
 						//ntv::OBJECT::_DOOR_CONTROL(-1501157055, -444.4985f, 6017.06f, 31.86633f, true, 0.0f, 0.0f, 0.0f);
@@ -549,7 +549,7 @@ namespace nob {
 					return {-442.66f, 6015.222f, 31.86633f};
 
 				case ilp::sheriff_office_sandy_shores: {
-					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1854.2537841796875, 3686.738525390625, 33.2671012878418);
+					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1854.2537841796875f, 3686.738525390625f, 33.2671012878418f);
 					if (toggle) {
 						ntv::INTERIOR::DISABLE_INTERIOR(intr, false);
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
@@ -583,10 +583,10 @@ namespace nob {
 						ntv::STREAMING::REMOVE_IPL("fakeint");
 						ntv::STREAMING::REQUEST_IPL("fakeint");
 					}
-					return {0, 0, 0};
+					return {0.f, 0.f, 0.f};
 
 				case ilp::slaughter_house: {
-					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(982.2329711914062, -2160.381591796875, 28.4761);
+					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(982.2329711914062f, -2160.381591796875f, 28.4761f);
 					if (toggle) {
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
 						ntv::INTERIOR::DISABLE_INTERIOR(intr, false);
@@ -719,14 +719,14 @@ namespace nob {
 						ntv::STREAMING::REMOVE_IPL("TrevorsTrailerTrash");
 						ntv::STREAMING::REMOVE_IPL("TrevorsTrailerTidy");
 						ntv::STREAMING::REMOVE_IPL("TrevorsTrailer");
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1973.0, 3815.0, 34.0), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(1973.0f, 3815.0f, 34.0f), false);
 						ntv::STREAMING::REQUEST_IPL("TrevorsTrailerTidy");
 						//ntv::OBJECT::_DOOR_CONTROL(132154435, 1972.769f, 3815.366f, 33.66326f, false, 0.0f, 0.0f, 0.0f);
 					}
 					return {1972.769f, 3815.366f, 33.66326f};
 
 				case ilp::tequl_la_la: {
-					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-556.5089111328125, 286.318115234375, 81.1763);
+					auto intr = ntv::INTERIOR::GET_INTERIOR_AT_COORDS(-556.5089111328125f, 286.318115234375f, 81.1763f);
 					if (toggle) {
 						ntv::INTERIOR::DISABLE_INTERIOR(intr, false);
 						ntv::INTERIOR::CAP_INTERIOR(intr, false);
@@ -744,11 +744,11 @@ namespace nob {
 
 				case ilp::torture:
 					if (toggle) {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(147.43299865722656, -2201.370361328125, 3.688), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(147.43299865722656f, -2201.370361328125f, 3.688f), false);
 						ntv::STREAMING::REQUEST_IPL("v_torture");
 						//ntv::OBJECT::_DOOR_CONTROL(464151082, 134.3954f, -2204.097f, 7.514325f, false, 0.0f, 0.0f, 0.0f);
 					} else {
-						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(147.43299865722656, -2201.370361328125, 3.688), false);
+						ntv::INTERIOR::DISABLE_INTERIOR(ntv::INTERIOR::GET_INTERIOR_AT_COORDS(147.43299865722656f, -2201.370361328125f, 3.688f), false);
 						ntv::STREAMING::REMOVE_IPL("v_torture");
 						//ntv::OBJECT::_DOOR_CONTROL(464151082, 134.3954f, -2204.097f, 7.514325f, true, 0.0f, 0.0f, 0.0f);
 					}

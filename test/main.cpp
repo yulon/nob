@@ -287,7 +287,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			));
 		}),
 		action("Make Nodes", []() {
-			std::fstream f("wpn_nodes.inc", f.binary | f.trunc | f.in | f.out);
+			std::fstream f("wpn_nodes.inc", std::ios_base::binary | std::ios_base::trunc | std::ios_base::in | std::ios_base::out);
 			if (!f.is_open()) {
 				nob::log("failed to open");
 			}
@@ -555,7 +555,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 				"~r~I'm a legend!"
 			);
 
-			ia_menu.toggle();
+			nob::ui::menu::close_any();
 		}),
 		flag("Banner", [](bool val) {
 			if (val) {

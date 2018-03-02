@@ -28,11 +28,11 @@ namespace nob {
 
 			model &operator=(const model &src) {
 				free();
-				static_cast<hasher &>(*this) = static_cast<const hasher &>(src);
+				static_cast<hasher &>(*this) = src;
 				return *this;
 			}
 
-			constexpr model(model &&src) : hasher(static_cast<const hasher &>(src)), _loaded(src._loaded) {
+			model(model &&src) : hasher(src), _loaded(src._loaded) {
 				if (src._loaded == this_script::gameplay_id) {
 					src._loaded = 0;
 				}
