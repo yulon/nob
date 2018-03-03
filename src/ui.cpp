@@ -87,12 +87,12 @@ namespace nob {
 			return this->_data.get() && _menu::cur.get() && _menu::cur.get() == this->_data.get();
 		}
 
-		bool menu::is_opened_any() {
+		bool menu::is_any_opened() {
 			return _menu::cur.get();
 		}
 
 		void menu::open() {
-			if (is_opened()) {
+			if (is_any_opened()) {
 				return;
 			}
 
@@ -209,7 +209,10 @@ namespace nob {
 					hotkey_t::Phone,
 					hotkey_t::FrontendPauseAlternate
 				},
-				[](hotkey_t, bool)->bool {
+				[](hotkey_t hk, bool)->bool {
+					if (hk == hotkey_t::InteractionMenu) {
+						return true;
+					}
 					return false;
 				},
 				true
@@ -304,7 +307,7 @@ namespace nob {
 		}
 
 		void menu::close_any() {
-			if (!is_opened_any()) {
+			if (!is_any_opened()) {
 				return;
 			}
 			_menu::del_res();

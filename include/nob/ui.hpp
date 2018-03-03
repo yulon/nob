@@ -203,27 +203,12 @@ namespace nob {
 
 				bool is_opened() const;
 
-				static bool is_opened_any();
+				static bool is_any_opened();
 
 				void toggle() {
 					if (is_opened()) {
 						close();
 					} else {
-						open();
-					}
-				}
-
-				void weak_open() {
-					if (is_opened_any()) {
-						return;
-					}
-					open();
-				}
-
-				void weak_toggle() {
-					if (is_opened()) {
-						close();
-					} else if (!is_opened_any()) {
 						open();
 					}
 				}
