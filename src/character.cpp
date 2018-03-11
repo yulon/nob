@@ -160,28 +160,109 @@ namespace nob {
 		vector3 focus{0, 0, 0};
 	};
 
-	std::unordered_map<int, _chr_data> _chr_data_map;
+	static std::unordered_map<int, _chr_data> _data_map;
 
-	initer _chr_data_initer([]() {
-		if (_chr_data_map.size()) {
-			_chr_data_map.clear();
+	static initer _data_initer([]() {
+		if (_data_map.size()) {
+			_data_map.clear();
 		}
 	});
 
 	void character::del() {
 		gc::undelegate(*this);
-		_chr_data_map.erase(_h);
+		_data_map.erase(_h);
 		ntv::PED::DELETE_PED(&_h);
 	}
 
 	void character::free() {
 		gc::undelegate(*this);
-		_chr_data_map.erase(_h);
+		_data_map.erase(_h);
 		ntv::ENTITY::SET_PED_AS_NO_LONGER_NEEDED(&_h);
 	}
 
+	static inline character::motion_state_t _motion_state(int _h) {
+		using motion_state_t = character::motion_state_t;
+
+		auto ps = ntv::PED::GET_PED_PARACHUTE_STATE(_h);
+		if (ps == 1 || ps == 2) {
+			return motion_state_t::parachuting;
+		}
+
+		if (ntv::PED::IS_PED_IN_PARACHUTE_FREE_FALL(_h)) {
+			return motion_state_t::skydiving;
+		}
+
+		if (ntv::PED::IS_PED_FALLING(_h)) {
+			return motion_state_t::falling;
+		}
+
+		if (ntv::PED::IS_PED_JUMPING(_h)) {
+			/*if (ntv::AI::IS_PED_WALKING(_h)) {
+
+			} else if (ntv::AI::IS_PED_RUNNING(_h)) {
+
+			} else if (ntv::AI::IS_PED_SPRINTING(_h)) {
+
+			}*/
+			return motion_state_t::jumping;
+		}
+
+		if (ntv::AI::GET_IS_TASK_ACTIVE(_h, 1)) { // CTaskClimbLadder
+			return motion_state_t::climbing_ladder;
+		}
+
+		if (ntv::PED::IS_PED_CLIMBING(_h)) {
+			return motion_state_t::climbing;
+		}
+
+		if (ntv::PED::IS_PED_IN_COVER(_h, 0)) {
+			return motion_state_t::covering;
+		}
+
+		if (
+			ntv::PED::IS_PED_RAGDOLL(_h) ||
+			ntv::PED::IS_PED_RUNNING_RAGDOLL_TASK(_h) ||
+			ntv::AI::GET_IS_TASK_ACTIVE(_h, 125) || // CTaskHitWall
+			ntv::AI::GET_IS_TASK_ACTIVE(_h, 387) || // CTaskAnimatedHitByExplosion
+			ntv::AI::GET_IS_TASK_ACTIVE(_h, 95) // CTaskCarReactToVehicleCollisionGetOut
+		) {
+			return motion_state_t::paralysing;
+		}
+
+		if (ntv::AI::IS_PED_STILL(_h)) {
+			return motion_state_t::still;
+		}
+
+		if (ntv::AI::IS_PED_WALKING(_h)) {
+			return motion_state_t::walking;
+		}
+
+		if (ntv::AI::IS_PED_RUNNING(_h)) {
+			return motion_state_t::runing;
+		}
+
+		if (ntv::AI::IS_PED_SPRINTING(_h)) {
+			return motion_state_t::sprinting;
+		}
+
+		return motion_state_t::null;
+	}
+
+	static character::motion_state_t _ms_cache;
+	static int _ms_cache_fc = -1;
+
+	character::motion_state_t character::motion_state() const {
+		auto cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
+		if (cur_fc == _ms_cache_fc) {
+			return _ms_cache;
+		}
+		_ms_cache_fc = cur_fc;
+		_ms_cache = _motion_state(_h);
+		return _ms_cache;
+	}
+
 	static bool _is_new_mds(int h, character::motion_state_t now) {
-		auto &data = _chr_data_map[h];
+		auto &data = _data_map[h];
 
 		if (data.lst_mds == now) {
 			return false;
@@ -216,7 +297,7 @@ namespace nob {
 
 	void character::stop_motion_command() {
 		_is_new_mds(_h, character::motion_state_t::null);
-		auto &data = _chr_data_map[_h];
+		auto &data = _data_map[_h];
 		if (data.aiming) {
 			data.aiming = false;
 		}
@@ -274,7 +355,7 @@ namespace nob {
 	}
 
 	void character::go_to(const vector3 &dest, float speed) {
-		auto &data = _chr_data_map[_h];
+		auto &data = _data_map[_h];
 
 		if (data.going) {
 			bool is_new;
@@ -315,7 +396,7 @@ namespace nob {
 	}
 
 	void character::look() {
-		/*auto &data = _chr_data_map[_h];
+		/*auto &data = _data_map[_h];
 		data.focus = coords;
 		if (data.shooting) {
 			shoot();
@@ -329,11 +410,11 @@ namespace nob {
 	}
 
 	void character::focus(const vector3 &coords) {
-		_chr_data_map[_h].focus = coords;
+		_data_map[_h].focus = coords;
 	}
 
 	void character::aim(bool toggle) {
-		auto &data = _chr_data_map[_h];
+		auto &data = _data_map[_h];
 
 		if (toggle) {
 			data.aiming = true;
@@ -379,7 +460,7 @@ namespace nob {
 	}
 
 	void character::shoot(bool toggle) {
-		auto &data = _chr_data_map[_h];
+		auto &data = _data_map[_h];
 
 		if (toggle) {
 			data.shooting = true;
@@ -414,7 +495,7 @@ namespace nob {
 	void character::shoot_once() {
 		/*vector3 dest;
 
-		auto &data = _chr_data_map[_h];
+		auto &data = _data_map[_h];
 		if (data.aiming) {
 			dest = data.focus;
 		} else {
@@ -451,7 +532,7 @@ namespace nob {
 		if (!_is_new_mds(_h, character::motion_state_t::parachuting)) {
 			return;
 		}
-		auto &data = _chr_data_map[_h];
+		auto &data = _data_map[_h];
 		if (data.fk_chute) {
 			return;
 		}

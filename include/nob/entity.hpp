@@ -338,71 +338,7 @@ namespace nob {
 				paralysing
 			};
 
-			motion_state_t motion_state() const {
-				auto ps = ntv::PED::GET_PED_PARACHUTE_STATE(_h);
-				if (ps == 1 || ps == 2) {
-					return motion_state_t::parachuting;
-				}
-
-				if (ntv::PED::IS_PED_IN_PARACHUTE_FREE_FALL(_h)) {
-					return motion_state_t::skydiving;
-				}
-
-				if (ntv::PED::IS_PED_FALLING(_h)) {
-					return motion_state_t::falling;
-				}
-
-				if (ntv::PED::IS_PED_JUMPING(_h)) {
-					/*if (ntv::AI::IS_PED_WALKING(_h)) {
-
-					} else if (ntv::AI::IS_PED_RUNNING(_h)) {
-
-					} else if (ntv::AI::IS_PED_SPRINTING(_h)) {
-
-					}*/
-					return motion_state_t::jumping;
-				}
-
-				if (ntv::AI::GET_IS_TASK_ACTIVE(_h, 1)) { // CTaskClimbLadder
-					return motion_state_t::climbing_ladder;
-				}
-
-				if (ntv::PED::IS_PED_CLIMBING(_h)) {
-					return motion_state_t::climbing;
-				}
-
-				if (ntv::PED::IS_PED_IN_COVER(_h, 0)) {
-					return motion_state_t::covering;
-				}
-
-				if (
-					ntv::PED::IS_PED_RAGDOLL(_h) ||
-					ntv::PED::IS_PED_RUNNING_RAGDOLL_TASK(_h) ||
-					ntv::AI::GET_IS_TASK_ACTIVE(_h, 125) || // CTaskHitWall
-					ntv::AI::GET_IS_TASK_ACTIVE(_h, 387) || // CTaskAnimatedHitByExplosion
-					ntv::AI::GET_IS_TASK_ACTIVE(_h, 95) // CTaskCarReactToVehicleCollisionGetOut
-				) {
-					return motion_state_t::paralysing;
-				}
-
-				if (ntv::AI::IS_PED_STILL(_h)) {
-					return motion_state_t::still;
-				}
-
-				if (ntv::AI::IS_PED_WALKING(_h)) {
-					return motion_state_t::walking;
-				}
-
-				if (ntv::AI::IS_PED_RUNNING(_h)) {
-					return motion_state_t::runing;
-				}
-
-				if (ntv::AI::IS_PED_SPRINTING(_h)) {
-					return motion_state_t::sprinting;
-				}
-
-				return motion_state_t::null;
-			}
+			motion_state_t motion_state() const;
 
 			struct movement_t : public entity::movement_t {
 				motion_state_t motion_state;
