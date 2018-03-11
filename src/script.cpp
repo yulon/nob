@@ -59,7 +59,7 @@ namespace nob {
 		std::atomic<size_t> gameplay_id(0);
 		std::atomic<bool> exiting(false);
 		std::atomic<bool> _exited(false);
-		size_t _last_fc = 0;
+		int _last_fc = -1;
 
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
@@ -87,8 +87,8 @@ namespace nob {
 			_hkl::recv();
 
 			if (auto_init) {
-				size_t cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
-				if (!_last_fc || cur_fc - _last_fc > 1) {
+				auto cur_fc = ntv::GAMEPLAY::GET_FRAME_COUNT();
+				if (cur_fc - _last_fc > 1) {
 					need_init = true;
 				}
 				_last_fc = cur_fc;
