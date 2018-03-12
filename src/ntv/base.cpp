@@ -237,7 +237,7 @@ namespace nob {
 
 		full_call_context_t _dft_call_ctx;
 
-		uintptr_t (*get_entity_addr)(int handle);
+		entity_instance_map_t **entity_instance_map;
 
 		script_context_pool_t *script_context_pool;
 
@@ -325,13 +325,13 @@ namespace nob {
 				finded = false;
 			}
 
-			get_entity_addr = program::code.match_sub({
-				// Reference from http://gtaforums.com/topic/903092-gta-5-get-entity-address/
-				0xE8, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xD8, 0x48, 0x85, 0xC0, 0x74, 0x2E, 0x48, 0x83, 0x3D
+			entity_instance_map = program::code.match_sub({
+				// Reference from https://github.com/JLFSL/FiveMultiplayer/blob/dev/Client/Core/MemoryAccess.h#L23
+				0x4C, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0x49, 0x2B, 0x00
 			})[0].derelative<int32_t>();
 
-			if (!get_entity_addr) {
-				log("nob::ntv::get_entity_addr: not found!");
+			if (!entity_instance_map) {
+				log("nob::ntv::entity_instance_map: not found!");
 				//finded = false;
 			}
 

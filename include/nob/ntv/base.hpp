@@ -583,6 +583,30 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
-		extern uintptr_t (*get_entity_addr)(int handle);
+		struct entity_instance_map_t {
+			struct node_t {
+				uintptr_t _unk, value;
+			};
+
+			node_t *nodes;
+			uint8_t *hanlde_remainders;
+			uint32_t size;
+			uint32_t node_size;
+
+			uintptr_t operator[](int handle) const {
+				auto ix = static_cast<uint32_t>(handle / 0x100);
+				if (ix >= size || hanlde_remainders[ix] != handle % 0x100) {
+					log("nob::ntv::entity_instance_map_t[", handle, "]: not found!");
+					return 0;
+				}
+				if (node_size != sizeof(node_t)) {
+					log("nob::ntv::entity_instance_map_t::node_size: is ", node_size, "!");
+					return reinterpret_cast<node_t *>(reinterpret_cast<uintptr_t>(nodes) + ix * node_size)->value;
+				}
+				return nodes[ix].value;
+			}
+		};
+
+		extern entity_instance_map_t **entity_instance_map;
 	} /* ntv */
 } /* nob */
