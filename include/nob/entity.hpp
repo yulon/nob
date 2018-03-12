@@ -74,7 +74,7 @@ namespace nob {
 			}
 
 			void move(const vector3 &coords) {
-				ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, true, true, true);
+				ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, false, false, true);
 			}
 
 			vector3 rotation() const {
@@ -970,6 +970,10 @@ namespace nob {
 					ntv::AUDIO::SET_VEHICLE_RADIO_LOUD(_h, true);
 				}
 				ntv::AUDIO::SET_VEH_RADIO_STATION(_h, rs.c_str());
+			}
+
+			void honk_horn(bool toggle = true) {
+				ntv::AUDIO::SET_HORN_ENABLED(_h, toggle);
 			}
 
 			void engine_on(bool toggle = true) {
