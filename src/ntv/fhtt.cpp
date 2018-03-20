@@ -17,7 +17,7 @@ namespace nob {
 			#include "fhtt/1290.inc"
 		};
 
-		const std::map<uint16_t, const std::unordered_map<uint64_t, uint64_t> &> fhtt {
+		const std::map<uint16_t, const std::unordered_map<uint64_t, uint64_t> &> fhtt_map {
 			{
 				1290,
 				_fhtt_1290
@@ -32,6 +32,6 @@ namespace nob {
 			}
 		};
 
-		const std::unordered_map<uint64_t, uint64_t> *cur_fhtt = nullptr;
+		const std::unordered_map<uint64_t, uint64_t> *fhtt = nullptr;
 	}
 }

@@ -258,12 +258,12 @@ namespace nob {
 		bool _init() {
 			auto finded = true;
 
-			auto cur_fhtt_it = fhtt.find(program::version);
-			if (cur_fhtt_it != fhtt.end()) {
-				cur_fhtt = &cur_fhtt_it->second;
+			auto fhtt_it = fhtt_map.find(program::version);
+			if (fhtt_it != fhtt_map.end()) {
+				fhtt = &fhtt_it->second;
 			} else {
-				log("nob::ntv::cur_fhtt: not found!");
-				cur_fhtt = &fhtt.rbegin()->second;
+				log("nob::ntv::fhtt: not found!");
+				fhtt = &fhtt_map.rbegin()->second;
 				//finded = false;
 			}
 
