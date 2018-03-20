@@ -374,7 +374,7 @@ namespace nob {
 					script_thread_t::id_count = mr.match_sub({
 						0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
 					})[0].derelative<int32_t>();
-					fake_script_hash_count = blk.derelative<int32_t>(-9);
+					fake_script_hash_count = mr.derelative<int32_t>(-9);
 				} else {
 					script_thread_t::id_count = nullptr;
 					fake_script_hash_count = nullptr;
