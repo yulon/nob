@@ -32,6 +32,6 @@ namespace nob {
 			}
 		};
 
-		const std::unordered_map<uint64_t, uint64_t> *cur_fhtt_ptr = nullptr;
+		const std::unordered_map<uint64_t, uint64_t> *cur_fhtt = nullptr;
 	}
 }

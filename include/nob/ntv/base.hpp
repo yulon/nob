@@ -523,9 +523,9 @@ namespace nob {
 						if (_f) {
 							return _f;
 						}
-					} else if (_1st_h && cur_fhtt_ptr) {
-						auto it = cur_fhtt_ptr->find(_1st_h);
-						if (it != cur_fhtt_ptr->end() && it->second) {
+					} else if (_1st_h && cur_fhtt) {
+						auto it = cur_fhtt->find(_1st_h);
+						if (it != cur_fhtt->end() && it->second) {
 							_h = it->second;
 							_f = func_table[_h];
 							if (_f) {
