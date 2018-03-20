@@ -339,7 +339,7 @@ namespace nob {
 					context.stack_size = 0;
 				}
 
-				script_thread_t(void (*on_frame)());
+				script_thread_t(void (*on_frame)(), void (*on_orig_kill)() = nullptr);
 
 				~script_thread_t() {
 					kill();
@@ -361,7 +361,7 @@ namespace nob {
 				uintptr_t _nob_thread_class_pad[10];
 
 				script_thread_t *_orig_owner;
-				void (*_on_frame)();
+				void (*_on_frame)(), (*_on_orig_kill)();
 				vtable_t _vtab_impl;
 		};
 

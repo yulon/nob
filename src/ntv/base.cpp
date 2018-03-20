@@ -8,7 +8,7 @@ namespace nob {
 	namespace ntv {
 		std::recursive_mutex _scr_td_mtx;
 
-		script_thread_t::script_thread_t(void (*on_frame)()) : script_thread_t() {
+		script_thread_t::script_thread_t(void (*on_frame)(), void (*on_orig_kill)()) : script_thread_t() {
 			if (
 				!pool ||
 				!id_count ||
@@ -26,6 +26,7 @@ namespace nob {
 			for (size_t i = 0; i < pool->count; ++i) {
 				if (!(*pool)[i]->context.id) {
 					_on_frame = on_frame;
+					_on_orig_kill = on_orig_kill;
 					vtable = &_vtab_impl;
 
 					_vtab_impl.reset = [](script_thread_t *td, uint32_t fake_script_hash, uintptr_t *, uint32_t)->state_t {
@@ -82,7 +83,11 @@ namespace nob {
 						};
 					}
 
-					_vtab_impl.kill = [](script_thread_t *) {};
+					_vtab_impl.kill = [](script_thread_t *td) {
+						if (td->_on_orig_kill) {
+							td->_on_orig_kill();
+						}
+					};
 
 					_vtab_impl._dtor = [](script_thread_t *td) {
 						log("nob::ntv::script_thread_t: delete ", td, " by native!");

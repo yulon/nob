@@ -63,8 +63,13 @@ namespace nob {
 
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
-			gameplay_id = ntv::GAMEPLAY::GET_FRAME_COUNT();
 			tasks->bind_this_thread();
+
+			if (ntv::GAMEPLAY::GET_FRAME_COUNT.target()) {
+				gameplay_id = ntv::GAMEPLAY::GET_FRAME_COUNT();
+			} else {
+				++gameplay_id;
+			}
 
 			for (auto &initer : *_initers) {
 				initer();
@@ -173,11 +178,22 @@ namespace nob {
 		std::unique_ptr<ntv::script_thread_t> _main_td;
 
 		bool _td_main() {
-			_main_td.reset(new ntv::script_thread_t([]() {
-				if (!_run()) {
-					_main_td.reset();
+			static bool need_init = true;
+
+			_main_td.reset(new ntv::script_thread_t(
+				[]() {
+					auto life = _run(false, need_init);
+					if (need_init) {
+						need_init = false;
+					}
+					if (!life) {
+						_main_td.reset();
+					}
+				},
+				[]() {
+					need_init = true;
 				}
-			}));
+			));
 
 			if (!*_main_td) {
 				_main_td.reset();
