@@ -463,7 +463,15 @@ namespace nob {
 
 		class func_table_t {
 			public:
-				uintptr_t _nodes;
+				struct list_t {
+					using node_t = void;
+
+					node_t *begin;
+				};
+
+				static constexpr size_t lists_size = 0x100;
+
+				list_t lists[lists_size];
 
 				func_t *find(uint64_t hash) const;
 
@@ -476,12 +484,47 @@ namespace nob {
 					return nullptr;
 				}
 
-				operator bool() const {
-					return _nodes;
+				class iterator {
+					public:
+						std::pair<uint64_t, func_t &> operator*() const;
+
+						iterator &operator++();
+
+						iterator operator++(int) {
+							auto pit = *this;
+							++(*this);
+							return pit;
+						}
+
+						bool operator==(const iterator &target) const {
+							return _lis == target._lis && _li_ix == target._li_ix && _node == target._node && _fn_ix == target._fn_ix;
+						}
+
+						bool operator!=(const iterator &target) const {
+							return !(*this == target);
+						}
+
+					private:
+						const list_t *_lis;
+						uint8_t _li_ix;
+						list_t::node_t *_node;
+						uint8_t _fn_ix;
+
+						iterator(const list_t *lis, uint8_t li_ix = 0, list_t::node_t *node = nullptr, int8_t fn_ix = 0) :
+							_lis(lis), _li_ix(li_ix), _node(node), _fn_ix(fn_ix)
+						{}
+
+						friend func_table_t;
+				};
+
+				iterator begin() const;
+
+				iterator end() const {
+					return lists;
 				}
 		};
 
-		extern func_table_t func_table;
+		extern func_table_t *func_table;
 
 		////////////////////////////////////////////////////////////////////////////
 
@@ -519,7 +562,7 @@ namespace nob {
 						return _f;
 					}
 					if (_h) {
-						_f = func_table[_h];
+						_f = (*func_table)[_h];
 						if (_f) {
 							return _f;
 						}
@@ -527,7 +570,7 @@ namespace nob {
 						auto it = fhtt->find(_1st_h);
 						if (it != fhtt->end() && it->second) {
 							_h = it->second;
-							_f = func_table[_h];
+							_f = (*func_table)[_h];
 							if (_f) {
 								return _f;
 							}

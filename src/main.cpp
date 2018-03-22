@@ -34,7 +34,7 @@ namespace nob {
 		#define _NOB_CALL_INIT_FN(_f) \
 			if (!_f()) { \
 				MessageBoxW(0, rua::u8_to_u16(log.str()).c_str(), L"ERRORS", MB_OK | MB_ICONERROR); \
-				this_script::exiting = true; \
+				this_script::_exited = true; \
 				exit(1); \
 				return; \
 			}
@@ -80,10 +80,6 @@ namespace nob {
 	}
 
 	void _exit(HMODULE hinstDLL) {
-		if (this_script::exiting) {
-			return;
-		}
-
 		this_script::exiting = true;
 
 		for (;;) {

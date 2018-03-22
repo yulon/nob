@@ -146,23 +146,7 @@ namespace nob {
 			}
 		};
 
-		template <typename T>
-		func_t *_fn_tab_find(uintptr_t nodes, uint64_t hash) {
-			if (!nodes) {
-				return nullptr;
-			}
-			for (auto n = reinterpret_cast<T **>(nodes)[hash % 0x100]; n; n = n->next()) {
-				for (uint8_t i = 0; i < n->length(); ++i) {
-					if (n->hash(i) == hash) {
-						return &n->funcs[i];
-					}
-				}
-			}
-			log("nob::ntv::func_table_t::find(", std::hex, hash, std::dec, "): not found!");
-			return nullptr;
-		}
-
-		func_t *func_table_t::find(uint64_t hash) const {
+		namespace _fn_tab {
 			struct node_t {
 				node_t *nxt;
 				func_t funcs[7];
@@ -223,11 +207,108 @@ namespace nob {
 				}
 			};
 
+			template <typename T>
+			func_t *find(const func_table_t::list_t *lis, uint64_t hash) {
+				if (!lis) {
+					return nullptr;
+				}
+				for (auto n = reinterpret_cast<T * const *>(lis)[hash % func_table_t::lists_size]; n; n = n->next()) {
+					for (uint8_t i = 0; i < n->length(); ++i) {
+						if (n->hash(i) == hash) {
+							return &n->funcs[i];
+						}
+					}
+				}
+				log("nob::ntv::func_table_t::find(", std::hex, hash, std::dec, "): not found!");
+				return nullptr;
+			}
+
+			template <typename T>
+			void inc_it(const func_table_t::list_t *lis, uint8_t &li_ix, func_table_t::list_t::node_t *&node, uint8_t &fn_ix) {
+				assert(node);
+
+				for (auto n = reinterpret_cast<T *>(node); n; n = n->next()) {
+					for (uint8_t i = fn_ix + 1; i < n->length(); ++i) {
+						node = reinterpret_cast<func_table_t::list_t::node_t *>(n);
+						fn_ix = i;
+						return;
+					}
+				}
+
+				for (size_t i = static_cast<size_t>(li_ix) + 1; i < func_table_t::lists_size; ++i) {
+					for (auto n = reinterpret_cast<T * const *>(lis)[i]; n; n = n->next()) {
+						for (uint8_t j = 0; j < n->length(); ++j) {
+							li_ix = i;
+							node = reinterpret_cast<func_table_t::list_t::node_t *>(n);
+							fn_ix = j;
+							return;
+						}
+					}
+				}
+
+				li_ix = 0;
+				node = nullptr;
+				fn_ix = 0;
+			}
+
+			template <typename T>
+			void begin_it(const func_table_t::list_t *lis, uint8_t &li_ix, func_table_t::list_t::node_t *&node, uint8_t &fn_ix) {
+				for (size_t i = 0; i < func_table_t::lists_size; ++i) {
+					for (auto n = reinterpret_cast<T * const *>(lis)[i]; n; n = n->next()) {
+						for (uint8_t j = 0; j < n->length(); ++j) {
+							li_ix = i;
+							node = reinterpret_cast<func_table_t::list_t::node_t *>(n);
+							fn_ix = j;
+							return;
+						}
+					}
+				}
+
+				li_ix = 0;
+				node = nullptr;
+				fn_ix = 0;
+			}
+		}
+
+		func_t *func_table_t::find(uint64_t hash) const {
 			return
 				program::version < 1290 ?
-				_fn_tab_find<node_t>(_nodes, hash) :
-				_fn_tab_find<node_1290_t>(_nodes, hash)
+				_fn_tab::find<_fn_tab::node_t>(lists, hash) :
+				_fn_tab::find<_fn_tab::node_1290_t>(lists, hash)
 			;
+		}
+
+		std::pair<uint64_t, func_t &> func_table_t::iterator::operator*() const {
+			return
+				program::version < 1290 ?
+				std::pair<uint64_t, func_t &>(
+					reinterpret_cast<_fn_tab::node_t *>(_node)->hash(_fn_ix),
+					reinterpret_cast<_fn_tab::node_t *>(_node)->funcs[_fn_ix]
+				) :
+				std::pair<uint64_t, func_t &>(
+					reinterpret_cast<_fn_tab::node_1290_t *>(_node)->hash(_fn_ix),
+					reinterpret_cast<_fn_tab::node_1290_t *>(_node)->funcs[_fn_ix]
+				)
+			;
+		}
+
+		func_table_t::iterator &func_table_t::iterator::operator++() {
+			if (program::version < 1290) {
+				_fn_tab::inc_it<_fn_tab::node_t>(_lis, _li_ix, _node, _fn_ix);
+			} else {
+				_fn_tab::inc_it<_fn_tab::node_1290_t>(_lis, _li_ix, _node, _fn_ix);
+			}
+			return *this;
+		}
+
+		func_table_t::iterator func_table_t::begin() const {
+			iterator it(lists);
+			if (program::version < 1290) {
+				_fn_tab::begin_it<_fn_tab::node_t>(lists, it._li_ix, it._node, it._fn_ix);
+			} else {
+				_fn_tab::begin_it<_fn_tab::node_1290_t>(lists, it._li_ix, it._node, it._fn_ix);
+			}
+			return it;
 		}
 
 		global_table_t global_table;
@@ -238,7 +319,7 @@ namespace nob {
 
 		func_t call_context_t::res_fixer;
 
-		func_table_t func_table;
+		func_table_t *func_table;
 
 		full_call_context_t _dft_call_ctx;
 
@@ -305,8 +386,8 @@ namespace nob {
 				});
 			}
 
-			if (mrs.empty() || !(func_table._nodes = mrs[0].derelative<int32_t>())) {
-				log("nob::ntv::func_table::_nodes: not found!");
+			if (mrs.empty() || !(func_table = mrs[0].derelative<int32_t>())) {
+				log("nob::ntv::func_table: not found!");
 				finded = false;
 			}
 
