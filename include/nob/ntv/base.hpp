@@ -124,20 +124,24 @@ namespace nob {
 		struct script_list_t {
 			struct script_t {
 				struct info_t {
-					uintptr_t _unk1[2];
+					uintptr_t _padding1[2];
 					uintptr_t *code_pages;
-					alignas(uintptr_t) uint32_t code_length;
-					alignas(uintptr_t) uint32_t local_count;
-					alignas(uintptr_t) uint32_t native_count;
+					uint32_t _padding2;
+					uint32_t code_length;
+					uint32_t _padding3;
+					uint32_t local_count;
+					uint32_t _padding4;
+					uint32_t native_count;
 					uintptr_t *local_pages;
-					uintptr_t _unk2;
+					uintptr_t _padding5;
 					uintptr_t *native_pages;
-					uintptr_t _unk3[2];
-					alignas(uintptr_t) uint32_t name_hash;
+					uintptr_t _padding6[2];
+					uint32_t name_hash;
+					uint32_t _padding7;
 					const char *name;
 					const char **str_pool_pages;
-					alignas(uintptr_t) uint32_t str_pool_length;
-					uintptr_t _unk4;
+					uint32_t str_pool_length;
+					uint32_t _padding8[3];
 
 					static constexpr size_t max_page_length = 0x4000;
 
