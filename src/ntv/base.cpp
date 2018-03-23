@@ -374,21 +374,34 @@ namespace nob {
 				finded = false;
 			}
 
-			if (program::version < 1290) {
+			if (program::version >= 1365) {
 				mrs = program::code.match_sub({
-					// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L389
-					0x76, 0x61, 0x49, 0x8B, 0x7A, 0x40, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
+					// Reference from https://www.unknowncheats.me/forum/2061818-post2131.html
+					0x76, 1111, 1111, 0x8b, 1111, 1111, 0x48, 0x8d, 0x0d, 1111, 1111, 1111, 1111, 1111, 0x8b, 1111, 1111, 1111
 				});
-			} else {
-				mrs = program::code.match_sub({
-					// Reference from https://www.unknowncheats.me/forum/1932632-post1648.html
-					0x40, 0x53, 0x48, 0x83, 0xEC, 0x20, 0x48, 0x8D, 0x1D, 1111, 1111, 1111, 1111, 0x4C, 0x8D, 0x05
-				});
-			}
 
-			if (mrs.empty() || !(func_table = mrs[0].derelative<int32_t>())) {
-				log("nob::ntv::func_table: not found!");
-				finded = false;
+				if (mrs.empty() || !(func_table = mrs[2].derelative<int32_t>())) {
+					log("nob::ntv::func_table: not found!");
+					finded = false;
+				}
+
+			} else {
+				if (program::version >= 1290) {
+					mrs = program::code.match_sub({
+						// Reference from https://www.unknowncheats.me/forum/1932632-post1648.html
+						0x40, 0x53, 0x48, 0x83, 0xEC, 0x20, 0x48, 0x8D, 0x1D, 1111, 1111, 1111, 1111, 0x4C, 0x8D, 0x05
+					});
+				} else {
+					mrs = program::code.match_sub({
+						// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L389
+						0x76, 0x61, 0x49, 0x8B, 0x7A, 0x40, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
+					});
+				}
+
+				if (mrs.empty() || !(func_table = mrs[0].derelative<int32_t>())) {
+					log("nob::ntv::func_table: not found!");
+					finded = false;
+				}
 			}
 
 			mrs = program::code.match_sub({
