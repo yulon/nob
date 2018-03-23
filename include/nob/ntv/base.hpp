@@ -477,6 +477,8 @@ namespace nob {
 
 				list_t lists[lists_size];
 
+				size_t size() const;
+
 				func_t *find(uint64_t hash) const;
 
 				func_t operator[](uint64_t hash) const {
@@ -524,7 +526,7 @@ namespace nob {
 				iterator begin() const;
 
 				iterator end() const {
-					return lists;
+					return &lists[0];
 				}
 		};
 

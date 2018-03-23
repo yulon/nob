@@ -224,11 +224,32 @@ namespace nob {
 			}
 
 			template <typename T>
+			size_t size(const func_table_t::list_t *lis) {
+				if (!lis) {
+					return 0;
+				}
+				size_t c = 0;
+				for (size_t i = 0; i < func_table_t::lists_size; ++i) {
+					for (auto n = reinterpret_cast<T * const *>(lis)[i]; n; n = n->next()) {
+						for (uint8_t j = 0; j < n->length(); ++j) {
+							++c;
+						}
+					}
+				}
+				return c;
+			}
+
+			template <typename T>
 			void inc_it(const func_table_t::list_t *lis, uint8_t &li_ix, func_table_t::list_t::node_t *&node, uint8_t &fn_ix) {
 				assert(node);
 
-				for (auto n = reinterpret_cast<T *>(node); n; n = n->next()) {
-					for (uint8_t i = fn_ix + 1; i < n->length(); ++i) {
+				auto n = reinterpret_cast<T *>(node);
+				if (++fn_ix < n->length()) {
+					return;
+				}
+
+				for (n = n->next(); n; n = n->next()) {
+					for (uint8_t i = 0; i < n->length(); ++i) {
 						node = reinterpret_cast<func_table_t::list_t::node_t *>(n);
 						fn_ix = i;
 						return;
@@ -236,7 +257,7 @@ namespace nob {
 				}
 
 				for (size_t i = static_cast<size_t>(li_ix) + 1; i < func_table_t::lists_size; ++i) {
-					for (auto n = reinterpret_cast<T * const *>(lis)[i]; n; n = n->next()) {
+					for (n = reinterpret_cast<T * const *>(lis)[i]; n; n = n->next()) {
 						for (uint8_t j = 0; j < n->length(); ++j) {
 							li_ix = i;
 							node = reinterpret_cast<func_table_t::list_t::node_t *>(n);
@@ -275,6 +296,14 @@ namespace nob {
 				program::version < 1290 ?
 				_fn_tab::find<_fn_tab::node_t>(lists, hash) :
 				_fn_tab::find<_fn_tab::node_1290_t>(lists, hash)
+			;
+		}
+
+		size_t func_table_t::size() const {
+			return
+				program::version < 1290 ?
+				_fn_tab::size<_fn_tab::node_t>(lists) :
+				_fn_tab::size<_fn_tab::node_1290_t>(lists)
 			;
 		}
 
