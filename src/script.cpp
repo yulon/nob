@@ -63,13 +63,17 @@ namespace nob {
 
 		static inline void _init() {
 			thread_id = std::this_thread::get_id();
-			tasks->bind_this_thread();
 
-			if (ntv::GAMEPLAY::GET_FRAME_COUNT.target()) {
-				gameplay_id = ntv::GAMEPLAY::GET_FRAME_COUNT();
+			if (!tasks) {
+				tasks.reset(new rua::co_pool);
+				tasks->add_back([]() {
+					tasks->exit();
+				});
 			} else {
-				++gameplay_id;
+				tasks->bind_this_thread();
 			}
+
+			++gameplay_id;
 
 			for (auto &initer : *_initers) {
 				initer();
