@@ -132,9 +132,9 @@ namespace nob {
 					uint32_t local_count;
 					uint32_t _padding4;
 					uint32_t native_count;
-					uintptr_t *local_pages;
+					uintptr_t *locals;
 					uintptr_t _padding5;
-					uintptr_t *native_pages;
+					uintptr_t *native_addrs;
 					uintptr_t _padding6[2];
 					uint32_t name_hash;
 					uint32_t _padding7;
