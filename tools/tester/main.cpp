@@ -56,14 +56,15 @@ nob::first_task blk([]() {
 	nob::ui::loading_screen(false);
 });
 */
+
 using namespace nob::ui;
 
 void add_veh(list &li, const nob::model &m) {
-	li->items.emplace_back(action(nob::i18n::get(m.name()), m.name(), [m]() {
+	li->items.emplace_back(action(nob::i18n(m.name()), m.name(), [m]() {
 		auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
 		veh.place_on_ground();
 		veh.set_best_mods();
-		veh.invincible();
+		//veh.invincible();
 	}));
 }
 
@@ -107,6 +108,38 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			li->items = { std::move(super), std::move(plane), std::move(heli), std::move(other) };
 
 			li->on_show = nullptr;
+		}),
+		list("Last", [](list li) {
+			li->items.clear();
+
+			auto veh = nob::player::body().last_vehicle();
+
+			li->items.emplace_back(list("Mod", [veh](list li) mutable {
+				for (int i = 0; i < veh.mod_type_sum; ++i) {
+					if (!veh.mod_sum(i)) {
+						continue;
+					}
+					auto mod_type_name = veh.mod_type_name(i);
+					auto i18n_mod_type_name = nob::i18n(veh.mod_type_name(i));
+					if (i18n_mod_type_name != "NULL") {
+						mod_type_name = i18n_mod_type_name;
+					}
+					li->items.emplace_back(list(mod_type_name, [veh, i](list li) mutable {
+						for (int j = 0; j < veh.mod_sum(i); ++j) {
+							auto mod_name = veh.mod_name(i, j);
+							auto i18n_mod_name = nob::i18n(mod_name);
+							if (i18n_mod_name != "NULL") {
+								mod_name = i18n_mod_name;
+							}
+							li->items.emplace_back(action(mod_name, [veh, i, j]() mutable {
+								veh.mod(i, j);
+							}));
+						}
+						li->on_show = nullptr;
+					}));
+				}
+				li->on_show = nullptr;
+			}));
 		})
 	}),
 	list("Weapon", {
@@ -250,7 +283,11 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			if (rec.empty()) {
 				nob::ui::tip("record start!");
 				tsk = nob::task([pb]() {
-					rec.emplace(pb.movement());
+					if (pb.is_in_vehicle()) {
+						rec.emplace(nob::character::movement_t{pb.current_vehicle().movement(), nob::character::motion_state_t::null});
+					} else {
+						rec.emplace(pb.movement());
+					}
 				});
 			} else {
 				if (tsk) {
@@ -258,12 +295,28 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					nob::ui::tip("record done!");
 					return;
 				}
+				if (pb.is_in_vehicle()) {
+					//pb.current_vehicle().physics_collidable(false);
+
+					pb.current_vehicle().move(rec.front().pos);
+				} else {
+					pb.move(rec.front().pos);
+				}
+				nob::yield();
 				nob::task([pb]() mutable {
 					if (rec.size()) {
-						pb.movement(rec.front());
+						if (pb.is_in_vehicle()) {
+							pb.current_vehicle().movement(rec.front());
+						} else {
+							pb.movement(rec.front());
+						}
 						rec.pop();
 					} else {
-						nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
+						if (pb.is_in_vehicle()) {
+							//pb.current_vehicle().physics_collidable(true);
+						} else {
+							nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
+						}
 						nob::ui::tip("end!");
 						nob::this_task::del();
 					}
@@ -371,9 +424,53 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 1));
 			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
 
-			nob::ntv::UI::SET_ABILITY_BAR_VALUE(0, 0);
+			nob::log(std::hex);
 
+			auto c = 0, cc = 0;
+
+			for (auto it = nob::ntv::func_table->begin(); it != nob::ntv::func_table->end(); ++it) {
+				++c;
+			}
+
+			for (auto pr : *nob::ntv::func_table) {
+				//nob::log(std::setw(16), std::setfill('0'), pr.first);
+				++cc;
+			}
+
+			nob::log(std::dec, c, " ", cc, " ", nob::ntv::func_table->size());
 /*
+			static auto pb = nob::player::body();
+			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
+				if (nob::ntv::script_list->scripts[i]) {
+					nob::log("scr: ", nob::ntv::script_list->scripts[i].hash);
+					for (size_t j = 0; j < nob::ntv::script_list->scripts[i].info->local_count; ++j) {
+						if (nob::ntv::script_list->scripts[i].info->local_pages[j]) {
+							nob::log("  ", nob::ntv::script_list->scripts[i].info->local_pages[j]);
+						}
+					}
+					nob::log("=============================");
+				}
+				nob::yield();
+			}
+			//nob::ntv::AUDIO::_FORCE_VEHICLE_ENGINE_AUDIO(pb.last_vehicle(), "ADDER");
+			//nob::ntv::VEHICLE::SET_VEHICLE_FORWARD_SPEED(pb.last_vehicle(), 5.f);
+
+
+
+			auto veh_data = (**nob::ntv::entity_instance_map)[pb.last_vehicle()];
+			if (veh_data) {
+				auto &x = *reinterpret_cast<uint8_t *>(veh_data + 0x0B60 - 4 - 4);
+				nob::log("0 ", (size_t)x);
+				//nob::sleep(10000);
+				//nob::task([]() {
+					//nob::log("1 ", x);
+					//nob::ntv::ENTITY::SET_ENTITY_COORDS(, 882.702, 58.1396, 78.3142, 1, 0, 0, 1);
+				//	pb.last_vehicle().move({ 882.702, 58.1396, 78.3142 });
+					//nob::log("2 ", x);
+				//});
+			}
+
+
 			nob::task([]() {
 				if (
 					nob::ntv::CONTROLS::IS_CONTROL_PRESSED(0, (int)nob::hotkey_t::FrontendDown) ||
@@ -396,7 +493,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			nob::player::damage_modifier(0);
 
-			static auto pb = nob::player::body();
 			//auto pos = pb.pos({0, 5, 0});
 
 
@@ -480,30 +576,7 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 				0, true, false, 0
 			);
 
-			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
-				if (nob::ntv::script_list->nodes[i].hash == nob::hash("friends_debug_controller")) {
-					nob::log("!!!!!!!!!!!!!!!!!!");
 
-					nob::log(nob::ntv::script_list->nodes[i].script);
-					nob::log((nob::ntv::script_list->nodes[i].script ? nob::ntv::script_list->nodes[i].script->is_valid() : false));
-
-					if (!nob::ntv::SCRIPT::HAS_SCRIPT_LOADED("friends_debug_controller")) {
-						nob::ntv::SCRIPT::REQUEST_SCRIPT("friends_debug_controller");
-						while (!nob::ntv::SCRIPT::HAS_SCRIPT_LOADED("friends_debug_controller")) {
-							nob::yield();
-						}
-					}
-
-					nob::log("!~~~~~~~~~~~~~~~~");
-
-					nob::log(nob::ntv::script_list->nodes[i].script->code_length);
-
-					nob::ntv::script_list->nodes[i].script->code_pages[0] = reinterpret_cast<uintptr_t>(&xxx2);
-
-					nob::ntv::SYSTEM::START_NEW_SCRIPT("friends_debug_controller", 4096);
-					break;
-				}
-			}
 
 			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
 
@@ -623,4 +696,30 @@ nob::hotkey_listener ia_menu_open_hotkey(
 		return false;
 	},
 	true
-);
+)/*,
+veh(
+	{
+		nob::hotkey_t::VehicleMoveUp,
+		nob::hotkey_t::VehicleMoveUpOnly,
+		nob::hotkey_t::VehicleSlowMoUpOnly
+	},
+	[](nob::hotkey_t hk, bool down)->bool {
+		if (down) {
+			switch (hk) {
+				case nob::hotkey_t::VehicleAccelerate:
+					nob::log("VehicleAccelerate");
+					break;
+				case nob::hotkey_t::VehicleBrake:
+					nob::log("VehicleBrake");
+					break;
+				case nob::hotkey_t::VehicleDuck:
+					nob::log("VehicleDuck");
+					break;
+				default:
+					break;
+			}
+		}
+		return false;
+	},
+	false
+)*/;

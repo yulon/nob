@@ -41,10 +41,33 @@ workspace "nob"
 	project "nob_tester"
 		kind "SharedLib"
 		targetdir("bin")
-		files { "test/*.cpp" }
+		files { "tools/tester/*.cpp" }
 		targetextension ".asi"
 		libdirs { "lib" }
 		links { "nob", "psapi", "version", "MinHook" }
+
+		configuration { "gmake*" }
+			linkoptions { "-Wl,--exclude-all-symbols", "-static" }
+
+		configuration { "vs*" }
+			linkoptions { "/include:DllMain" }
+
+		configuration "Debug"
+			defines { "DEBUG" }
+			symbols "On"
+			warnings "Extra"
+
+		configuration "Release"
+			defines { "NDEBUG" }
+			optimize "Speed"
+
+	project "nob_ntv_dumper"
+		kind "SharedLib"
+		targetdir("bin")
+		files { "tools/ntv_dumper/*.cpp" }
+		targetextension ".asi"
+		libdirs { "lib" }
+		links { "nob", "psapi", "version", "MinHook", "stdc++fs" }
 
 		configuration { "gmake*" }
 			linkoptions { "-Wl,--exclude-all-symbols", "-static" }
