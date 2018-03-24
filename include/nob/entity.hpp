@@ -886,7 +886,7 @@ namespace nob {
 						return std::move(str);
 					}
 				}
-				return "MOD_" + std::to_string(type);
+				return "MOD_TYPE_" + std::to_string(type);
 			}
 
 			std::string mod_name(int type, int ix) {
@@ -897,7 +897,7 @@ namespace nob {
 						return std::move(str);
 					}
 				}
-				return "MOD_" + std::to_string(type) + "_" + std::to_string(ix);
+				return "MOD_" + (ix < 0 ? std::string("DEFAULT") : std::to_string(ix));
 			}
 
 			void set_best_mods() {

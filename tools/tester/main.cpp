@@ -125,7 +125,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 						mod_type_name = i18n_mod_type_name;
 					}
 					li->items.emplace_back(list(mod_type_name, [veh, i](list li) mutable {
-						for (int j = 0; j < veh.mod_sum(i); ++j) {
+						for (int j = -1; j < veh.mod_sum(i); ++j) {
 							auto mod_name = veh.mod_name(i, j);
 							auto i18n_mod_name = nob::i18n(mod_name);
 							if (i18n_mod_name != "NULL") {
