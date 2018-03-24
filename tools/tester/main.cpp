@@ -3,8 +3,6 @@
 #include <rua/hook.hpp>
 #include <rua/observer.hpp>
 
-#include "../../steam_id_getter/include/steam_id_getter.hpp"
-
 #include <cstring>
 #include <cstdlib>
 
