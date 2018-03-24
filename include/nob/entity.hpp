@@ -9,6 +9,8 @@
 #include "gc.hpp"
 #include "log.hpp"
 
+#include <string>
+
 namespace nob {
 	class entity {
 		public:
@@ -872,8 +874,30 @@ namespace nob {
 				ntv::VEHICLE::SET_VEHICLE_MOD(_h, type, ix, true);
 			}
 
-			void mod(int type) {
-				ntv::VEHICLE::GET_VEHICLE_MOD(_h, type);
+			int mod(int type) {
+				return ntv::VEHICLE::GET_VEHICLE_MOD(_h, type);
+			}
+
+			std::string mod_type_name(int type) {
+				auto c_str = ntv::VEHICLE::GET_MOD_SLOT_NAME(_h, type);
+				if (c_str) {
+					std::string str(c_str);
+					if (str.length()) {
+						return std::move(str);
+					}
+				}
+				return "MOD_" + std::to_string(type);
+			}
+
+			std::string mod_name(int type, int ix) {
+				auto c_str = ntv::VEHICLE::GET_MOD_TEXT_LABEL(_h, type, ix);
+				if (c_str) {
+					std::string str(c_str);
+					if (str.length()) {
+						return std::move(str);
+					}
+				}
+				return "MOD_" + std::to_string(type) + "_" + std::to_string(ix);
 			}
 
 			void set_best_mods() {
