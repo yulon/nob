@@ -10,6 +10,8 @@
 
 namespace nob {
 	namespace this_script {
+		extern HMODULE os_module_handle;
+
 		enum class mode_t {
 			invalid,
 			shv,

@@ -54,6 +54,7 @@ namespace nob {
 	}
 
 	namespace this_script {
+		HMODULE os_module_handle;
 		mode_t mode = mode_t::invalid;
 		std::thread::id thread_id;
 		std::atomic<size_t> gameplay_id(0);

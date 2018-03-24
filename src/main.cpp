@@ -43,6 +43,8 @@ namespace nob {
 	#endif
 
 	void _main(HMODULE hinstDLL) {
+		this_script::os_module_handle = hinstDLL;
+
 		std::thread([hinstDLL]() {
 			while (!window::native_handle()) {
 				std::this_thread::sleep_for(std::chrono::seconds(1));
