@@ -64,13 +64,13 @@ workspace "nob"
 	project "nob_ntv_dumper"
 		kind "SharedLib"
 		targetdir("bin")
-		files { "tools/ntv_dumper/*.cpp" }
+		files { "tools/ntv_dumper/*.cpp", "tools/ntv_dumper/*.cc" }
 		targetextension ".asi"
 		libdirs { "lib" }
-		links { "nob", "psapi", "version", "MinHook", "stdc++fs" }
+		links { "nob", "psapi", "version", "MinHook", "stdc++fs", "protobuf" }
 
 		configuration { "gmake*" }
-			linkoptions { "-Wl,--exclude-all-symbols", "-static" }
+			linkoptions { "-Wl,--exclude-all-symbols" }
 
 		configuration { "vs*" }
 			linkoptions { "/include:DllMain" }
