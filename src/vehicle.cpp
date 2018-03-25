@@ -82,10 +82,10 @@ namespace nob {
 
 		std::thread([ch]() mutable {
 			auto &sc_inf = *_shop_ctrllr->info;
-			for (size_t i = 0; i < sc_inf.code_pages_count(); ++i) {
+			for (size_t i = 0; i < sc_inf.code_page_count(); ++i) {
 				auto addr = rua::bin_ref(
 					sc_inf.code_pages[i],
-					sc_inf.code_page_length(i)
+					sc_inf.code_page_size(i)
 				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03}).base();
 				if (!addr) {
 					continue;

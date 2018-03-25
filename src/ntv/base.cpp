@@ -348,7 +348,7 @@ namespace nob {
 
 		func_t call_context_t::res_fixer;
 
-		func_table_t *func_table;
+		func_table_t *func_table = nullptr;
 
 		full_call_context_t _dft_call_ctx;
 

@@ -53,7 +53,7 @@ namespace nob {
 		typedef unsigned int Void;
 		typedef unsigned int Any;
 		typedef unsigned int uint;
-		typedef unsigned int Hash;
+		typedef hash_t Hash;
 		typedef int Entity;
 		typedef int Player;
 		typedef int FireId;
@@ -92,122 +92,6 @@ namespace nob {
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			}
 		}
-
-		////////////////////////////////////////////////////////////////////////
-
-		// Reference from https://github.com/zorg93/EnableMpCars-GTAV
-
-		static uint64_t _bad_g;
-
-		class global_table_t {
-			public:
-				uint64_t **_segments;
-
-				operator bool() const {
-					return _segments;
-				}
-
-				uint64_t &operator[](size_t off) {
-					if (!*this) {
-						return _bad_g;
-					}
-					if (!*_segments) {
-						log("nob::ntv::global_table_t::_segments: not allocated!");
-						return _bad_g;
-					}
-					return _segments[off / 0x40000 % 0x40][off % 0x40000];
-				}
-		};
-
-		extern global_table_t global_table;
-
-		struct script_list_t {
-			struct script_t {
-				struct info_t {
-					uintptr_t _padding1[2];
-					uintptr_t *code_pages;
-					uint32_t _padding2;
-					uint32_t code_length;
-					uint32_t _padding3;
-					uint32_t local_count;
-					uint32_t _padding4;
-					uint32_t native_count;
-					uintptr_t *locals;
-					uintptr_t _padding5;
-					uintptr_t *native_addrs;
-					uintptr_t _padding6[2];
-					uint32_t name_hash;
-					uint32_t _padding7;
-					const char *name;
-					const char **str_pool_pages;
-					uint32_t str_pool_length;
-					uint32_t _padding8[3];
-
-					static constexpr size_t max_page_length = 0x4000;
-
-					size_t code_pages_count() const {
-						return (code_length - 1) / max_page_length + 1;
-					}
-
-					size_t code_page_length(size_t page_ix) const {
-						return (page_ix == code_pages_count() - 1) ? code_length % max_page_length : max_page_length;
-					}
-
-					size_t code_off(size_t page_ix, uintptr_t addr) const {
-						return addr - code_pages[page_ix] + page_ix * max_page_length;
-					}
-
-					size_t code_off(uintptr_t addr) const {
-						for (size_t i = 0; i < code_pages_count(); ++i) {
-							auto diff = addr - code_pages[i];
-							if (diff < max_page_length) {
-								return diff + i * max_page_length;
-							}
-						}
-						return 0;
-					}
-
-					uintptr_t code_addr(size_t off) const {
-						return code_pages[off / max_page_length] + off % max_page_length;
-					}
-
-					const char *str_addr(size_t off) const {
-						return &str_pool_pages[off / max_page_length][off % max_page_length];
-					}
-				};
-
-				info_t *info;
-				uint32_t _unk;
-				uint32_t hash;
-
-				operator bool() const {
-					return info && info->code_length;
-				}
-			};
-
-			script_t *scripts;
-			uintptr_t _unk[2];
-			uint32_t size;
-
-			operator bool() const {
-				return scripts;
-			}
-
-			script_t *find(const char *name) const {
-				if (*this) {
-					auto h = hash(name);
-					for (size_t i = 0; i < size; i++) {
-						if (scripts[i].hash == h) {
-							return &scripts[i];
-						}
-					}
-				}
-				log("nob::ntv::script_list_t::find(", name, "): not found!");
-				return nullptr;
-			}
-		};
-
-		extern script_list_t *script_list;
 
 		////////////////////////////////////////////////////////////////////////////
 
@@ -629,6 +513,173 @@ namespace nob {
 					return _dft_call_ctx.result<R>();
 				}
 		};
+
+		////////////////////////////////////////////////////////////////////////
+
+		/*
+			Reference from
+				https://github.com/zorg93/EnableMpCars-GTAV
+				https://www.gtamodding.com/wiki/Script_Container
+		*/
+
+		static uint64_t _bad_g;
+
+		class global_table_t {
+			public:
+				uint64_t **_segments;
+
+				operator bool() const {
+					return _segments;
+				}
+
+				uint64_t &operator[](size_t off) {
+					if (!*this) {
+						return _bad_g;
+					}
+					if (!*_segments) {
+						log("nob::ntv::global_table_t::_segments: not allocated!");
+						return _bad_g;
+					}
+					return _segments[off / 0x40000 % 0x40][off % 0x40000];
+				}
+		};
+
+		extern global_table_t global_table;
+
+		struct ysc_header_t {
+			uintptr_t page_base;
+			uintptr_t page_map;
+			uintptr_t *code_pages;
+			uint32_t globals_signature;
+			uint32_t code_size;
+			uint32_t param_count;
+			uint32_t static_count;
+			uint32_t global_count;
+			uint32_t native_count;
+			uintptr_t *statics;
+			uintptr_t *globals;
+			uintptr_t *natives;
+			uintptr_t _unk[2];
+			hash_t name_hash;
+			uint32_t _unk2;
+			char *name;
+			char **str_pages;
+			uint32_t str_size;
+			uint32_t _unk3[3];
+
+			static constexpr size_t page_size_max = 0x4000;
+
+			size_t code_page_count() const {
+				return (code_size - 1) / page_size_max + 1;
+			}
+
+			size_t code_page_size(size_t page_ix) const {
+				return (page_ix == code_page_count() - 1) ? code_size % page_size_max : page_size_max;
+			}
+
+			size_t code_off(size_t page_ix, uintptr_t addr) const {
+				return addr - code_pages[page_ix] + page_ix * page_size_max;
+			}
+
+			size_t code_off(uintptr_t addr) const {
+				for (size_t i = 0; i < code_page_count(); ++i) {
+					auto diff = addr - code_pages[i];
+					if (diff < page_size_max) {
+						return diff + i * page_size_max;
+					}
+				}
+				return 0;
+			}
+
+			uintptr_t code_addr(size_t off) const {
+				return code_pages[off / page_size_max] + off % page_size_max;
+			}
+
+			const char *str_addr(size_t off) const {
+				return &str_pages[off / page_size_max][off % page_size_max];
+			}
+
+			void redirect() {
+				_rd_ptr(page_map);
+
+				_rd_ptr(code_pages);
+				for (size_t i = 0; i < code_page_count(); ++i) {
+					_rd_ptr(code_pages[i]);
+				}
+
+				_rd_ptr(statics);
+
+				_rd_ptr(globals);
+
+				_rd_ptr(natives);
+				if (func_table) {
+					for (size_t i = 0; i < native_count; ++i) {
+						natives[i] = reinterpret_cast<uintptr_t>((*func_table)[_native_hash(i)]);
+					}
+				} else {
+					for (size_t i = 0; i < native_count; ++i) {
+						natives[i] = _native_hash(i);
+					}
+				}
+
+				_rd_ptr(name);
+
+				_rd_ptr(str_pages);
+			}
+
+			private:
+				void _rd_ptr(uintptr_t &ptr) {
+					if ((ptr & 0xFF000000) != 0x50000000) {
+						return;
+					}
+					ptr = reinterpret_cast<uintptr_t>(this) + (ptr & 0x00FFFFFF);
+				}
+
+				template <typename Ptr>
+				void _rd_ptr(Ptr &ptr) {
+					_rd_ptr(*reinterpret_cast<uintptr_t *>(&ptr));
+				}
+
+				uint64_t _native_hash(size_t ix) {
+					uint8_t rotate = (ix + code_size) & 0x3F;
+					return natives[ix] << rotate | natives[ix] >> (64 - rotate);
+				}
+		};
+
+		struct script_list_t {
+			struct script_t {
+				ysc_header_t *info;
+				uint32_t _unk;
+				uint32_t hash;
+
+				operator bool() const {
+					return info && info->code_size;
+				}
+			};
+
+			script_t *scripts;
+			uintptr_t _unk[2];
+			uint32_t size;
+
+			operator bool() const {
+				return scripts;
+			}
+
+			script_t *find(const char *name) const {
+				if (*this) {
+					auto h = hash(name);
+					for (size_t i = 0; i < size; i++) {
+						if (scripts[i].hash == h) {
+							return &scripts[i];
+						}
+					}
+				}
+				log("nob::ntv::script_list_t::find(", name, "): not found!");
+				return nullptr;
+			}
+		};
+
+		extern script_list_t *script_list;
 
 		////////////////////////////////////////////////////////////////////////
 

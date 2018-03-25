@@ -1,9 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 namespace nob {
-	typedef unsigned int hash_t;
+	typedef uint32_t hash_t;
 
 	static inline constexpr hash_t hash(const char *str) {
 		hash_t h = 0;
