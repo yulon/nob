@@ -61,19 +61,12 @@ workspace "nob"
 			defines { "NDEBUG" }
 			optimize "Speed"
 
-	project "nob_ntv_dumper"
-		kind "SharedLib"
+	project "nob_ntv_fhtt_generater"
+		kind "ConsoleApp"
 		targetdir("bin")
-		files { "tools/ntv_dumper/*.cpp", "tools/ntv_dumper/*.cc" }
-		targetextension ".asi"
+		files { "tools/ntv_fhtt_generater/*.cpp" }
 		libdirs { "lib" }
-		links { "nob", "psapi", "version", "MinHook", "stdc++fs", "protobuf" }
-
-		configuration { "gmake*" }
-			linkoptions { "-Wl,--exclude-all-symbols" }
-
-		configuration { "vs*" }
-			linkoptions { "/include:DllMain" }
+		links { "nob", "psapi", "version", "stdc++fs" }
 
 		configuration "Debug"
 			defines { "DEBUG" }
