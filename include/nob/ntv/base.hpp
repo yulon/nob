@@ -554,11 +554,11 @@ namespace nob {
 			uint32_t code_size;
 			uint32_t param_count;
 			uint32_t static_count;
-			uint32_t global_count;
-			uint32_t native_count;
+			uint32_t using_global_count;
+			uint32_t using_func_count;
 			uintptr_t *statics;
-			uintptr_t *globals;
-			uintptr_t *natives;
+			uintptr_t *using_globals;
+			uintptr_t *using_funcs;
 			uintptr_t _unk[2];
 			hash_t name_hash;
 			uint32_t _unk2;
@@ -609,16 +609,16 @@ namespace nob {
 
 				_rd_ptr(statics);
 
-				_rd_ptr(globals);
+				_rd_ptr(using_globals);
 
-				_rd_ptr(natives);
+				_rd_ptr(using_funcs);
 				if (func_table) {
-					for (size_t i = 0; i < native_count; ++i) {
-						natives[i] = reinterpret_cast<uintptr_t>((*func_table)[_native_hash(i)]);
+					for (size_t i = 0; i < using_func_count; ++i) {
+						using_funcs[i] = reinterpret_cast<uintptr_t>((*func_table)[_using_func_hash(i)]);
 					}
 				} else {
-					for (size_t i = 0; i < native_count; ++i) {
-						natives[i] = _native_hash(i);
+					for (size_t i = 0; i < using_func_count; ++i) {
+						using_funcs[i] = _using_func_hash(i);
 					}
 				}
 
@@ -640,9 +640,9 @@ namespace nob {
 					_rd_ptr(*reinterpret_cast<uintptr_t *>(&ptr));
 				}
 
-				uint64_t _native_hash(size_t ix) {
+				uint64_t _using_func_hash(size_t ix) {
 					uint8_t rotate = (ix + code_size) & 0x3F;
-					return natives[ix] << rotate | natives[ix] >> (64 - rotate);
+					return using_funcs[ix] << rotate | using_funcs[ix] >> (64 - rotate);
 				}
 		};
 

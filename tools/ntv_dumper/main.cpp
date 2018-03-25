@@ -76,8 +76,8 @@ nob::first_task blk([]() {
 
 		auto &funcs = (*dump.mutable_script_funcs())[scr_inf.name];
 
-		for (size_t j = 0; j < scr_inf.native_count; ++j) {
-			funcs.add_addr(scr_inf.natives[j]);
+		for (size_t j = 0; j < scr_inf.using_func_count; ++j) {
+			funcs.add_addr(scr_inf.using_funcs[j]);
 		}
 
 		if (loading) {
