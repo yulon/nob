@@ -13,7 +13,7 @@ std::unordered_set<uint64_t> old_hashs, new_hashs;
 std::unordered_map<std::string, std::pair<size_t, std::vector<uintptr_t>>> old_ysc_map, new_ysc_map;
 
 const std::unordered_map<uint64_t, uint64_t> *old_fhtt;
-std::unordered_map<uint64_t, std::map<size_t, uint64_t>> new_fhtt;
+std::unordered_map<uint64_t, std::pair<uint64_t, size_t>> new_fhtt_nn;
 
 namespace fs = std::experimental::filesystem;
 
@@ -122,18 +122,20 @@ int main() {
 
 		if (old_hash_ballot.empty()) {
 			++loss_old_hash_c;
-			new_fhtt[new_hash].emplace(1, new_hash);
+			new_fhtt_nn.emplace(new_hash, std::make_pair(new_hash, 1));
 			continue;
 		}
 
 		for (auto &hash_pr : *old_fhtt) {
-			auto &map = new_fhtt[hash_pr.first];
+			auto it = new_fhtt_nn.find(hash_pr.first);
 
-			for (auto &votes : old_hash_ballot) {
-				if (votes.first == hash_pr.second) {
-					auto it = map.find(votes.second);
-					if (it == map.end()) {
-						map.emplace(votes.second, new_hash);
+			for (auto &old_hash_cand : old_hash_ballot) {
+				if (old_hash_cand.first == hash_pr.second) {
+					if (it == new_fhtt_nn.end()) {
+						new_fhtt_nn.emplace(hash_pr.first, std::make_pair(new_hash, old_hash_cand.second));
+					} else if (old_hash_cand.second > it->second.second) {
+						it->second.first = new_hash;
+						it->second.second = old_hash_cand.second;
 					}
 				}
 			}
@@ -144,44 +146,53 @@ int main() {
 
 	std::cout << "loss_old_hash_c: " << loss_old_hash_c << std::endl;
 
-	std::cout << "new_fhtt: " << new_fhtt.size() << std::endl;
-
 	auto new_fhtt_path = bin_dir_path + "..\\src\\ntv\\fhtt\\" + std::to_string(new_ver) + ".unsafe.inc";
 
 	std::cout << "writing new_fhtt to '" << new_fhtt_path << "'" << std::endl;
 
-	std::fstream fhtt_f(new_fhtt_path, std::ios_base::binary | std::ios_base::trunc | std::ios_base::out);
-	if (!fhtt_f.is_open()) {
+	std::fstream new_fhtt_f(new_fhtt_path, std::ios_base::binary | std::ios_base::trunc | std::ios_base::out);
+	if (!new_fhtt_f.is_open()) {
 		std::cout << "failed to open" << std::endl;
 	}
 
-	fhtt_f << std::hex << std::uppercase;
+	new_fhtt_f << std::hex << std::uppercase;
 
-	size_t miti_new_hash_c = 0;
+	size_t new_fhtt_sz = 0;
 
 	bool first = true;
 
-	for (auto &pr : new_fhtt) {
-		if (pr.second.empty()) {
-			continue;
-		}
-
+	for (auto &pr : new_fhtt_nn) {
 		if (first) {
 			first = false;
 		} else {
-			fhtt_f << "," << std::endl;
+			new_fhtt_f << "," << std::endl;
 		}
 
-		fhtt_f << "{ 0x" << std::setw(16) << std::setfill('0') << pr.first << ", 0x" << std::setw(16) << std::setfill('0') << pr.second.rbegin()->second << " }";
+		new_fhtt_f << "{ 0x" << std::setw(16) << std::setfill('0') << pr.first << ", 0x" << std::setw(16) << std::setfill('0') << pr.second.first << " }";
 
-		if (pr.second.size() > 1) {
-			++miti_new_hash_c;
+		++new_fhtt_sz;
+
+		auto it = new_hashs.find(pr.second.first);
+		if (it != new_hashs.end()) {
+			new_hashs.erase(it);
 		}
 	}
 
-	fhtt_f << std::endl;
+	for (auto &new_hash : new_hashs) {
+		if (first) {
+			first = false;
+		} else {
+			new_fhtt_f << "," << std::endl;
+		}
 
-	std::cout << "miti_new_hash_c: " << miti_new_hash_c << std::endl;
+		new_fhtt_f << "{ 0x" << std::setw(16) << std::setfill('0') << new_hash << ", 0x" << std::setw(16) << std::setfill('0') << new_hash << " }";
+
+		++new_fhtt_sz;
+	}
+
+	new_fhtt_f << std::endl;
+
+	std::cout << "new_fhtt_sz: " << new_fhtt_sz << std::endl;
 
 	std::cout << "done!!!" << std::endl;
 }
