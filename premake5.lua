@@ -61,10 +61,10 @@ workspace "nob"
 			defines { "NDEBUG" }
 			optimize "Speed"
 
-	project "nob_ntv_fhtt_generater"
+	project "nob_ntv_fhtt_generator"
 		kind "ConsoleApp"
 		targetdir("bin")
-		files { "tools/ntv_fhtt_generater/*.cpp" }
+		files { "tools/ntv_fhtt_generator/*.cpp" }
 		libdirs { "lib" }
 		links { "nob", "psapi", "version", "stdc++fs" }
 
