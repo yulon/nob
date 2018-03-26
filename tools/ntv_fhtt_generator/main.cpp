@@ -39,9 +39,9 @@ void load_yscs(std::string dir, std::unordered_set<uint64_t> &hashs, std::unorde
 
 		ysc_inf.first = ysc.code_size;
 
-		for (size_t i = 0; i < ysc.using_func_count; ++i) {
-			hashs.emplace(ysc.using_funcs[i]);
-			ysc_inf.second.emplace_back(ysc.using_funcs[i]);
+		for (size_t i = 0; i < ysc.imp_func_count; ++i) {
+			hashs.emplace(ysc.imp_funcs[i]);
+			ysc_inf.second.emplace_back(ysc.imp_funcs[i]);
 		}
 	}
 }
