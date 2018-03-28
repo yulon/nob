@@ -282,7 +282,10 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				nob::ui::tip("record start!");
 				tsk = nob::task([pb]() {
 					if (pb.is_in_vehicle()) {
-						rec.emplace(nob::character::movement_t{pb.current_vehicle().movement(), nob::character::motion_state_t::null});
+						nob::character::movement_t mm;
+						static_cast<nob::entity::movement_t &>(mm) = pb.current_vehicle().movement();
+						mm.motion_state = nob::character::motion_state_t::null;
+						rec.emplace(mm);
 					} else {
 						rec.emplace(pb.movement());
 					}

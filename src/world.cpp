@@ -800,7 +800,7 @@ namespace nob {
 				chan<uint8_t *> ch;
 
 				std::thread([ch]() mutable {
-					auto bca = program::code.match({
+					auto bca = game_code.match({
 						// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
 						0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
 					}).base();

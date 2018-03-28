@@ -20,7 +20,7 @@ namespace nob {
 			}
 
 			while (!*pool) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				Sleep(500);
 			}
 
 			for (size_t i = 0; i < pool->count; ++i) {
@@ -293,7 +293,7 @@ namespace nob {
 
 		func_t *func_table_t::find(uint64_t hash) const {
 			return
-				program::version < 1290 ?
+				game_build < 1290 ?
 				_fn_tab::find<_fn_tab::node_t>(lists, hash) :
 				_fn_tab::find<_fn_tab::node_1290_t>(lists, hash)
 			;
@@ -301,7 +301,7 @@ namespace nob {
 
 		size_t func_table_t::size() const {
 			return
-				program::version < 1290 ?
+				game_build < 1290 ?
 				_fn_tab::size<_fn_tab::node_t>(lists) :
 				_fn_tab::size<_fn_tab::node_1290_t>(lists)
 			;
@@ -309,7 +309,7 @@ namespace nob {
 
 		std::pair<uint64_t, func_t &> func_table_t::iterator::operator*() const {
 			return
-				program::version < 1290 ?
+				game_build < 1290 ?
 				std::pair<uint64_t, func_t &>(
 					reinterpret_cast<_fn_tab::node_t *>(_node)->hash(_fn_ix),
 					reinterpret_cast<_fn_tab::node_t *>(_node)->funcs[_fn_ix]
@@ -322,7 +322,7 @@ namespace nob {
 		}
 
 		func_table_t::iterator &func_table_t::iterator::operator++() {
-			if (program::version < 1290) {
+			if (game_build < 1290) {
 				_fn_tab::inc_it<_fn_tab::node_t>(_lis, _li_ix, _node, _fn_ix);
 			} else {
 				_fn_tab::inc_it<_fn_tab::node_1290_t>(_lis, _li_ix, _node, _fn_ix);
@@ -332,7 +332,7 @@ namespace nob {
 
 		func_table_t::iterator func_table_t::begin() const {
 			iterator it(lists);
-			if (program::version < 1290) {
+			if (game_build < 1290) {
 				_fn_tab::begin_it<_fn_tab::node_t>(lists, it._li_ix, it._node, it._fn_ix);
 			} else {
 				_fn_tab::begin_it<_fn_tab::node_1290_t>(lists, it._li_ix, it._node, it._fn_ix);
@@ -373,7 +373,7 @@ namespace nob {
 		bool _init() {
 			auto finded = true;
 
-			auto fhtt_it = fhtt_map.find(program::version);
+			auto fhtt_it = fhtt_map.find(game_build);
 			if (fhtt_it != fhtt_map.end()) {
 				fhtt = &fhtt_it->second;
 			} else {
@@ -382,7 +382,7 @@ namespace nob {
 				//finded = false;
 			}
 
-			auto mrs = program::code.match_sub({
+			auto mrs = game_code.match_sub({
 				// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 				0x4C, 0x8D, 0x05, 1111, 1111, 1111, 1111, 0x4D, 0x8B, 0x08,
 				0x4D, 0x85, 0xC9, 0x74, 0x11
@@ -393,7 +393,7 @@ namespace nob {
 				finded = false;
 			}
 
-			call_context_t::res_fixer = program::code.match({
+			call_context_t::res_fixer = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L104
 				0x83, 0x79, 0x18, 1111, 0x48, 0x8B, 0xD1, 0x74, 0x4A, 0xFF, 0x4A, 0x18
 			}).base();
@@ -403,8 +403,8 @@ namespace nob {
 				finded = false;
 			}
 
-			if (program::version >= 1365) {
-				mrs = program::code.match_sub({
+			if (game_build >= 1365) {
+				mrs = game_code.match_sub({
 					// Reference from https://www.unknowncheats.me/forum/2061818-post2131.html
 					0x76, 1111, 1111, 0x8b, 1111, 1111, 0x48, 0x8d, 0x0d, 1111, 1111, 1111, 1111, 1111, 0x8b, 1111, 1111, 1111
 				});
@@ -415,13 +415,13 @@ namespace nob {
 				}
 
 			} else {
-				if (program::version >= 1290) {
-					mrs = program::code.match_sub({
+				if (game_build >= 1290) {
+					mrs = game_code.match_sub({
 						// Reference from https://www.unknowncheats.me/forum/1932632-post1648.html
 						0x40, 0x53, 0x48, 0x83, 0xEC, 0x20, 0x48, 0x8D, 0x1D, 1111, 1111, 1111, 1111, 0x4C, 0x8D, 0x05
 					});
 				} else {
-					mrs = program::code.match_sub({
+					mrs = game_code.match_sub({
 						// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L389
 						0x76, 0x61, 0x49, 0x8B, 0x7A, 0x40, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
 					});
@@ -433,7 +433,7 @@ namespace nob {
 				}
 			}
 
-			mrs = program::code.match_sub({
+			mrs = game_code.match_sub({
 				// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 				0x48, 0x03, 0x15, 1111, 1111, 1111, 1111, 0x4C, 0x23, 0xC2,
 				0x49, 0x8B, 0x08
@@ -444,7 +444,7 @@ namespace nob {
 				finded = false;
 			}
 
-			mrs = program::code.match_sub({
+			mrs = game_code.match_sub({
 				// Reference from https://github.com/MockbaTheBorg/GTALuaF/blob/master/PHP/patternsGTA.txt#L10
 				0x83, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x8A, 0xD9, 0x74, 0x0A
 			});
@@ -454,7 +454,7 @@ namespace nob {
 				finded = false;
 			}
 
-			mrs = program::code.match_sub({
+			mrs = game_code.match_sub({
 				// Reference from https://github.com/JLFSL/FiveMultiplayer/blob/dev/Client/Core/MemoryAccess.h#L23
 				0x4C, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0x49, 0x2B, 0x00
 			});
@@ -464,14 +464,14 @@ namespace nob {
 				//finded = false;
 			}
 
-			if (program::version >= 757) {
+			if (game_build >= 757) {
 
-				if (program::version >= 1290) {
-					mrs = program::code.match_sub({
+				if (game_build >= 1290) {
+					mrs = game_code.match_sub({
 						0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0xFF, 0xC2
 					});
 				} else {
-					mrs = program::code.match_sub({
+					mrs = game_code.match_sub({
 						0x89, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x0C, 0xD8
 					});
 				}
@@ -481,7 +481,7 @@ namespace nob {
 					//finded = false;
 				}
 
-				mrs = program::code.match_sub({
+				mrs = game_code.match_sub({
 					0xFF, 0x0D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xF9
 				});
 
@@ -494,7 +494,7 @@ namespace nob {
 
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L381
 
-				auto mr = program::code.match({
+				auto mr = game_code.match({
 					0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
 				});
 
@@ -512,7 +512,7 @@ namespace nob {
 				}
 			}
 
-			/*auto code_block_1 = program::code.match({
+			/*auto code_block_1 = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/ScriptHandlerMgr.cpp#L33
 				0x80, 0x78, 0x32, 0x00, 0x75, 0x34, 0xB1, 0x01, 0xE8
 			});
@@ -524,7 +524,7 @@ namespace nob {
 				log("nob::ntv::_find_addrs::code_block_1: not found!");
 			}*/
 
-			mrs = program::code.match_sub({
+			mrs = game_code.match_sub({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L393
 				0x74, 0x17, 0x48, 0x8B, 0xC8, 0xE8, 1111, 1111, 1111, 1111, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
 			});
@@ -534,7 +534,7 @@ namespace nob {
 				//finded = false;
 			}
 
-			auto mr = program::code.match({
+			auto mr = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L379
 				1111, 1111, 1111, 1111, 0x48, 0x8B, 0x04, 0xD0, 0x4A, 0x8B, 0x14, 0x00, 0x48, 0x8B, 0x01, 0xF3, 0x44, 0x0F, 0x2C, 0x42, 0x20
 			});
@@ -544,7 +544,7 @@ namespace nob {
 				//finded = false;
 			}
 
-			mrs = program::code.match_sub({
+			mrs = game_code.match_sub({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L357
 				0x48, 0x8B, 0xC8, 0xEB, 0x03, 0x48, 0x8B, 0xCB, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111
 			});
@@ -554,7 +554,7 @@ namespace nob {
 				//finded = false;
 			}
 
-			script_thread_t::init_gta_data = program::code.match({
+			script_thread_t::init_gta_data = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L77
 				0x83, 0x89, 0x38, 0x01, 0x00, 0x00, 0xFF, 0x83, 0xA1, 0x50, 0x01, 0x00, 0x00, 0xF0
 			}).base();
@@ -564,7 +564,7 @@ namespace nob {
 				//finded = false;
 			}
 
-			mr = program::code.match({
+			mr = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L40
 				0x80, 0xB9, 0x46, 0x01, 0x00, 0x00, 0x00, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x74, 0x05
 			});
@@ -576,7 +576,7 @@ namespace nob {
 				//finded = false;
 			}
 
-			mr = program::code.match({
+			mr = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L50
 				0x48, 0x83, 0xEC, 0x20, 0x48, 0x83, 0xB9, 0x10, 0x01, 0x00, 0x00, 0x00, 0x48, 0x8B, 0xD9, 0x74, 0x14
 			});

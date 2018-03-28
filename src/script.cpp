@@ -1,4 +1,5 @@
 #include <nob/script.hpp>
+#include <nob/program.hpp>
 #include <nob/ntv.hpp>
 #include <nob/shv.hpp>
 #include <nob/log.hpp>
@@ -33,6 +34,14 @@ namespace nob {
 		_exiters->push_back(std::move(handler));
 	}
 
+	namespace ntv {
+		bool _init();
+	}
+
+	namespace shv {
+		bool _init();
+	}
+
 	extern std::queue<std::function<void()>> _inputs;
 
 	static inline void _clear_inputs() {
@@ -54,7 +63,6 @@ namespace nob {
 	}
 
 	namespace this_script {
-		HMODULE os_module_handle;
 		mode_t mode = mode_t::invalid;
 		std::thread::id thread_id;
 		std::atomic<size_t> gameplay_id(0);
@@ -134,7 +142,7 @@ namespace nob {
 			ntv::SCRIPT::TERMINATE_THIS_THREAD();
 		}
 
-		bool _hook_main() {
+		bool _create_from_main_td() {
 			if (!ntv::func_table) {
 				return false;
 			}
@@ -144,7 +152,7 @@ namespace nob {
 			ntv::func_t wait_fp;
 
 			for (wait_fp = ntv::SYSTEM::WAIT.target(); !wait_fp; wait_fp = ntv::SYSTEM::WAIT.target()) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				Sleep(500);
 				if (*ntv::game_state == ntv::game_state_t::playing) {
 					wait_fp = ntv::SYSTEM::WAIT.target();
 					if (wait_fp) {
@@ -180,19 +188,18 @@ namespace nob {
 			return true;
 		}
 
-		std::unique_ptr<ntv::script_thread_t> _main_td;
-
-		bool _td_main() {
+		bool _create_from_new_td() {
+			static std::unique_ptr<ntv::script_thread_t> td;
 			static bool need_init = true;
 
-			_main_td.reset(new ntv::script_thread_t(
+			td.reset(new ntv::script_thread_t(
 				[]() {
 					auto life = _run(false, need_init);
 					if (need_init) {
 						need_init = false;
 					}
 					if (!life) {
-						_main_td.reset();
+						td.reset();
 					}
 				},
 				[]() {
@@ -200,11 +207,77 @@ namespace nob {
 				}
 			));
 
-			if (!*_main_td) {
-				_main_td.reset();
+			if (!*td) {
+				td.reset();
 			}
 
-			return _main_td.get();
+			return td.get();
+		}
+
+		#ifdef NDEBUG
+			#define _NOB_CALL_INIT_FN(_f) \
+				if (!_f()) { \
+					MessageBoxW(0, rua::u8_to_u16(log.str()).c_str(), L"ERRORS", MB_OK | MB_ICONERROR); \
+					_exited = true; \
+					exit(1); \
+					return; \
+				}
+		#else
+			#define _NOB_CALL_INIT_FN(_f) _f()
+		#endif
+
+		void _create() {
+			while (!window::native_handle()) {
+				Sleep(1000);
+			}
+
+			while (!IsWindowVisible(window::native_handle())) {
+				Sleep(1000);
+			}
+
+			log.alloc_console();
+
+			_NOB_CALL_INIT_FN(ntv::_init);
+
+			if (shv::_init()) {
+				mode = mode_t::shv;
+				shv::scriptRegister(this_dll, _shv_main);
+				return;
+			}
+
+			if (ntv::game_state) {
+				auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
+				while (gs && gs < 5) {
+					Sleep(500);
+				}
+			}
+
+			if (_create_from_new_td()) {
+				mode = mode_t::sub_thread;
+				return;
+			}
+
+			mode = mode_t::main_thread;
+			_NOB_CALL_INIT_FN(_create_from_main_td);
+		}
+
+		void _destroy() {
+			exiting = true;
+
+			for (;;) {
+				if (!IsWindowVisible(window::native_handle())) {
+					return;
+				}
+				if (_exited) {
+					break;
+				}
+				Sleep(100);
+			}
+
+			if (mode == mode_t::shv) {
+				shv::scriptUnregister(this_dll);
+				return;
+			}
 		}
 	} /* this_script */
 
