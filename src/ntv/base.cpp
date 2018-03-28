@@ -352,7 +352,7 @@ namespace nob {
 
 		full_call_context_t _dft_call_ctx;
 
-		entity_instance_map_t **entity_instance_map;
+		entity_obj_map_t **entity_obj_map;
 
 		script_context_pool_t *script_context_pool;
 
@@ -459,8 +459,8 @@ namespace nob {
 				0x4C, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0x49, 0x2B, 0x00
 			});
 
-			if (mrs.empty() || !(entity_instance_map = mrs[0].derelative<int32_t>())) {
-				log("nob::ntv::entity_instance_map: not found!");
+			if (mrs.empty() || !(entity_obj_map = mrs[0].derelative<int32_t>())) {
+				log("nob::ntv::entity_obj_map: not found!");
 				//finded = false;
 			}
 

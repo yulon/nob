@@ -35,14 +35,9 @@ namespace nob {
 		}
 	};
 
-	#ifndef _NOB_NTV_VEC3
-		#define _NOB_NTV_VEC3
-		namespace ntv {
-			struct Vector3 {
-				alignas(uintptr_t) float x, y, z;
-			};
-		}
-	#endif
+	struct vector3_wf {
+		alignas(uintptr_t) float x, y, z;
+	};
 
 	struct vector3 : public vector2 {
 		float z;
@@ -62,9 +57,9 @@ namespace nob {
 			}
 		}
 
-		constexpr vector3(const ntv::Vector3 &nv3) : vector3(nv3.x, nv3.y, nv3.z) {}
+		constexpr vector3(const vector3_wf &nv3) : vector3(nv3.x, nv3.y, nv3.z) {}
 
-		constexpr operator ntv::Vector3() const {
+		constexpr operator vector3_wf() const {
 			return {x, y, z};
 		}
 

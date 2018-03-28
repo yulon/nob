@@ -192,8 +192,8 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 								tsks[ti] = nob::task([dest]() {
 									auto pb = nob::player::body();
 									auto rot = nob::ntv::CAM::GET_GAMEPLAY_CAM_ROT(0);
-									pb.rotation(rot);
 									pb.move(dest(rot));
+									pb.rotation(rot);
 								});
 							}
 						} else if (tsks[ti]) {
@@ -294,11 +294,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					return;
 				}
 				if (pb.is_in_vehicle()) {
-					//pb.current_vehicle().physics_collidable(false);
-
-					pb.current_vehicle().move(rec.front().pos);
-				} else {
-					pb.move(rec.front().pos);
+					pb.into_vehicle(pb.current_vehicle(), 0);
 				}
 				nob::yield();
 				nob::task([pb]() mutable {
@@ -306,7 +302,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 						if (pb.is_in_vehicle()) {
 							pb.current_vehicle().movement(rec.front());
 						} else {
-							pb.movement(rec.front());
+							static_cast<nob::entity &>(pb).movement(rec.front());
 						}
 						rec.pop();
 					} else {
@@ -422,22 +418,10 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 1));
 			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
 
-			nob::log(std::hex);
-
-			auto c = 0, cc = 0;
-
-			for (auto it = nob::ntv::func_table->begin(); it != nob::ntv::func_table->end(); ++it) {
-				++c;
-			}
-
-			for (auto pr : *nob::ntv::func_table) {
-				//nob::log(std::setw(16), std::setfill('0'), pr.first);
-				++cc;
-			}
-
-			nob::log(std::dec, c, " ", cc, " ", nob::ntv::func_table->size());
-/*
 			static auto pb = nob::player::body();
+
+/*
+
 			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {
 					nob::log("scr: ", nob::ntv::script_list->scripts[i].hash);
@@ -455,18 +439,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 
 
-			auto veh_data = (**nob::ntv::entity_instance_map)[pb.last_vehicle()];
-			if (veh_data) {
-				auto &x = *reinterpret_cast<uint8_t *>(veh_data + 0x0B60 - 4 - 4);
-				nob::log("0 ", (size_t)x);
-				//nob::sleep(10000);
-				//nob::task([]() {
-					//nob::log("1 ", x);
-					//nob::ntv::ENTITY::SET_ENTITY_COORDS(, 882.702, 58.1396, 78.3142, 1, 0, 0, 1);
-				//	pb.last_vehicle().move({ 882.702, 58.1396, 78.3142 });
-					//nob::log("2 ", x);
-				//});
-			}
+
 
 
 			nob::task([]() {

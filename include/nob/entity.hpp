@@ -76,7 +76,7 @@ namespace nob {
 			}
 
 			void move(const vector3 &coords) {
-				ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, false, false, true);
+				(**nob::ntv::entity_obj_map)[_h]->move(coords);
 			}
 
 			vector3 rotation() const {

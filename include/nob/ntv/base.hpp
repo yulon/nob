@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../hash.hpp"
+#include "../vector.hpp"
 #include "../log.hpp"
 #include "fhtt.hpp"
 
@@ -77,12 +78,7 @@ namespace nob {
 		typedef int Sphere;
 		typedef int ScrHandle;
 
-		#ifndef _NOB_NTV_VEC3
-			#define _NOB_NTV_VEC3
-			struct Vector3 {
-				alignas(uintptr_t) float x, y, z;
-			};
-		#endif
+		using Vector3 = vector3_wf;
 
 		////////////////////////////////////////////////////////////////////////
 
@@ -683,9 +679,35 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
-		struct entity_instance_map_t {
+		class entity_obj_t {
+			public:
+				struct nav_t {
+					uint8_t _unk[0x0020];
+					float compas_heading; //0x0020
+					uint8_t _unk4[0x0034 - (0x0020 + sizeof(nav_t::compas_heading))];
+					float compas_heading2; //0x0034
+					uint8_t _unk5[0x0050 - (0x0034 + sizeof(nav_t::compas_heading2))];
+					vector3 pos; //0x0050
+				};
+
+				uintptr_t vtable;
+				uintptr_t _unk[0x0030 - sizeof(entity_obj_t::vtable)];
+				nav_t *nav; //0x0030
+				uintptr_t _unk2[0x0090 - (0x0030 + sizeof(entity_obj_t::nav))];
+				vector3 pos; //0x0090
+
+				// ...
+
+				void move(const vector3 &coords) {
+					nav->pos = coords;
+					pos = coords;
+				}
+		};
+
+		struct entity_obj_map_t {
 			struct node_t {
-				uintptr_t _unk, value;
+				uintptr_t _unk;
+				entity_obj_t *value;
 			};
 
 			node_t *nodes;
@@ -693,20 +715,20 @@ namespace nob {
 			uint32_t size;
 			uint32_t node_size;
 
-			uintptr_t operator[](int handle) const {
+			entity_obj_t *operator[](int handle) const {
 				auto ix = static_cast<uint32_t>(handle / 0x100);
 				if (ix >= size || hanlde_remainders[ix] != handle % 0x100) {
-					log("nob::ntv::entity_instance_map_t[", handle, "]: not found!");
+					log("nob::ntv::entity_obj_map_t[", handle, "]: not found!");
 					return 0;
 				}
 				if (node_size != sizeof(node_t)) {
-					log("nob::ntv::entity_instance_map_t::node_size: is ", node_size, "!");
+					log("nob::ntv::entity_obj_map_t::node_size: is ", node_size, "!");
 					return reinterpret_cast<node_t *>(reinterpret_cast<uintptr_t>(nodes) + ix * node_size)->value;
 				}
 				return nodes[ix].value;
 			}
 		};
 
-		extern entity_instance_map_t **entity_instance_map;
+		extern entity_obj_map_t **entity_obj_map;
 	} /* ntv */
 } /* nob */
