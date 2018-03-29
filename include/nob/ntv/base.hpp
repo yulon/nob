@@ -691,9 +691,9 @@ namespace nob {
 				};
 
 				uintptr_t vtable;
-				uintptr_t _unk[0x0030 - sizeof(entity_obj_t::vtable)];
+				uint8_t _unk[0x0030 - sizeof(entity_obj_t::vtable)];
 				nav_t *nav; //0x0030
-				uintptr_t _unk2[0x0090 - (0x0030 + sizeof(entity_obj_t::nav))];
+				uint8_t _unk2[0x0090 - (0x0030 + sizeof(entity_obj_t::nav))];
 				vector3 pos; //0x0090
 
 				// ...

@@ -5,6 +5,7 @@
 #include <nob/log.hpp>
 
 #include <rua/hook.hpp>
+#include <rua/strenc.hpp>
 
 #include <windows.h>
 
