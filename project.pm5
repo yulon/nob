@@ -1,0 +1,21 @@
+project "minhook"
+	language "C"
+	cdialect "C11"
+	kind "StaticLib"
+	files {
+		"deps/minhook/include/*.h",
+		"deps/minhook/src/*.c", "deps/minhook/src/hde/*.c",
+	}
+
+project "nob"
+	language "C++"
+	cppdialect "C++17"
+	kind "StaticLib"
+	files {
+		"include/*.hpp", "include/*.h",
+		"include/*/*.hpp", "include/*/*.h",
+		"include/*/*/*.hpp", "include/*/*/*.h",
+		"src/*.cpp", "src/*.hpp", "src/*.h",
+		"src/*/*.cpp", "src/*/*.hpp", "src/*/*.h",
+		"src/*/*.inc", "src/*/*/*.inc"
+	}

@@ -1,0 +1,9 @@
+project "nob_ntv_fhtt_generator"
+	language "C++"
+	cppdialect "C++17"
+	kind "ConsoleApp"
+	files { "ntv_fhtt_generator/*.cpp" }
+	dofileopt "../link.pm5"
+
+	configuration { "gmake*" }
+		links { "stdc++fs" }

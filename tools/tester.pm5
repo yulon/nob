@@ -1,0 +1,10 @@
+project "nob_tester"
+	language "C++"
+	cppdialect "C++17"
+	kind "SharedLib"
+	files { "tester/*.cpp" }
+	targetextension ".asi"
+	dofileopt "../link.pm5"
+
+	configuration { "gmake*" }
+		linkoptions { "-Wl,--exclude-all-symbols", "-static" }

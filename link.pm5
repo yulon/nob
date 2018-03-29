@@ -1,0 +1,4 @@
+links { "nob", "minhook", "psapi", "version" }
+
+configuration { "SharedLib", "vs*" }
+	linkoptions { "/include:DllMain" }
