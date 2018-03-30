@@ -51,7 +51,7 @@ func main() {
 		}
 	}
 
-	hpp, err := os.Create("../include/nob/ntv/funcs.hpp")
+	hpp, err := os.Create("../../include/nob/ntv/funcs.hpp")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -64,7 +64,7 @@ func main() {
 #include "consts.hpp"`)
 	gen(hpp, true)
 
-	cpp, err := os.Create("../src/ntv/funcs.cpp")
+	cpp, err := os.Create("../../src/ntv/funcs.cpp")
 	if err != nil {
 		fmt.Println(err)
 		return
