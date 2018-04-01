@@ -296,14 +296,12 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					nob::ui::tip("record done!");
 					return;
 				}
-				if (pb.is_in_vehicle()) {
-					pb.into_vehicle(pb.current_vehicle(), 0);
-				}
 				nob::yield();
 				nob::task([pb]() mutable {
 					if (rec.size()) {
 						if (pb.is_in_vehicle()) {
 							pb.current_vehicle().movement(rec.front());
+							pb.current_vehicle().action(32);
 						} else {
 							static_cast<nob::entity &>(pb).movement(rec.front());
 						}
@@ -421,9 +419,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 1));
 			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
 
-			static auto pb = nob::player::body();
-
-/*
+/*			static auto pb = nob::player::body();
 
 			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {
