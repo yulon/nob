@@ -1,6 +1,6 @@
 #include <nob.hpp>
 
-#include <rua/hook.hpp>
+#include <minhook.hpp>
 #include <rua/observer.hpp>
 
 #include <cstring>
@@ -325,12 +325,12 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(nob::player::body());
 		}),
 		action("Hook Function", []() {
-			static rua::hooked<nob::ntv::func_t> hkd;
-			nob::log(hkd.hook(
+			static minhook<nob::ntv::func_t> hkd;
+			nob::log(hkd.install(
 				nob::ntv::AI::TASK_PLAY_ANIM_ADVANCED.target(),
 				[](nob::ntv::call_context_t &cc) {
 					nob::log(cc.arg<char *>(1), ", ", cc.arg<char *>(2));
-					hkd(cc);
+					hkd.original(cc);
 				}
 			));
 		}),

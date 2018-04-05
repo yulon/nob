@@ -1,1 +1,3 @@
-includedirs { "include", "deps", "deps/minhook/include" }
+dofileopt "deps/minhook_cpp/include.pm5"
+
+includedirs { "include", "deps" }

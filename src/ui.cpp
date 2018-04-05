@@ -2,8 +2,7 @@
 #include <nob/program.hpp>
 #include <nob/script.hpp>
 
-#include <rua/hook.hpp>
-#include <rua/hook.inc>
+#include <minhook.hpp>
 
 #include <thread>
 #include <sstream>
@@ -37,7 +36,7 @@ namespace nob {
 
 		void disable_wheel_slowmo(bool toggle) {
 			static void (*sf)() = nullptr;
-			static rua::hooked<void (*)()> hkd;
+			static minhook<void (*)()> hkd;
 
 			if (toggle) {
 				if (!sf) {
@@ -60,10 +59,10 @@ namespace nob {
 					}
 				}
 				if (!hkd) {
-					hkd.hook(sf, []() {});
+					hkd.install(sf, []() {});
 				}
 			} else {
-				hkd.unhook();
+				hkd.uninstall();
 			}
 		}
 

@@ -4,7 +4,7 @@
 #include <nob/shv.hpp>
 #include <nob/log.hpp>
 
-#include <rua/hook.hpp>
+#include <minhook.hpp>
 #include <rua/strenc.hpp>
 
 #include <windows.h>
@@ -148,7 +148,7 @@ namespace nob {
 				return false;
 			}
 
-			static rua::hooked<ntv::func_t> wait_hkd;
+			static minhook<ntv::func_t> wait_hkd;
 
 			ntv::func_t wait_fp;
 
@@ -169,17 +169,17 @@ namespace nob {
 				return false;
 			}
 
-			if (!wait_hkd.hook(
+			if (!wait_hkd.install(
 				wait_fp,
 				[](ntv::call_context_t &cc) {
 					if (strcmp(ntv::SCRIPT::GET_THIS_SCRIPT_NAME(), "main_persistent") == 0) {
 						if (!_run()) {
-							wait_hkd(cc);
-							wait_hkd.unhook();
+							wait_hkd.original(cc);
+							wait_hkd.uninstall();
 							return;
 						}
 					}
-					wait_hkd(cc);
+					wait_hkd.original(cc);
 				}
 			)) {
 				log("nob::this_script::_exclusive_main: hook failed!");
