@@ -800,19 +800,21 @@ namespace nob {
 				chan<uint8_t *> ch;
 
 				std::thread([ch]() mutable {
-					auto bca = game_code.match({
+					auto mpos = game_code.match({
 						// Reference from http://gtaforums.com/topic/902339-enable-snowy-map-in-single-player/
 						0x74, 0x25, 0xB9, 0x40, 0x00, 0x00, 0x00, 0xE8, 1111, 1111, 1111, 1111, 0x84, 0xC0
-					}).base();
+					});
 
-					if (bca) {
-						VirtualProtect(bca, 20, PAGE_EXECUTE_READWRITE, nullptr);
-						memcpy(&block_code_bak, bca, 20);
-					} else {
+					if (mpos == rua::nullpos) {
 						log("nob::world::snowy::block_code_addr: not found!");
+						ch << nullptr;
 					}
 
+					auto bca = game_code.base() + mpos;
+					VirtualProtect(bca, 20, PAGE_EXECUTE_READWRITE, nullptr);
+					memcpy(&block_code_bak, bca, 20);
 					ch << bca;
+
 				}).detach();
 
 				return ch.get();

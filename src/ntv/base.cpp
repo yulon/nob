@@ -342,29 +342,29 @@ namespace nob {
 
 		global_table_t global_table;
 
-		script_list_t *script_list;
+		script_list_t *script_list = nullptr;
 
-		game_state_t *game_state;
+		game_state_t *game_state = nullptr;
 
-		func_t call_context_t::res_fixer;
+		func_t call_context_t::res_fixer = nullptr;
 
 		func_table_t *func_table = nullptr;
 
 		full_call_context_t _dft_call_ctx;
 
-		entity_obj_map_t **entity_obj_map;
+		entity_obj_map_t **entity_obj_map = nullptr;
 
-		script_context_pool_t *script_context_pool;
+		script_context_pool_t *script_context_pool = nullptr;
 
-		uint32_t *fake_script_hash_count;
+		uint32_t *fake_script_hash_count = nullptr;
 
-		uint32_t script_thread_t::tls_off;
+		uint32_t script_thread_t::tls_off = 0;
 
-		container_t<script_thread_t *> *script_thread_t::pool;
+		container_t<script_thread_t *> *script_thread_t::pool = nullptr;
 
-		uint32_t *script_thread_t::id_count;
+		uint32_t *script_thread_t::id_count = nullptr;
 
-		void (*script_thread_t::init_gta_data)(script_thread_t *);
+		void (*script_thread_t::init_gta_data)(script_thread_t *) = nullptr;
 
 		script_thread_t::state_t (*script_thread_t::default_tick)(script_thread_t *, uint32_t ops_to_execute) = nullptr;
 
@@ -382,110 +382,128 @@ namespace nob {
 				//finded = false;
 			}
 
-			auto mrs = game_code.match_sub({
+			auto mposs = game_code.match_sub({
 				// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 				0x4C, 0x8D, 0x05, 1111, 1111, 1111, 1111, 0x4D, 0x8B, 0x08,
 				0x4D, 0x85, 0xC9, 0x74, 0x11
 			});
 
-			if (mrs.empty() || !(global_table._segments = mrs[0].derelative<int32_t>())) {
+			if (mposs.size() && mposs[0] != rua::nullpos) {
+				global_table._segments = game_code.derel<int32_t>(mposs[0]);
+			} else {
 				log("nob::ntv::global_table::_segments: not found!");
 				finded = false;
 			}
 
-			call_context_t::res_fixer = game_code.match({
+			auto mpos = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L104
 				0x83, 0x79, 0x18, 1111, 0x48, 0x8B, 0xD1, 0x74, 0x4A, 0xFF, 0x4A, 0x18
-			}).base();
+			});
 
-			if (!call_context_t::res_fixer) {
+			if (mpos != rua::nullpos) {
+				call_context_t::res_fixer = game_code.base() + mpos;
+			} else {
 				log("nob::ntv::call_context_t::res_fixer: not found!");
 				finded = false;
 			}
 
 			if (game_build >= 1365) {
-				mrs = game_code.match_sub({
+				mposs = game_code.match_sub({
 					// Reference from https://www.unknowncheats.me/forum/2061818-post2131.html
 					0x76, 1111, 1111, 0x8b, 1111, 1111, 0x48, 0x8d, 0x0d, 1111, 1111, 1111, 1111, 1111, 0x8b, 1111, 1111, 1111
 				});
 
-				if (mrs.empty() || !(func_table = mrs[2].derelative<int32_t>())) {
+				if (mposs.size() && mposs[2] != rua::nullpos) {
+					func_table = game_code.derel<int32_t>(mposs[2]);
+				} else {
 					log("nob::ntv::func_table: not found!");
 					finded = false;
 				}
 
 			} else {
 				if (game_build >= 1290) {
-					mrs = game_code.match_sub({
+					mposs = game_code.match_sub({
 						// Reference from https://www.unknowncheats.me/forum/1932632-post1648.html
 						0x40, 0x53, 0x48, 0x83, 0xEC, 0x20, 0x48, 0x8D, 0x1D, 1111, 1111, 1111, 1111, 0x4C, 0x8D, 0x05
 					});
 				} else {
-					mrs = game_code.match_sub({
+					mposs = game_code.match_sub({
 						// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L389
 						0x76, 0x61, 0x49, 0x8B, 0x7A, 0x40, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
 					});
 				}
 
-				if (mrs.empty() || !(func_table = mrs[0].derelative<int32_t>())) {
+				if (mposs.size() && mposs[0] != rua::nullpos) {
+					func_table = game_code.derel<int32_t>(mposs[0]);
+				} else {
 					log("nob::ntv::func_table: not found!");
 					finded = false;
 				}
 			}
 
-			mrs = game_code.match_sub({
+			mposs = game_code.match_sub({
 				// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 				0x48, 0x03, 0x15, 1111, 1111, 1111, 1111, 0x4C, 0x23, 0xC2,
 				0x49, 0x8B, 0x08
 			});
 
-			if (mrs.empty() || !(script_list = mrs[0].derelative<int32_t>())) {
+			if (mposs.size() && mposs[0] != rua::nullpos) {
+				script_list = game_code.derel<int32_t>(mposs[0]);
+			} else {
 				log("nob::ntv::script_list: not found!");
 				finded = false;
 			}
 
-			mrs = game_code.match_sub({
+			mposs = game_code.match_sub({
 				// Reference from https://github.com/MockbaTheBorg/GTALuaF/blob/master/PHP/patternsGTA.txt#L10
 				0x83, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x8A, 0xD9, 0x74, 0x0A
 			});
 
-			if (mrs.empty() || !(game_state = rua::unsafe_ptr(mrs[0].derelative<int32_t>().value()++))) {
+			if (mposs.size() && mposs[0] != rua::nullpos) {
+				game_state = ++game_code.derel<int32_t>(mposs[0]);
+			} else {
 				log("nob::ntv::game_state: not found!");
 				finded = false;
 			}
 
-			mrs = game_code.match_sub({
+			mposs = game_code.match_sub({
 				// Reference from https://github.com/JLFSL/FiveMultiplayer/blob/dev/Client/Core/MemoryAccess.h#L23
 				0x4C, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0x49, 0x2B, 0x00
 			});
 
-			if (mrs.empty() || !(entity_obj_map = mrs[0].derelative<int32_t>())) {
+			if (mposs.size() && mposs[0] != rua::nullpos) {
+				entity_obj_map = game_code.derel<int32_t>(mposs[0]);
+			} else {
 				log("nob::ntv::entity_obj_map: not found!");
-				//finded = false;
+				finded = false;
 			}
 
 			if (game_build >= 757) {
 
 				if (game_build >= 1290) {
-					mrs = game_code.match_sub({
+					mposs = game_code.match_sub({
 						0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0xFF, 0xC2
 					});
 				} else {
-					mrs = game_code.match_sub({
+					mposs = game_code.match_sub({
 						0x89, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0x0C, 0xD8
 					});
 				}
 
-				if (mrs.empty() || !(script_thread_t::id_count = mrs[0].derelative<int32_t>())) {
+				if (mposs.size() && mposs[0] != rua::nullpos) {
+					script_thread_t::id_count = game_code.derel<int32_t>(mposs[0]);
+				} else {
 					log("nob::ntv::script_thread_t::id_count: not found!");
 					//finded = false;
 				}
 
-				mrs = game_code.match_sub({
+				mposs = game_code.match_sub({
 					0xFF, 0x0D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xF9
 				});
 
-				if (mrs.empty() || !(fake_script_hash_count = mrs[0].derelative<int32_t>())) {
+				if (mposs.size() && mposs[0] != rua::nullpos) {
+					fake_script_hash_count = game_code.derel<int32_t>(mposs[0]);
+				} else {
 					log("nob::ntv::fake_script_hash_count: not found!");
 					//finded = false;
 				}
@@ -494,95 +512,90 @@ namespace nob {
 
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L381
 
-				auto mr = game_code.match({
+				mpos = game_code.match({
 					0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
 				});
 
-				if (mr) {
-					script_thread_t::id_count = mr.match_sub({
+				if (mpos != rua::nullpos) {
+					auto game_code_slice = game_code[mpos];
+					script_thread_t::id_count = game_code_slice.derel<int32_t>(game_code_slice.match_sub({
 						0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
-					})[0].derelative<int32_t>();
-					fake_script_hash_count = mr.derelative<int32_t>(-9);
+					})[0]);
+					fake_script_hash_count = game_code_slice.derel<int32_t>(-9);
 				} else {
-					script_thread_t::id_count = nullptr;
-					fake_script_hash_count = nullptr;
 					log("nob::ntv::script_thread_t::id_count: not found!");
 					log("nob::ntv::fake_script_hash_count: not found!");
 					//finded = false;
 				}
 			}
 
-			/*auto code_block_1 = game_code.match({
-				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/ScriptHandlerMgr.cpp#L33
-				0x80, 0x78, 0x32, 0x00, 0x75, 0x34, 0xB1, 0x01, 0xE8
-			});
-			if (code_block_1) {
-				rua::unsafe_ptr addr = code_block_1.base().value() + 4;
-				VirtualProtect(addr, 2, PAGE_EXECUTE_READWRITE, nullptr);
-				*(addr).to<uint8_t *>() = 0xEB;
-			} else {
-				log("nob::ntv::_find_addrs::code_block_1: not found!");
-			}*/
-
-			mrs = game_code.match_sub({
+			mposs = game_code.match_sub({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L393
 				0x74, 0x17, 0x48, 0x8B, 0xC8, 0xE8, 1111, 1111, 1111, 1111, 0x48, 0x8D, 0x0D, 1111, 1111, 1111, 1111
 			});
 
-			if (mrs.empty() || !(script_context_pool = mrs[1].derelative<int32_t>())) {
+			if (mposs.size() && mposs[1] != rua::nullpos) {
+				script_context_pool = game_code.derel<int32_t>(mposs[1]);
+			} else {
 				log("nob::ntv::script_context_pool: not found!");
 				//finded = false;
 			}
 
-			auto mr = game_code.match({
+			mpos = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L379
 				1111, 1111, 1111, 1111, 0x48, 0x8B, 0x04, 0xD0, 0x4A, 0x8B, 0x14, 0x00, 0x48, 0x8B, 0x01, 0xF3, 0x44, 0x0F, 0x2C, 0x42, 0x20
 			});
 
-			if (!mr || !(script_thread_t::tls_off = mr.get<int32_t>())) {
+			if (mpos != rua::nullpos) {
+				script_thread_t::tls_off = game_code.get<int32_t>(mpos);
+			} else {
 				log("nob::ntv::script_thread_t::tls_off: not found!");
 				//finded = false;
 			}
 
-			mrs = game_code.match_sub({
+			mposs = game_code.match_sub({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L357
 				0x48, 0x8B, 0xC8, 0xEB, 0x03, 0x48, 0x8B, 0xCB, 0x48, 0x8B, 0x05, 1111, 1111, 1111, 1111
 			});
 
-			if (mrs.empty() || !(script_thread_t::pool = mrs[0].derelative<int32_t>())) {
+			if (mposs.size() && mposs[0] != rua::nullpos) {
+				script_thread_t::pool = game_code.derel<int32_t>(mposs[0]);
+			} else {
 				log("nob::ntv::script_thread_t::pool: not found!");
 				//finded = false;
 			}
 
-			script_thread_t::init_gta_data = game_code.match({
+			mpos = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L77
 				0x83, 0x89, 0x38, 0x01, 0x00, 0x00, 0xFF, 0x83, 0xA1, 0x50, 0x01, 0x00, 0x00, 0xF0
-			}).base();
+			});
 
-			if (!script_thread_t::init_gta_data) {
+			if (mpos != rua::nullpos) {
+				script_thread_t::init_gta_data = game_code.base() + mpos;
+			} else {
 				log("nob::ntv::script_thread_t::init_gta_data: not found!");
 				//finded = false;
 			}
 
-			mr = game_code.match({
+			mpos = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L40
 				0x80, 0xB9, 0x46, 0x01, 0x00, 0x00, 0x00, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x74, 0x05
 			});
 
-			if (mr) {
-				script_thread_t::default_tick = rua::unsafe_ptr(mr.base().value() - 0xF);
+			if (mpos != rua::nullpos) {
+				script_thread_t::default_tick = game_code.base() + mpos - 0xF;
 			} else {
 				log("nob::ntv::script_thread_t::default_tick: not found!");
 				//finded = false;
 			}
 
-			mr = game_code.match({
+			mpos = game_code.match({
 				// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L50
 				0x48, 0x83, 0xEC, 0x20, 0x48, 0x83, 0xB9, 0x10, 0x01, 0x00, 0x00, 0x00, 0x48, 0x8B, 0xD9, 0x74, 0x14
 			});
 
-			if (mr) {
-				script_thread_t::default_kill = rua::unsafe_ptr(mr.base().value() - 6);
+			if (mpos != rua::nullpos) {
+				script_thread_t::default_kill = game_code.base() + mpos - 6;
 			} else {
 				log("nob::ntv::script_thread_t::default_kill: not found!");
 				//finded = false;

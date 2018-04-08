@@ -7,7 +7,7 @@
 #include "script.hpp"
 #include "input.hpp"
 
-#include <rua/obj.hpp>
+#include <rua/poly.hpp>
 
 #include <string>
 #include <functional>

@@ -5,7 +5,7 @@
 #include "../log.hpp"
 #include "fhtt.hpp"
 
-#include <rua/unsafe_ptr.hpp>
+#include <rua/any_word.hpp>
 
 #ifdef NOB_USING_SHV_CALL
 	#include "../shv.hpp"
@@ -288,7 +288,7 @@ namespace nob {
 
 			template <typename T>
 			void set_arg(size_t i, T v) {
-				reinterpret_cast<rua::unsafe_ptr *>(args_ptr)[i] = v;
+				reinterpret_cast<rua::any_word *>(args_ptr)[i] = v;
 			}
 
 			template <typename T>
@@ -523,6 +523,8 @@ namespace nob {
 		class global_table_t {
 			public:
 				uint64_t **_segments;
+
+				constexpr global_table_t(uint64_t **segments = nullptr) : _segments(segments) {}
 
 				operator bool() const {
 					return _segments;

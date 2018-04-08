@@ -1,4 +1,4 @@
-#include <rua/bin.hpp>
+#include <rua/mem.hpp>
 
 #include <windows.h>
 
@@ -6,6 +6,6 @@
 
 namespace nob {
 	extern HMODULE this_dll;
-	extern rua::bin_ref game_code;
+	extern rua::mem::data game_code;
 	extern uint16_t game_build;
 }
