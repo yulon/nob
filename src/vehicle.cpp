@@ -82,14 +82,14 @@ namespace nob {
 		std::thread([ch]() mutable {
 			auto &sc_inf = *_shop_ctrllr->info;
 			for (size_t i = 0; i < sc_inf.code_page_count(); ++i) {
-				auto mpos = rua::mem::data(
+				auto mr = rua::mem::data(
 					rua::any_ptr(sc_inf.code_pages[i]),
 					sc_inf.code_page_size(i)
 				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03});
-				if (mpos == rua::nullpos) {
+				if (!mr) {
 					continue;
 				}
-				size_t code_off = sc_inf.code_off(i, sc_inf.code_pages[i] + mpos);
+				size_t code_off = sc_inf.code_off(i, sc_inf.code_pages[i] + mr.pos);
 				for (size_t j = 0; j < 2000; j++) {
 					if (*(uint32_t *)sc_inf.code_addr(code_off - j) == 0x0008012D) {
 						size_t func_off = *(uint32_t *)sc_inf.code_addr(code_off - j + 6) & 0xFFFFFF;

@@ -43,17 +43,18 @@ namespace nob {
 					chan<void (*)()> ch;
 
 					std::thread([ch]() mutable {
-						auto mpos = game_code.match({
+						auto mr = game_code.match({
 							// Reference from https://www.unknowncheats.me/forum/grand-theft-auto-v/181752-weapon-wheel-slowmotion.html
 							0x48, 0x89, 0x5C, 0x24, 0x08, 0x57, 0x48, 0x83, 0xEC, 0x20,
 							0x33, 0xC0, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x83, 0xFA, 0x01,
 							0x75, 1111, 0x38, 0x05, 1111, 1111, 1111, 1111, 0x0F, 0x45,
 							0xF8
 						});
-						if (mpos == rua::nullpos) {
+						if (!mr) {
 							ch << nullptr;
+							return;
 						}
-						ch << game_code.base() + mpos;
+						ch << game_code.base() + mr.pos;
 					}).detach();
 
 					ch >> sf;
