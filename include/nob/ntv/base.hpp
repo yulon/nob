@@ -5,7 +5,7 @@
 #include "../log.hpp"
 #include "fhtt.hpp"
 
-#include <rua/any_word.hpp>
+#include <rua/gnc/any_word.hpp>
 
 #ifdef NOB_USING_SHV_CALL
 	#include "../shv.hpp"

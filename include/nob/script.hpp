@@ -1,7 +1,6 @@
 #pragma once
 
-#include <rua/co_pool.hpp>
-#include <rua/chan.hpp>
+#include <rua/cp.hpp>
 
 #include <functional>
 #include <thread>
@@ -24,9 +23,9 @@ namespace nob {
 		extern std::atomic<bool> exiting;
 	} /* this_script */
 
-	extern std::unique_ptr<rua::co_pool> tasks;
+	extern std::unique_ptr<rua::cp::co_pool> tasks;
 
-	using duration = rua::co_pool::duration;
+	using duration = rua::cp::co_pool::duration;
 
 	class task {
 		public:
@@ -34,7 +33,7 @@ namespace nob {
 
 			task(const std::function<void()> &handler, duration timeout = duration::forever) {
 				if (!tasks) {
-					tasks.reset(new rua::co_pool);
+					tasks.reset(new rua::cp::co_pool);
 					tasks->add_back([]() {
 						tasks->exit();
 					});
@@ -58,7 +57,7 @@ namespace nob {
 			}
 
 		private:
-			rua::co_pool::task _cp_tsk;
+			rua::cp::co_pool::task _cp_tsk;
 	};
 
 	inline task go(const std::function<void()> &handler) {
@@ -126,9 +125,9 @@ namespace nob {
 	};
 
 	template <typename T>
-	class chan : public rua::chan<T> {
+	class chan : public rua::cp::chan<T> {
 		public:
-			chan() : rua::chan<T>({ tasks->get_scheduler() }) {}
+			chan() : rua::cp::chan<T>({ tasks->get_scheduler() }) {}
 	};
 
 	void terminate_unimportant_scripts();
