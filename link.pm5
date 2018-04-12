@@ -1,6 +1,6 @@
-dofileopt "deps/minhook_cpp/link.pm5"
-
 links { "nob", "psapi", "version" }
+
+dofileopt "deps/minhook_cpp/link.pm5"
 
 configuration { "SharedLib", "vs*" }
 	linkoptions { "/include:DllMain" }
