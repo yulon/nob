@@ -142,7 +142,7 @@ namespace nob {
 			vector3 cam_pos = ntv::CAM::GET_GAMEPLAY_CAM_COORD();
 			vector3 fwd = cam_pos + 500.0f * vector3(ntv::CAM::GET_GAMEPLAY_CAM_ROT(0)).rotation_to_direction();
 			auto ray = ntv::WORLDPROBE::_START_SHAPE_TEST_RAY(cam_pos.x, cam_pos.y, cam_pos.z, fwd.x, fwd.y, fwd.z, -1, player::body(), 7);
-			bool hit;
+			BOOL hit;
 			ntv::Vector3 pos;
 			ntv::Vector3 surface_normal;
 			ntv::Entity ety = 0;

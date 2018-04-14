@@ -51,9 +51,10 @@ namespace nob {
 
 		// Reference from http://www.dev-c.com/gtav/scripthookv/
 
-		typedef unsigned int Void;
-		typedef unsigned int Any;
 		typedef unsigned int uint;
+		typedef uint Void;
+		typedef uint Any;
+		typedef int BOOL;
 		typedef hash_t Hash;
 		typedef int Entity;
 		typedef int Player;

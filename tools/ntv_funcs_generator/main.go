@@ -92,10 +92,6 @@ namespace nob {
 			switch fn.Results {
 			case "char*":
 				fn.Results = "const char*"
-			case "BOOL":
-				fn.Results = "bool"
-			case "BOOL*":
-				fn.Results = "bool*"
 			}
 			file.WriteString("			")
 			if isHeadFile {
@@ -106,10 +102,6 @@ namespace nob {
 				switch p.Type {
 				case "char*":
 					p.Type = "const char*"
-				case "BOOL":
-					p.Type = "bool"
-				case "BOOL*":
-					p.Type = "bool*"
 				}
 				file.WriteString(p.Type + " " + p.Name)
 				if i < len(fn.Params)-1 {
