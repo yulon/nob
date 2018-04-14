@@ -97,17 +97,18 @@ namespace nob {
 		void no_mans_island(bool toggle) {
 			static task tsk;
 
-			static initer reset([]() {
-				if (tsk) {
-					tsk.del();
-				}
-			});
-
 			struct gc_id_t {
 				static constexpr bool native_handle() {
 					return true;
 				}
 			};
+
+			static initer reset([]() {
+				if (tsk) {
+					tsk.del();
+					gc::undelegate(gc_id_t());
+				}
+			});
 
 			if (toggle) {
 				if (tsk) {
@@ -167,18 +168,16 @@ namespace nob {
 					ntv::AI::SET_SCENARIO_GROUP_ENABLED(sg, false);
 				}
 
-				if (!gc::is_delegated(gc_id_t())) {
-					auto h = ntv::PED::ADD_SCENARIO_BLOCKING_AREA(-7000.0f, -7000.0f, -100.0f, 7000.0f, 7000.0f, 315.0f, 0, 1, 1, 1);
-					gc::delegate(gc_id_t(), [h]() {
-						ntv::PED::REMOVE_SCENARIO_BLOCKING_AREA(h, 0);
-					});
-				}
+				auto h = ntv::PED::ADD_SCENARIO_BLOCKING_AREA(-7000.0f, -7000.0f, -100.0f, 7000.0f, 7000.0f, 315.0f, 0, 1, 1, 1);
+				gc::delegate(gc_id_t(), [h]() {
+					ntv::PED::REMOVE_SCENARIO_BLOCKING_AREA(h, 0);
+				});
 
 				for (auto st : _scenario_types) {
 					ntv::AI::SET_SCENARIO_TYPE_ENABLED(st, false);
 				}
 
-			} else {
+			} else if (tsk) {
 				tsk.del();
 				gc::free(gc_id_t());
 			}
@@ -821,17 +820,18 @@ namespace nob {
 				return ch.get();
 			})();
 
-			static initer reset([]() {
-				if (block_code_addr && *block_code_addr == 0x90) {
-					memcpy(block_code_addr, &block_code_bak, 20);
-				}
-			});
-
 			struct gc_id_t {
 				static constexpr bool native_handle() {
 					return true;
 				}
 			};
+
+			static initer reset([]() {
+				if (block_code_addr && *block_code_addr == 0x90) {
+					memcpy(block_code_addr, &block_code_bak, 20);
+				}
+				gc::undelegate(gc_id_t());
+			});
 
 			if (toggle) {
 				if (!block_code_addr) {
