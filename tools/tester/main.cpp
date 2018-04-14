@@ -419,9 +419,15 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 1));
 			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
 
-/*			static auto pb = nob::player::body();
+			static auto pb = nob::player::body();
 
-			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
+			pb.current_vehicle().lights_state(nob::vehicle::lights_state_t::high_beams_on);
+			nob::log((int)pb.current_vehicle().lights_state());
+			nob::sleep(5000);
+			pb.current_vehicle().lights_state(nob::vehicle::lights_state_t::off);
+			nob::log((int)pb.current_vehicle().lights_state());
+
+/*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {
 					nob::log("scr: ", nob::ntv::script_list->scripts[i].hash);
 					for (size_t j = 0; j < nob::ntv::script_list->scripts[i].info->local_count; ++j) {

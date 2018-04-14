@@ -972,6 +972,57 @@ namespace nob {
 				ntv::VEHICLE::GET_VEHICLE_COLOURS(_h, &primary, &secondary);
 			}
 
+			enum class lights_state_t : uint8_t {
+				off,
+				low_beams_on,
+				high_beams_on
+			};
+
+			lights_state_t lights_state() const {
+				BOOL low_beams_on, high_beams_on;
+				ntv::VEHICLE::GET_VEHICLE_LIGHTS_STATE(_h, &low_beams_on, &high_beams_on);
+				if (high_beams_on) {
+					return lights_state_t::high_beams_on;
+				}
+				if (low_beams_on) {
+					return lights_state_t::low_beams_on;
+				}
+				return lights_state_t::off;
+			}
+
+			void lights_state(lights_state_t ls) {
+				auto cls = lights_state();
+				switch (ls) {
+					case lights_state_t::high_beams_on:
+						if (cls == lights_state_t::high_beams_on) {
+							return;
+						}
+						if (cls == lights_state_t::off) {
+							ntv::VEHICLE::SET_VEHICLE_LIGHTS(_h, 3);
+							return;
+						}
+						ntv::VEHICLE::SET_VEHICLE_FULLBEAM(_h, true);
+						return;
+					case lights_state_t::low_beams_on:
+						if (cls == lights_state_t::high_beams_on) {
+							ntv::VEHICLE::SET_VEHICLE_FULLBEAM(_h, false);
+						}
+						if (cls == lights_state_t::low_beams_on) {
+							return;
+						}
+						ntv::VEHICLE::SET_VEHICLE_LIGHTS(_h, 3);
+						return;
+					case lights_state_t::off:
+						if (cls == lights_state_t::off) {
+							return;
+						}
+						if (cls == lights_state_t::high_beams_on) {
+							ntv::VEHICLE::SET_VEHICLE_FULLBEAM(_h, false);
+						}
+						ntv::VEHICLE::SET_VEHICLE_LIGHTS(_h, 4);
+				}
+			}
+
 			bool is_playing_radio() const {
 				return ntv::AUDIO::_IS_VEHICLE_RADIO_LOUD(_h);
 			}
