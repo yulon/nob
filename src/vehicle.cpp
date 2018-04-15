@@ -3,7 +3,7 @@
 #include <nob/script.hpp>
 #include <nob/log.hpp>
 
-#include <rua/mem.hpp>
+#include <rua/gnc/data.hpp>
 
 #include <thread>
 #include <queue>
@@ -86,7 +86,7 @@ namespace nob {
 		std::thread([ch]() mutable {
 			auto &sc_inf = *_shop_ctrllr->info;
 			for (size_t i = 0; i < sc_inf.code_page_count(); ++i) {
-				auto mr = rua::mem::data(
+				auto mr = rua::data(
 					rua::any_ptr(sc_inf.code_pages[i]),
 					sc_inf.code_page_size(i)
 				).match({0x28, 0x26, 0xCE, 0x6B, 0x86, 0x39, 0x03});

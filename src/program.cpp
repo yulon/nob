@@ -9,7 +9,7 @@
 #include <memory>
 
 namespace nob {
-	rua::mem::data game_code = rua::os::process::from_this().mem_image().to_mem_data_ref();
+	rua::data game_code = rua::os::process::from_this().mem_image().to_local_ref();
 
 	uint16_t game_build = ([]()->uint16_t {
 		WCHAR path[MAX_PATH];

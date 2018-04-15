@@ -6,6 +6,7 @@
 #include "fhtt.hpp"
 
 #include <rua/gnc/any_word.hpp>
+#include <rua/gnc/getter.hpp>
 
 #ifdef NOB_USING_SHV_CALL
 	#include "../shv.hpp"
@@ -682,17 +683,9 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
-		class offset_getter_t {
+		class entity_obj_t : public rua::getter {
 			public:
-				template <typename T>
-				T &get(size_t off) const {
-					return *reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(this) + off);
-				}
-		};
-
-		class entity_obj_t : public offset_getter_t {
-			public:
-				struct nav_t : public offset_getter_t {
+				struct nav_t : public rua::getter {
 					vector3 &pos() const {
 						return get<vector3>(0x0050);
 					}
