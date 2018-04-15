@@ -1,7 +1,7 @@
 #include <nob/ntv/base.hpp>
 #include <nob/ntv/fhtt.hpp>
 
-#include <rua/process.hpp>
+#include <rua/os/process.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -18,7 +18,7 @@ std::unordered_map<uint64_t, std::pair<uint64_t, size_t>> new_fhtt_nn;
 namespace fs = std::experimental::filesystem;
 
 void load_yscs(std::string dir, std::unordered_set<uint64_t> &hashs, std::unordered_map<std::string, std::pair<size_t, std::vector<uintptr_t>>> &ysc_map) {
-	for (auto &de: std::experimental::filesystem::directory_iterator(dir)) {
+	for (auto &de: fs::directory_iterator(dir)) {
 		auto path = de.path().string();
 		auto name = de.path().filename().string();
 
@@ -56,7 +56,7 @@ int main() {
 		return 0;
 	}
 
-	auto bin_dir_path = fs::path(rua::process::from_this().file_path()).remove_filename().string();
+	auto bin_dir_path = fs::path(rua::os::process::from_this().file_path()).remove_filename().string();
 
 	std::cout << "reading ysc files from '" + bin_dir_path + "ysc\\{" << old_ver << "," << new_ver << "}\\*'" << std::endl;
 
