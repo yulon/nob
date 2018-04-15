@@ -48,23 +48,23 @@ namespace nob {
 	void _disable_ws2_func(const std::string &name) {
 		static auto ws2_dll = GetModuleHandleW(L"ws2_32.dll");
 
-		rua::any_ptr ptr = GetProcAddress(ws2_dll, name.c_str());
-		if (!ptr) {
+		auto fp = GetProcAddress(ws2_dll, name.c_str());
+		if (!fp) {
 			log("nob::_disable_mp: ", name, "() not found!");
 			return;
 		}
 
-		auto is_fix = rua::mem::protect(ptr, 3);
-		if (!is_fix) {
+		auto is_writable = rua::mem::protect(fp, 3);
+		if (!is_writable) {
 			log("nob::_disable_mp: set ", name, "() memory protection failed!");
 			return;
 		}
 
-		if (rua::mem::get<uint16_t>(ptr) != 0xC031) {
-			rua::mem::get<uint16_t>(ptr) = 0xC031;
+		if (rua::mem::get<uint16_t>(fp) != 0xC031) {
+			rua::mem::get<uint16_t>(fp) = 0xC031;
 		}
-		if (rua::mem::get<uint8_t>(ptr, 2) != 0xC3) {
-			rua::mem::get<uint8_t>(ptr, 2) = 0xC3;
+		if (rua::mem::get<uint8_t>(fp, 2) != 0xC3) {
+			rua::mem::get<uint8_t>(fp, 2) = 0xC3;
 		}
 	}
 
