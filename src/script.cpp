@@ -5,6 +5,8 @@
 #include <nob/log.hpp>
 
 #include <minhook.hpp>
+
+#include <rua/mem.hpp>
 #include <rua/strenc.hpp>
 
 #include <windows.h>
@@ -43,6 +45,41 @@ namespace nob {
 		bool _init();
 	}
 
+	void _disable_ws2_func(const std::string &name) {
+		static auto ws2_dll = GetModuleHandleW(L"ws2_32.dll");
+
+		rua::any_ptr ptr = GetProcAddress(ws2_dll, name.c_str());
+		if (!ptr) {
+			log("nob::_disable_mp: ", name, "() not found!");
+			return;
+		}
+
+		auto is_fix = rua::mem::protect(ptr, 3);
+		if (!is_fix) {
+			log("nob::_disable_mp: set ", name, "() memory protection failed!");
+			return;
+		}
+
+		if (rua::mem::get<uint16_t>(ptr) != 0xC031) {
+			rua::mem::get<uint16_t>(ptr) = 0xC031;
+		}
+		if (rua::mem::get<uint8_t>(ptr, 2) != 0xC3) {
+			rua::mem::get<uint8_t>(ptr, 2) = 0xC3;
+		}
+	}
+
+	bool _is_disabled_mp = false;
+
+	void _disable_mp() {
+		if (_is_disabled_mp) {
+			return;
+		}
+		_is_disabled_mp = true;
+
+		_disable_ws2_func("send");
+		_disable_ws2_func("recv");
+	}
+
 	extern std::queue<std::function<void()>> _inputs;
 
 	static inline void _clear_inputs() {
@@ -72,6 +109,8 @@ namespace nob {
 		int _last_fc = -1;
 
 		static inline void _init() {
+			_disable_mp();
+
 			thread_id = std::this_thread::get_id();
 
 			if (!tasks) {
@@ -159,13 +198,13 @@ namespace nob {
 					if (wait_fp) {
 						break;
 					}
-					log("nob::this_script::_exclusive_main: nob::ntv::SYSTEM::WAIT not found!");
+					log("nob::this_script::_create_from_main_td: nob::ntv::SYSTEM::WAIT not found!");
 					return false;
 				}
 			}
 
 			if (*reinterpret_cast<uint8_t *>(wait_fp) != 0x8B) {
-				log("nob::this_script::_exclusive_main: hooked by other mod!");
+				log("nob::this_script::_create_from_main_td: hooked by other mod!");
 				return false;
 			}
 
@@ -182,7 +221,7 @@ namespace nob {
 					wait_hkd.original(cc);
 				}
 			)) {
-				log("nob::this_script::_exclusive_main: hook failed!");
+				log("nob::this_script::_create_from_main_td: hook failed!");
 				return false;
 			}
 
@@ -248,9 +287,10 @@ namespace nob {
 
 			if (ntv::game_state) {
 				auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
-				while (gs && gs < 5) {
+				while (gs && gs < 6) {
 					Sleep(500);
 				}
+				_disable_mp();
 			}
 
 			if (_create_from_new_td()) {
