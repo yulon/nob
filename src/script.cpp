@@ -17,7 +17,7 @@
 #include <cassert>
 
 namespace nob {
-	std::unique_ptr<rua::cp::co_pool> tasks(nullptr);
+	std::unique_ptr<rua::cp::coro_pool> tasks(nullptr);
 
 	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
 
@@ -114,7 +114,7 @@ namespace nob {
 			thread_id = std::this_thread::get_id();
 
 			if (!tasks) {
-				tasks.reset(new rua::cp::co_pool);
+				tasks.reset(new rua::cp::coro_pool);
 				tasks->add_back([]() {
 					tasks->exit();
 				});

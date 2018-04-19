@@ -23,9 +23,9 @@ namespace nob {
 		extern std::atomic<bool> exiting;
 	} /* this_script */
 
-	extern std::unique_ptr<rua::cp::co_pool> tasks;
+	extern std::unique_ptr<rua::cp::coro_pool> tasks;
 
-	using duration = rua::cp::co_pool::duration;
+	using duration = rua::cp::coro_pool::duration;
 
 	class task {
 		public:
@@ -33,7 +33,7 @@ namespace nob {
 
 			task(const std::function<void()> &handler, duration timeout = duration::forever) {
 				if (!tasks) {
-					tasks.reset(new rua::cp::co_pool);
+					tasks.reset(new rua::cp::coro_pool);
 					tasks->add_back([]() {
 						tasks->exit();
 					});
@@ -57,7 +57,7 @@ namespace nob {
 			}
 
 		private:
-			rua::cp::co_pool::task _cp_tsk;
+			rua::cp::coro_pool::task _cp_tsk;
 	};
 
 	inline task go(const std::function<void()> &handler) {
