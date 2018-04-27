@@ -25,13 +25,13 @@ namespace nob {
 
 	extern std::unique_ptr<rua::cp::coro_pool> tasks;
 
-	using duration = rua::cp::coro_pool::duration;
+	using dur_t = rua::cp::coro_pool::dur_t;
 
 	class task {
 		public:
 			task(std::nullptr_t np = nullptr) : _cp_tsk(np) {}
 
-			task(const std::function<void()> &handler, duration timeout = duration::forever) {
+			task(const std::function<void()> &handler, dur_t timeout = dur_t::forever) {
 				if (!tasks) {
 					tasks.reset(new rua::cp::coro_pool);
 					tasks->add_back([]() {
@@ -52,7 +52,7 @@ namespace nob {
 				}
 			}
 
-			void reset_dol(duration timeout = duration::disposable) {
+			void reset_dol(dur_t timeout = dur_t::disposable) {
 				tasks->reset_dol(_cp_tsk, timeout);
 			}
 
@@ -61,7 +61,7 @@ namespace nob {
 	};
 
 	inline task go(const std::function<void()> &handler) {
-		return task(handler, duration::disposable);
+		return task(handler, dur_t::disposable);
 	}
 
 	inline bool in_task() {
@@ -73,11 +73,11 @@ namespace nob {
 			tasks->erase();
 		}
 
-		inline void reset_dol(duration timeout) {
+		inline void reset_dol(dur_t timeout) {
 			tasks->reset_dol(timeout);
 		}
 
-		inline void sleep(duration timeout) {
+		inline void sleep(dur_t timeout) {
 			tasks->sleep(timeout);
 		}
 
@@ -86,7 +86,7 @@ namespace nob {
 		}
 	}
 
-	inline void sleep(duration timeout) {
+	inline void sleep(dur_t timeout) {
 		this_task::sleep(timeout);
 	}
 
