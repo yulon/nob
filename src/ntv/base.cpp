@@ -1,8 +1,11 @@
 #include <nob/ntv/base.hpp>
 #include <nob/ntv/fhtt.hpp>
 #include <nob/program.hpp>
+#include <nob/window.hpp>
 #include <nob/hash.hpp>
 #include <nob/log.hpp>
+
+#include <rua/mem.hpp>
 
 namespace nob {
 	namespace ntv {
@@ -373,6 +376,23 @@ namespace nob {
 		bool _init() {
 			auto finded = true;
 
+			#ifdef NOB_FAST_LAUNCH
+				if (!window::is_visible()) {
+					auto mr = game_code.match({
+						0x70, 0x6C, 0x61, 0x74, 0x66, 0x6F, 0x72, 0x6D, 0x3A
+					});
+
+					if (mr) {
+						auto addr = game_code.base() + mr.pos;
+						rua::mem::protect(addr, 1);
+						rua::mem::get<uint8_t>(addr) = 0xC3;
+					} else {
+						log("nob::ntv::_init::logos_anim: not found!");
+						//finded = false;
+					}
+				}
+			#endif
+
 			auto fhtt_it = fhtt_map.find(game_build);
 			if (fhtt_it != fhtt_map.end()) {
 				fhtt = &fhtt_it->second;
@@ -382,7 +402,40 @@ namespace nob {
 				//finded = false;
 			}
 
+			while (!window::is_visible()) {
+				Sleep(1000);
+			}
+
 			auto mr = game_code.match({
+				// Reference from https://github.com/MockbaTheBorg/GTALuaF/blob/master/PHP/patternsGTA.txt#L10
+				0x83, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x8A, 0xD9, 0x74, 0x0A
+			});
+
+			if (mr) {
+				game_state = ++game_code.derel<int32_t>(mr[0]);
+			} else {
+				log("nob::ntv::game_state: not found!");
+				finded = false;
+			}
+
+			#ifdef NOB_FAST_LAUNCH
+				if (*game_state != game_state_t::playing && static_cast<uint8_t>(*game_state) <= 3) {
+					mr = game_code.match({
+						0x72, 0x1F, 0xE8, 1111, 1111, 1111, 1111, 0x8B, 0x0D
+					});
+
+					if (mr) {
+						auto addr = game_code.base() + mr.pos;
+						rua::mem::protect(addr, 2);
+						rua::mem::get<uint16_t>(addr) = 0x9090;
+					} else {
+						log("nob::ntv::_init::legals_view: not found!");
+						//finded = false;
+					}
+				}
+			#endif
+
+			mr = game_code.match({
 				// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 				0x4C, 0x8D, 0x05, 1111, 1111, 1111, 1111, 0x4D, 0x8B, 0x08,
 				0x4D, 0x85, 0xC9, 0x74, 0x11
@@ -451,18 +504,6 @@ namespace nob {
 				script_list = game_code.derel<int32_t>(mr[0]);
 			} else {
 				log("nob::ntv::script_list: not found!");
-				finded = false;
-			}
-
-			mr = game_code.match({
-				// Reference from https://github.com/MockbaTheBorg/GTALuaF/blob/master/PHP/patternsGTA.txt#L10
-				0x83, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x8A, 0xD9, 0x74, 0x0A
-			});
-
-			if (mr) {
-				game_state = ++game_code.derel<int32_t>(mr[0]);
-			} else {
-				log("nob::ntv::game_state: not found!");
 				finded = false;
 			}
 

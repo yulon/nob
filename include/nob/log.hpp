@@ -1,7 +1,5 @@
 #pragma once
 
-#include "window.hpp"
-
 #include <sstream>
 #include <mutex>
 

@@ -1,5 +1,6 @@
 #include <nob/script.hpp>
 #include <nob/program.hpp>
+#include <nob/window.hpp>
 #include <nob/ntv.hpp>
 #include <nob/shv.hpp>
 #include <nob/log.hpp>
@@ -267,17 +268,9 @@ namespace nob {
 		#endif
 
 		void _create() {
-			while (!window::native_handle()) {
-				Sleep(1000);
-			}
-
-			while (!IsWindowVisible(window::native_handle())) {
-				Sleep(1000);
-			}
+			_NOB_CALL_INIT_FN(ntv::_init);
 
 			log.alloc_console();
-
-			_NOB_CALL_INIT_FN(ntv::_init);
 
 			if (shv::_init()) {
 				mode = mode_t::shv;
@@ -287,10 +280,9 @@ namespace nob {
 
 			if (ntv::game_state) {
 				auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
-				while (gs && gs < 6) {
+				while (gs && gs < 5) {
 					Sleep(500);
 				}
-				_disable_mp();
 			}
 
 			if (_create_from_new_td()) {
