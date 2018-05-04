@@ -44,16 +44,15 @@ nob::task speed_log([]() {
 nob::first_task unlock_vehs(nob::unlock_banned_vehicles);
 /*
 nob::first_task blk([]() {
+	nob::player::switch_scene(nob::vector3{0, 0, 75});
 
 	while (*nob::ntv::game_state != nob::ntv::game_state_t::playing) {
 		nob::yield();
 	}
-	nob::sleep(2000);
-	nob::ui::loading_screen();
-	nob::sleep(10000);
-	nob::ui::loading_screen(false);
+
+	nob::player::switch_scene_finish();
 });
-*/
+//*/
 
 using namespace nob::ui;
 
@@ -344,50 +343,41 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			std::uniform_real_distribution<float> dis_x(nob::map::x_min, nob::map::x_max);
 			std::uniform_real_distribution<float> dis_y(nob::map::y_min, nob::map::y_max);
 
+			auto pb = nob::player::body();
+
 			for (size_t i = 0; i < 2000; ++i) {
-				nob::vector2 pos{dis_x(rd_ng), dis_y(rd_ng)};
-				auto mkr = nob::map::marker({pos.x, pos.y, 100.0f});
+				nob::vector3 pos{dis_x(rd_ng), dis_y(rd_ng), 1000.f};
+
+				bool ctn = false;
+				auto h = nob::world::ground_height(pos);
+				while (!h) {
+					if (pos.z <= 0) {
+						ctn = true;
+						break;
+					}
+					pos.z -= 200;
+					pb.move(pos);
+
+					nob::sleep(500);
+					h = nob::world::ground_height(pos);
+				}
+				if (ctn) {
+					continue;
+				}
+
+				float wh;
+				nob::ntv::WATER::GET_WATER_HEIGHT_NO_WAVES(pos.x, pos.y, pos.z, &wh);
+				if (wh > h) {
+					continue;
+				}
+
+				auto mkr = nob::map::marker(pos);
 				mkr.graphic(357);
 				mkr.keep_track(false);
-				f << "{ " << pos.x << ", " << pos.y << " }," << std::endl;
+				f << "{ " << pos.x << ", " << pos.y << ", " << pos.z << " }," << std::endl;
 			}
 
-			/*auto pb = nob::player::body();
-			for (size_t x = 0; x < static_cast<size_t>(nob::map::width) / 800 - 1; ++x) {
-				for (size_t y = 0; y < static_cast<size_t>(nob::map::height) / 800 - 1; ++y) {
-					nob::vector3 ct {nob::map::x_min + 400.0f + x * 800.0f, nob::map::y_min + 400.0f + x * 800.0f, 900.0f};
-					pb.move(ct);
-					nob::sleep(500);
-
-					bool ctn = false;
-
-					while (!nob::world::ground_height(ct)) {
-						if (ct.z <= 0) {
-							ctn = true;
-							break;
-						}
-
-						ct.z -= 200;
-						pb.move(ct);
-						nob::sleep(500);
-					}
-
-					if (ctn) {
-						continue;
-					}
-
-					for (size_t i = 0; i < 3; ++i) {
-						nob::ntv::Vector3 pos;
-						int id;
-						nob::ntv::PATHFIND::GET_RANDOM_VEHICLE_NODE(ct.x, ct.y, ct.z, 400.0f, false, false, false, &pos, &id);
-						auto mkr = nob::map::marker({pos.x, pos.y, pos.z});
-						mkr.graphic(357);
-						mkr.keep_track(false);
-						f << "{ " << pos.x << ", " << pos.y << ", " << pos.z << " }," << std::endl;
-					}
-				}
-			}
-
+			/*
 			std::fstream f("veh_nodes.inc", f.binary | f.trunc | f.in | f.out);
 			if (!f.is_open()) {
 				nob::log("failed to open");
@@ -420,12 +410,13 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
 
 			static auto pb = nob::player::body();
-
-			pb.current_vehicle().lights_state(nob::vehicle::lights_state_t::high_beams_on);
-			nob::log((int)pb.current_vehicle().lights_state());
-			nob::sleep(5000);
-			pb.current_vehicle().lights_state(nob::vehicle::lights_state_t::off);
-			nob::log((int)pb.current_vehicle().lights_state());
+			auto pos = pb.pos();
+			static nob::entity::anim_dict ad("anim@mp_snowball");
+			ad.load();
+			pb.play_anim(ad, "pickup_snowball");
+			nob::sleep(1500);
+			//pb.stop_anim(ad, "pickup_snowball");
+			nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(nob::player::body());
 
 /*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {
@@ -441,11 +432,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}
 			//nob::ntv::AUDIO::_FORCE_VEHICLE_ENGINE_AUDIO(pb.last_vehicle(), "ADDER");
 			//nob::ntv::VEHICLE::SET_VEHICLE_FORWARD_SPEED(pb.last_vehicle(), 5.f);
-
-
-
-
-
 
 			nob::task([]() {
 				if (
@@ -556,21 +542,12 @@ nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
 
 			nob::ntv::VEHICLE::DISABLE_VEHICLE_WEAPON(true, 0xca46f87d, pb.current_vehicle(), pb);
 
-
-			auto n = "p_parachute_s_idlefast";
-			nob::ntv::AI::TASK_PLAY_ANIM(pb, d, n, 8.0f, 0.0f, -1, 9, 0, 0, 0, 0);
-			nob::sleep(5000);
-			nob::ntv::AI::STOP_ANIM_TASK(pb, d, n, 0);//*/
-			//auto veh = pb.current_vehicle();
-			///*
-
-
 			//auto pos = pb.pos({0, 20, 0});
 			//nob::ntv::GRAPHICS::DRAW_LIGHT_WITH_RANGE(pos.x, pos.y, pos.z, 255, 0, 0, 10, 10);
 			//nob::player::disable_automatic_respawn();
 			//nob::sleep(10000);
 			//pb.resurrect();
-			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);
+			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(pb);*/
 		})
 	}),
 	list("World", {

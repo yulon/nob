@@ -187,6 +187,118 @@ namespace nob {
 
 		protected:
 			int _h;
+
+		////////////////////////////////////////////////////////////////////
+
+		public:
+			class anim_dict {
+				public:
+					anim_dict() : _name(""), _loaded(0) {}
+
+					anim_dict(std::nullptr_t) : anim_dict() {}
+
+					anim_dict(const char *name) : _name(name), _loaded(0) {}
+
+					anim_dict(std::string name) : _name(std::move(name)), _loaded(0) {}
+
+					anim_dict(const anim_dict &src) : _name(src._name), _loaded(0) {}
+
+					~anim_dict() {
+						free();
+					}
+
+					anim_dict &operator=(const anim_dict &src) {
+						free();
+						_name = src._name;
+						return *this;
+					}
+
+					anim_dict(anim_dict &&src) : _name(std::move(src._name)), _loaded(src._loaded) {
+						if (src._loaded == this_script::gameplay_id) {
+							src._loaded = 0;
+						}
+					}
+
+					anim_dict &operator=(anim_dict &&src) {
+						free();
+						_name = std::move(src._name);
+						if (src._loaded == this_script::gameplay_id) {
+							_loaded = src._loaded;
+							src._loaded = 0;
+						}
+						return *this;
+					}
+
+					const std::string &name() const {
+						return _name;
+					}
+
+					using native_handle_t = const char *;
+
+					native_handle_t native_handle() const {
+						return _name.c_str();
+					}
+
+					operator bool() const {
+						return _name.length();
+					}
+
+					bool is_loaded() const {
+						assert(*this);
+
+						return ntv::STREAMING::HAS_ANIM_DICT_LOADED(_name.c_str());
+					}
+
+					const anim_dict &load() {
+						assert(*this);
+
+						if (_loaded == this_script::gameplay_id) {
+							return *this;
+						}
+
+						start:
+
+						if (gc::try_ref(*this)) {
+							assert(is_loaded());
+
+							_loaded = this_script::gameplay_id;
+							return *this;
+						}
+
+						ntv::STREAMING::REQUEST_ANIM_DICT(_name.c_str());
+
+						auto cur_gpid = this_script::gameplay_id.load();
+
+						while (!is_loaded()) {
+							yield();
+							if (cur_gpid != this_script::gameplay_id) {
+								goto start;
+							}
+						}
+
+						_loaded = cur_gpid;
+
+						auto n = _name;
+						gc::delegate(*this, [n]() {
+							if (ntv::STREAMING::HAS_ANIM_DICT_LOADED(n.c_str())) {
+								ntv::STREAMING::REMOVE_ANIM_DICT(n.c_str());
+							}
+						});
+
+						return *this;
+					}
+
+					void free() {
+						if (_loaded == this_script::gameplay_id) {
+							gc::free(*this);
+							_loaded = 0;
+						}
+					}
+
+				private:
+					std::string _name;
+					size_t _loaded;
+			};
 	};
 
 	class vehicle;
@@ -758,6 +870,14 @@ namespace nob {
 
 			bool has_ntv_task(ntv_task_t t) const {
 				return ntv_task_state(t) != 7;
+			}
+
+			void play_anim(const anim_dict &dict, const char *name, int duration = -1, int flag = 0, float speed = 8.0f) {
+				ntv::AI::TASK_PLAY_ANIM(_h, dict.native_handle(), name, speed, 0.0f, duration, flag, 0.0f, 0, 0, 0);
+			}
+
+			void stop_anim(const anim_dict &dict, const char *name) {
+				ntv::AI::STOP_ANIM_TASK(_h, dict.native_handle(), name, 0.0f);
 			}
 
 			////////////////////////////////////////////////////////////////////
