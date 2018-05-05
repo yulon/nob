@@ -95,13 +95,14 @@ namespace nob {
 
 		// Reference from https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/
 
-		enum class game_state_t : uint8_t {
+		enum class game_state_t : int {
 			playing = 0,
 			preloading = 1,
 			preload_blocking = 3,
-			mode_menu = 5,
+			landing_page = 5,
 			loading = 6,
-			reloading_archive = 8
+			forced_loading_mp = 7,
+			forced_loading_sp = 8
 		};
 
 		extern game_state_t *game_state;

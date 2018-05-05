@@ -399,11 +399,11 @@ namespace nob {
 			} else {
 				log("nob::ntv::fhtt: not found!");
 				fhtt = &fhtt_map.rbegin()->second;
-				//finded = false;
+				finded = false;
 			}
 
 			while (!window::is_visible()) {
-				Sleep(1000);
+				Sleep(100);
 			}
 
 			auto mr = game_code.match({
@@ -412,8 +412,45 @@ namespace nob {
 			});
 
 			if (mr) {
-				game_state = ++game_code.derel<int32_t>(mr[0]);
+				game_state = game_code.derel<int32_t, 5>(mr[0]);
+			}
+
+			std::vector<uint16_t> mov_gs_6_pat = {
+				0xC7, 0x05, 1111, 1111, 1111, 1111, 0x06, 0x00, 0x00, 0x00, 0xEB, 0x3F
+			};
+
+			mr = game_code.match(mov_gs_6_pat);
+
+			if (mr) {
+				if (!game_state) {
+					game_state = game_code.derel<int32_t>(mr.pos + 2);
+				}
+
+				constexpr size_t skip_sz_b = 0x1C;
+				size_t skip_sz;
+
+				auto code = game_code[mr.pos - skip_sz_b];
+
+				if (code.get<uint32_t>() == 0x7501F883) {
+					mr = game_code[mr.pos + mov_gs_6_pat.size()].match({
+						0xC7, 0x05, 1111, 1111, 1111, 1111, 0x08, 0x00, 0x00, 0x00
+					});
+
+					if (mr) {
+						skip_sz = skip_sz_b + mov_gs_6_pat.size() + mr.pos;
+						rua::mem::protect(code.base(), skip_sz);
+						memset(code.base(), 0x90, skip_sz);
+					} else {
+						log("nob::ntv::_init: (*game_state = 8) not found!");
+					}
+				} else {
+					log("nob::ntv::_init: 'game_state_handler()' not found!");
+				}
 			} else {
+				log("nob::ntv::_init: (*game_state = 6) not found!");
+			}
+
+			if (!game_state) {
 				log("nob::ntv::game_state: not found!");
 				finded = false;
 			}
