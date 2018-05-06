@@ -10,6 +10,7 @@
 #include "nob/arm.hpp"
 #include "nob/g2d.hpp"
 #include "nob/g3d.hpp"
+#include "nob/dx.hpp"
 #include "nob/ui.hpp"
 #include "nob/screen.hpp"
 #include "nob/map.hpp"

@@ -1,4 +1,4 @@
-links { "nob", "psapi", "version" }
+links { "nob", "psapi", "version", "dxgi", "d3d11" }
 
 dofileopt "deps/minhook_cpp/link.pm5"
 
