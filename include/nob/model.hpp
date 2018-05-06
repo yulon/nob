@@ -33,7 +33,7 @@ namespace nob {
 			}
 
 			model(model &&src) : hasher(src), _loaded(src._loaded) {
-				if (src._loaded == this_script::gameplay_id) {
+				if (src._loaded == this_script::load_count) {
 					src._loaded = 0;
 				}
 			}
@@ -41,7 +41,7 @@ namespace nob {
 			model &operator=(model &&src) {
 				free();
 				static_cast<hasher &>(*this) = static_cast<const hasher &>(src);
-				if (src._loaded == this_script::gameplay_id) {
+				if (src._loaded == this_script::load_count) {
 					_loaded = src._loaded;
 					src._loaded = 0;
 				}
@@ -85,7 +85,7 @@ namespace nob {
 			const model &load() {
 				assert(*this);
 
-				if (_loaded == this_script::gameplay_id) {
+				if (_loaded == this_script::load_count) {
 					return *this;
 				}
 
@@ -94,23 +94,23 @@ namespace nob {
 				if (gc::try_ref(*this)) {
 					assert(is_loaded());
 
-					_loaded = this_script::gameplay_id;
+					_loaded = this_script::load_count;
 					return *this;
 				}
 
 				auto h = hash();
 				ntv::STREAMING::REQUEST_MODEL(h);
 
-				auto cur_gpid = this_script::gameplay_id.load();
+				auto cur_lc = this_script::load_count;
 
 				while (!is_loaded()) {
 					yield();
-					if (cur_gpid != this_script::gameplay_id) {
+					if (cur_lc != this_script::load_count) {
 						goto start;
 					}
 				}
 
-				_loaded = cur_gpid;
+				_loaded = cur_lc;
 
 				gc::delegate(*this, [h]() {
 					if (ntv::STREAMING::HAS_MODEL_LOADED(h)) {
@@ -122,7 +122,7 @@ namespace nob {
 			}
 
 			void free() {
-				if (_loaded == this_script::gameplay_id) {
+				if (_loaded == this_script::load_count) {
 					gc::free(*this);
 					_loaded = 0;
 				}

@@ -1,7 +1,6 @@
 #include <nob/ntv/base.hpp>
 #include <nob/ntv/fhtt.hpp>
 #include <nob/program.hpp>
-#include <nob/window.hpp>
 #include <nob/hash.hpp>
 #include <nob/log.hpp>
 
@@ -23,7 +22,7 @@ namespace nob {
 			}
 
 			while (!*pool) {
-				Sleep(500);
+				Sleep(100);
 			}
 
 			for (size_t i = 0; i < pool->count; ++i) {
@@ -373,9 +372,7 @@ namespace nob {
 
 		void (*script_thread_t::default_kill)(script_thread_t *) = nullptr;
 
-		bool _init() {
-			auto finded = true;
-
+		void _pre_init() {
 			#ifdef NOB_FAST_LAUNCH
 				if (!window::is_visible()) {
 					auto mr = game_code.match({
@@ -392,19 +389,10 @@ namespace nob {
 					}
 				}
 			#endif
+		}
 
-			auto fhtt_it = fhtt_map.find(game_build);
-			if (fhtt_it != fhtt_map.end()) {
-				fhtt = &fhtt_it->second;
-			} else {
-				log("nob::ntv::fhtt: not found!");
-				fhtt = &fhtt_map.rbegin()->second;
-				finded = false;
-			}
-
-			while (!window::is_visible()) {
-				Sleep(100);
-			}
+		bool _init() {
+			auto finded = true;
 
 			auto mr = game_code.match({
 				// Reference from https://github.com/MockbaTheBorg/GTALuaF/blob/master/PHP/patternsGTA.txt#L10
@@ -471,6 +459,15 @@ namespace nob {
 					}
 				}
 			#endif
+
+			auto fhtt_it = fhtt_map.find(game_build);
+			if (fhtt_it != fhtt_map.end()) {
+				fhtt = &fhtt_it->second;
+			} else {
+				log("nob::ntv::fhtt: not found!");
+				fhtt = &fhtt_map.rbegin()->second;
+				finded = false;
+			}
 
 			mr = game_code.match({
 				// Reference from https://github.com/zorg93/EnableMpCars-GTAV

@@ -39,11 +39,17 @@ namespace nob {
 	}
 
 	namespace ntv {
+		bool _pre_init();
 		bool _init();
 	}
 
 	namespace shv {
 		bool _init();
+	}
+
+	namespace dx {
+		bool _hook();
+		void _handle(void *);
 	}
 
 	void _disable_ws2_func(const std::string &name) {
@@ -104,10 +110,11 @@ namespace nob {
 	namespace this_script {
 		mode_t mode = mode_t::invalid;
 		std::thread::id thread_id;
-		std::atomic<size_t> gameplay_id(0);
+		size_t load_count = 0;
+		std::atomic<size_t> load_count_s(0);
 		std::atomic<bool> exiting(false);
-		std::atomic<bool> _exited(false);
-		int _last_fc = -1;
+		static std::atomic<bool> _exited(false);
+		static int _last_fc = -1;
 
 		static inline void _init() {
 			_disable_mp();
@@ -123,7 +130,7 @@ namespace nob {
 				tasks->bind_this_thread();
 			}
 
-			++gameplay_id;
+			load_count = ++load_count_s;
 
 			for (auto &initer : *_initers) {
 				initer();
@@ -268,30 +275,41 @@ namespace nob {
 		#endif
 
 		void _create() {
-			_NOB_CALL_INIT_FN(ntv::_init);
+			ntv::_pre_init();
 
-			log.alloc_console();
-
-			if (shv::_init()) {
-				mode = mode_t::shv;
-				shv::scriptRegister(this_dll, _shv_main);
-				return;
-			}
-
-			if (ntv::game_state) {
-				auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
-				while (gs && gs < 5) {
-					Sleep(500);
+			CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(static_cast<void(*)()>([]() {
+				while (!window::is_visible()) {
+					Sleep(100);
 				}
-			}
 
-			if (_create_from_new_td()) {
-				mode = mode_t::sub_thread;
-				return;
-			}
+				_NOB_CALL_INIT_FN(ntv::_init);
 
-			mode = mode_t::main_thread;
-			_NOB_CALL_INIT_FN(_create_from_main_td);
+				log.alloc_console();
+
+				if (shv::_init()) {
+					mode = mode_t::shv;
+					shv::scriptRegister(this_dll, _shv_main);
+					shv::presentCallbackRegister(&dx::_handle);
+					return;
+				}
+
+				if (ntv::game_state) {
+					auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
+					while (gs && gs < 5) {
+						Sleep(100);
+					}
+				}
+
+				dx::_hook();
+
+				if (_create_from_new_td()) {
+					mode = mode_t::sub_thread;
+					return;
+				}
+
+				mode = mode_t::main_thread;
+				_NOB_CALL_INIT_FN(_create_from_main_td);
+			})), nullptr, 0, nullptr);
 		}
 
 		void _destroy() {
@@ -309,6 +327,7 @@ namespace nob {
 
 			if (mode == mode_t::shv) {
 				shv::scriptUnregister(this_dll);
+				shv::presentCallbackUnregister(&dx::_handle);
 				return;
 			}
 		}

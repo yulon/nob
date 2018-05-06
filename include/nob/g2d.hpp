@@ -9,7 +9,7 @@
 
 namespace nob {
 	namespace g2d {
-		inline void text(
+		inline void draw_text(
 			float x, float y, float width,
 			const std::string &str,
 			float size,
@@ -46,7 +46,7 @@ namespace nob {
 			return (((((38.0f + 42.0f) / 0.9f) / 105.0f) * 0.1f) * size);
 		}
 
-		inline void rect(
+		inline void draw_rect(
 			float x, float y, float width, float height,
 			uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255
 		) {
@@ -76,7 +76,7 @@ namespace nob {
 				}
 
 				texture_dict(texture_dict &&src) : _name(std::move(src._name)), _loaded(src._loaded) {
-					if (src._loaded == this_script::gameplay_id) {
+					if (src._loaded == this_script::load_count) {
 						src._loaded = 0;
 					}
 				}
@@ -84,7 +84,7 @@ namespace nob {
 				texture_dict &operator=(texture_dict &&src) {
 					free();
 					_name = std::move(src._name);
-					if (src._loaded == this_script::gameplay_id) {
+					if (src._loaded == this_script::load_count) {
 						_loaded = src._loaded;
 						src._loaded = 0;
 					}
@@ -114,7 +114,7 @@ namespace nob {
 				const texture_dict &load() {
 					assert(*this);
 
-					if (_loaded == this_script::gameplay_id) {
+					if (_loaded == this_script::load_count) {
 						return *this;
 					}
 
@@ -123,22 +123,22 @@ namespace nob {
 					if (gc::try_ref(*this)) {
 						assert(is_loaded());
 
-						_loaded = this_script::gameplay_id;
+						_loaded = this_script::load_count;
 						return *this;
 					}
 
 					ntv::GRAPHICS::REQUEST_STREAMED_TEXTURE_DICT(_name.c_str(), false);
 
-					auto cur_gpid = this_script::gameplay_id.load();
+					auto cur_lc = this_script::load_count;
 
 					while (!is_loaded()) {
 						yield();
-						if (cur_gpid != this_script::gameplay_id) {
+						if (cur_lc != this_script::load_count) {
 							goto start;
 						}
 					}
 
-					_loaded = cur_gpid;
+					_loaded = cur_lc;
 
 					auto n = _name;
 					gc::delegate(*this, [n]() {
@@ -151,7 +151,7 @@ namespace nob {
 				}
 
 				void free() {
-					if (_loaded == this_script::gameplay_id) {
+					if (_loaded == this_script::load_count) {
 						gc::free(*this);
 						_loaded = 0;
 					}

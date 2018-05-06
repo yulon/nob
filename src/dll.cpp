@@ -15,7 +15,7 @@ BOOL APIENTRY DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID) {
 		case DLL_PROCESS_ATTACH:
 			DisableThreadLibraryCalls(hinstDLL);
 			nob::this_dll = hinstDLL;
-			CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(nob::this_script::_create), nullptr, 0, nullptr);
+			nob::this_script::_create();
 			break;
 		case DLL_PROCESS_DETACH:
 			nob::this_script::_destroy();

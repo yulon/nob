@@ -18,7 +18,7 @@ nob::task print_pos([]() {
 	auto pos = pb.pos();
 	std::stringstream ss;
 	ss << pos.str() << ", " << pb.rotation().str() << ", " << high_speed;
-	nob::g2d::text(0, 0.93, 1, ss.str().c_str(), 0.4, 255, 255, 255, 255, 1, true);
+	nob::g2d::draw_text(0, 0.93, 1, ss.str().c_str(), 0.4, 255, 255, 255, 255, 1, true);
 });
 
 nob::task speed_log([]() {
@@ -411,12 +411,11 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			static auto pb = nob::player::body();
 			auto pos = pb.pos();
-			static nob::entity::anim_dict ad("anim@mp_snowball");
+			static nob::entity::anim_dict ad("combat@damage@writhe");
 			ad.load();
-			pb.play_anim(ad, "pickup_snowball");
-			nob::sleep(1500);
-			//pb.stop_anim(ad, "pickup_snowball");
-			nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(nob::player::body());
+			pb.play_anim(ad, "writhe_loop");
+			//pb.stop_anim(ad, "pickup_snowball");mp_player_intdrink intro
+			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(nob::player::body());
 
 /*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {

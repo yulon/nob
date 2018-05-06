@@ -19,7 +19,8 @@ namespace nob {
 
 		extern mode_t mode;
 		extern std::thread::id id;
-		extern std::atomic<size_t> gameplay_id;
+		extern size_t load_count;
+		extern std::atomic<size_t> load_count_s;
 		extern std::atomic<bool> exiting;
 	} /* this_script */
 

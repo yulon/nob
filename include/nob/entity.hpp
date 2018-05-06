@@ -214,7 +214,7 @@ namespace nob {
 					}
 
 					anim_dict(anim_dict &&src) : _name(std::move(src._name)), _loaded(src._loaded) {
-						if (src._loaded == this_script::gameplay_id) {
+						if (src._loaded == this_script::load_count) {
 							src._loaded = 0;
 						}
 					}
@@ -222,7 +222,7 @@ namespace nob {
 					anim_dict &operator=(anim_dict &&src) {
 						free();
 						_name = std::move(src._name);
-						if (src._loaded == this_script::gameplay_id) {
+						if (src._loaded == this_script::load_count) {
 							_loaded = src._loaded;
 							src._loaded = 0;
 						}
@@ -252,7 +252,7 @@ namespace nob {
 					const anim_dict &load() {
 						assert(*this);
 
-						if (_loaded == this_script::gameplay_id) {
+						if (_loaded == this_script::load_count) {
 							return *this;
 						}
 
@@ -261,22 +261,22 @@ namespace nob {
 						if (gc::try_ref(*this)) {
 							assert(is_loaded());
 
-							_loaded = this_script::gameplay_id;
+							_loaded = this_script::load_count;
 							return *this;
 						}
 
 						ntv::STREAMING::REQUEST_ANIM_DICT(_name.c_str());
 
-						auto cur_gpid = this_script::gameplay_id.load();
+						auto cur_lc = this_script::load_count;
 
 						while (!is_loaded()) {
 							yield();
-							if (cur_gpid != this_script::gameplay_id) {
+							if (cur_lc != this_script::load_count) {
 								goto start;
 							}
 						}
 
-						_loaded = cur_gpid;
+						_loaded = cur_lc;
 
 						auto n = _name;
 						gc::delegate(*this, [n]() {
@@ -289,7 +289,7 @@ namespace nob {
 					}
 
 					void free() {
-						if (_loaded == this_script::gameplay_id) {
+						if (_loaded == this_script::load_count) {
 							gc::free(*this);
 							_loaded = 0;
 						}
@@ -891,7 +891,7 @@ namespace nob {
 					}
 
 					void del() {
-						if (_ct_gpid == this_script::gameplay_id) {
+						if (_ct_gpid == this_script::load_count) {
 							gc::free(*this);
 							_h = 0;
 						}
@@ -908,9 +908,9 @@ namespace nob {
 					}
 
 					void add(character chr) {
-						auto cur_gpid = this_script::gameplay_id.load();
-						if (_ct_gpid != cur_gpid) {
-							_ct_gpid = cur_gpid;
+						auto cur_lc = this_script::load_count;
+						if (_ct_gpid != cur_lc) {
+							_ct_gpid = cur_lc;
 							ntv::PED::ADD_RELATIONSHIP_GROUP(_n.c_str(), &_h);
 							auto h = _h;
 							gc::delegate(*this, [h]() {
