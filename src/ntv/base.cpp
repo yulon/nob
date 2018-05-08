@@ -1,10 +1,14 @@
 #include <nob/ntv/base.hpp>
 #include <nob/ntv/fhtt.hpp>
 #include <nob/program.hpp>
+#include <nob/window.hpp>
 #include <nob/hash.hpp>
 #include <nob/log.hpp>
 
 #include <rua/mem.hpp>
+#include <rua/observer.hpp>
+
+#include <thread>
 
 namespace nob {
 	namespace ntv {
@@ -372,9 +376,11 @@ namespace nob {
 
 		void (*script_thread_t::default_kill)(script_thread_t *) = nullptr;
 
+		bool _pre_init_when_no_wnd = false;
+
 		void _pre_init() {
-			#ifdef NOB_FAST_LAUNCH
-				if (!window::is_visible()) {
+			if (!window::is_visible()) {
+				#ifdef NOB_FAST_LAUNCH
 					auto mr = game_code.match({
 						0x70, 0x6C, 0x61, 0x74, 0x66, 0x6F, 0x72, 0x6D, 0x3A
 					});
@@ -387,8 +393,10 @@ namespace nob {
 						log("nob::ntv::_init::logos_anim: not found!");
 						//finded = false;
 					}
-				}
-			#endif
+				#endif
+
+				_pre_init_when_no_wnd = true;
+			}
 		}
 
 		bool _init() {
@@ -403,39 +411,42 @@ namespace nob {
 				game_state = game_code.derel<int32_t, 5>(mr[0]);
 			}
 
-			std::vector<uint16_t> mov_gs_6_pat = {
-				0xC7, 0x05, 1111, 1111, 1111, 1111, 0x06, 0x00, 0x00, 0x00, 0xEB, 0x3F
-			};
+			if (!game_state || _pre_init_when_no_wnd) {
+				std::vector<uint16_t> mov_gs_6_pat = {
+					0xC7, 0x05, 1111, 1111, 1111, 1111, 0x06, 0x00, 0x00, 0x00, 0xEB, 0x3F
+				};
 
-			mr = game_code.match(mov_gs_6_pat);
+				mr = game_code.match(mov_gs_6_pat);
 
-			if (mr) {
-				if (!game_state) {
-					game_state = game_code.derel<int32_t>(mr.pos + 2);
-				}
+				if (mr) {
+					if (!game_state) {
+						game_state = game_code.derel<int32_t>(mr.pos + 2);
+					}
+					if (_pre_init_when_no_wnd) {
+						constexpr size_t skip_sz_b = 0x1C;
+						size_t skip_sz;
 
-				constexpr size_t skip_sz_b = 0x1C;
-				size_t skip_sz;
+						auto code = game_code[mr.pos - skip_sz_b];
 
-				auto code = game_code[mr.pos - skip_sz_b];
+						if (code.get<uint32_t>() == 0x7501F883) {
+							mr = game_code[mr.pos + mov_gs_6_pat.size()].match({
+								0xC7, 0x05, 1111, 1111, 1111, 1111, 0x08, 0x00, 0x00, 0x00
+							});
 
-				if (code.get<uint32_t>() == 0x7501F883) {
-					mr = game_code[mr.pos + mov_gs_6_pat.size()].match({
-						0xC7, 0x05, 1111, 1111, 1111, 1111, 0x08, 0x00, 0x00, 0x00
-					});
-
-					if (mr) {
-						skip_sz = skip_sz_b + mov_gs_6_pat.size() + mr.pos;
-						rua::mem::protect(code.base(), skip_sz);
-						memset(code.base(), 0x90, skip_sz);
-					} else {
-						log("nob::ntv::_init: (*game_state = 8) not found!");
+							if (mr) {
+								skip_sz = skip_sz_b + mov_gs_6_pat.size() + mr.pos;
+								rua::mem::protect(code.base(), skip_sz);
+								memset(code.base(), 0x90, skip_sz);
+							} else {
+								log("nob::ntv::_init: (*game_state = 8) not found!");
+							}
+						} else {
+							log("nob::ntv::_init: 'game_state_handler()' not found!");
+						}
 					}
 				} else {
-					log("nob::ntv::_init: 'game_state_handler()' not found!");
+					log("nob::ntv::_init: (*game_state = 6) not found!");
 				}
-			} else {
-				log("nob::ntv::_init: (*game_state = 6) not found!");
 			}
 
 			if (!game_state) {
@@ -444,7 +455,7 @@ namespace nob {
 			}
 
 			#ifdef NOB_FAST_LAUNCH
-				if (*game_state != game_state_t::playing && static_cast<uint8_t>(*game_state) <= 3) {
+				if (_pre_init_when_no_wnd) {
 					mr = game_code.match({
 						0x72, 0x1F, 0xE8, 1111, 1111, 1111, 1111, 0x8B, 0x0D
 					});

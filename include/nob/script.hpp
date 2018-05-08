@@ -14,11 +14,10 @@ namespace nob {
 			shv,
 			ysc,
 			main_thread,
-			sub_thread
+			unique_thread
 		};
 
 		extern mode_t mode;
-		extern std::thread::id id;
 		extern size_t load_count;
 		extern std::atomic<size_t> load_count_s;
 		extern std::atomic<bool> exiting;
@@ -87,35 +86,137 @@ namespace nob {
 		}
 	}
 
+	// Only for task and input listener.
 	inline void sleep(dur_t timeout) {
 		this_task::sleep(timeout);
 	}
 
+	// Only for task and input listener.
 	inline void yield() {
 		this_task::yield();
 	}
 
 	// used to non-game resources initialization.
-	// can't use sleep/yield.
-	class initer {
+	class on_load {
 		public:
-			initer(std::function<void()>);
-	};
+			on_load() : _it(_handler_list().end()) {}
 
-	// used to destroy game resources during a halfway exit.
-	// can't use sleep/yield.
-	class exiter {
-		public:
-			exiter(std::function<void()>);
-	};
-
-	class first_task {
-		public:
-			first_task(const std::function<void()> &handler) {
-				initer([handler]() {
-					go(handler);
-				});
+			on_load(std::function<void()> handler) {
+				if (!handler) {
+					return;
+				}
+				_handler_list().emplace_back(std::move(handler));
+				_it = --_handler_list().end();
 			}
+
+			~on_load() {
+				del();
+			}
+
+			operator bool() const {
+				return _it != _handler_list().end();
+			}
+
+			void del() {
+				auto &li = _handler_list();
+				if (_it == li.end()) {
+					return;
+				}
+				li.erase(_it);
+				_it = li.end();
+			}
+
+			static size_t count() {
+				return _handler_list().size();
+			}
+
+			static void handle() {
+				for (auto &hdr : _handler_list()) {
+					hdr();
+				}
+			}
+
+		private:
+			using _handler_list_t = std::list<std::function<void()>>;
+
+			_handler_list_t::iterator _it;
+
+			static _handler_list_t &_handler_list() {
+				static _handler_list_t inst;
+				return inst;
+			}
+	};
+
+	// used to release game resources during a halfway exit.
+	class on_unload {
+		public:
+			on_unload() : _it(_handler_list().end()) {}
+
+			on_unload(std::function<void()> handler) {
+				if (!handler) {
+					return;
+				}
+				_handler_list().emplace_back(std::move(handler));
+				_it = --_handler_list().end();
+			}
+
+			~on_unload() {
+				del();
+			}
+
+			operator bool() const {
+				return _it != _handler_list().end();
+			}
+
+			void del() {
+				auto &li = _handler_list();
+				if (_it == li.end()) {
+					return;
+				}
+				li.erase(_it);
+				_it = li.end();
+			}
+
+			static size_t count() {
+				return _handler_list().size();
+			}
+
+			static void handle() {
+				auto &li = _handler_list();
+				for (auto rit = li.rbegin(); rit != li.rend(); ++rit) {
+					(*rit)();
+				}
+			}
+
+		private:
+			using _handler_list_t = std::list<std::function<void()>>;
+
+			_handler_list_t::iterator _it;
+
+			static _handler_list_t &_handler_list() {
+				static _handler_list_t inst;
+				return inst;
+			}
+	};
+
+	class on_load_task {
+		public:
+			on_load_task() = default;
+
+			on_load_task(const std::function<void()> &handler) : _ol(on_load([handler]() {
+				go(handler);
+			})) {}
+
+			operator bool() const {
+				return _ol;
+			}
+
+			void del() {
+				_ol.del();
+			}
+
+		private:
+			on_load _ol;
 	};
 
 	class once_task {

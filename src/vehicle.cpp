@@ -53,7 +53,7 @@ namespace nob {
 
 	// Reference from https://github.com/zorg93/EnableMpCars-GTAV
 	bool _find_ban_vehs() {
-		static initer reset([]() {
+		static on_load reset([]() {
 			_finded_ban_vehs = false;
 		});
 

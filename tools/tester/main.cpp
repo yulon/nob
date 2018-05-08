@@ -41,9 +41,9 @@ nob::task speed_log([]() {
 	nob::sleep(5000);
 });
 
-nob::first_task unlock_vehs(nob::unlock_banned_vehicles);
+nob::on_load_task unlock_vehs(nob::unlock_banned_vehicles);
 /*
-nob::first_task blk([]() {
+nob::on_load_task blk([]() {
 	nob::player::switch_scene(nob::vector3{0, 0, 75});
 
 	while (*nob::ntv::game_state != nob::ntv::game_state_t::playing) {
@@ -404,18 +404,15 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}*/
 		}),
 		action("Other", []() {
-			//nob::log(nob::ntv::SCRIPT::GET_THIS_SCRIPT_NAME());
-
-			//nob::log(nob::ntv::CONTROLS::GET_CONTROL_INSTRUCTIONAL_BUTTON(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 1));
-			//nob::log(nob::ntv::CONTROLS::_0x80C2FD58D720C801(2, static_cast<int>(nob::hotkey_t::InteractionMenu), 0));
-
 			static auto pb = nob::player::body();
 			auto pos = pb.pos();
-			static nob::entity::anim_dict ad("combat@damage@writhe");
-			ad.load();
-			pb.play_anim(ad, "writhe_loop");
-			//pb.stop_anim(ad, "pickup_snowball");mp_player_intdrink intro
-			//nob::ntv::AI::CLEAR_PED_TASKS_IMMEDIATELY(nob::player::body());
+
+			nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("scr_carsteal4");
+			while (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("scr_carsteal4")) {
+				nob::yield();
+			}
+			nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("scr_carsteal4");
+			nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("muz_shotgun", pos.x, pos.y, pos.z, 0.f, 0.f, 0, 1, 0, 0, 0, 0);
 
 /*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {
@@ -522,15 +519,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::sleep(5000);
 			nob::ntv::PED::RESET_PED_RAGDOLL_TIMER(pb);
 			nob::ntv::PED::SET_PED_TO_RAGDOLL(pb, 0, -1, 0, false, false, false);
-
-			if (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
-				nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
-				nob::sleep([]()->bool {
-					return nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core");
-				});
-			}
-nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");
-			nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("fire_script_petrol_trail_glow", pos.x, pos.y, pos.z, 0.f, 0.f, 0, 1, 0, 0, 0, 0);
 
 			nob::ntv::FIRE::ADD_OWNED_EXPLOSION(
 				pb, pos.x, pos.y, pos.z, (int)nob::ntv::eExplosionType::Flare,

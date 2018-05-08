@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rua/macros.hpp>
+
 #include <sstream>
 #include <mutex>
 
@@ -73,5 +75,5 @@ namespace nob {
 			}
 	};
 
-	extern log_t log;
+	RUA_INLINE_VAR_S(log_t, log, );
 }

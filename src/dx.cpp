@@ -1,14 +1,26 @@
 #include <nob/dx.hpp>
+#include <nob/shv.hpp>
+#include <nob/log.hpp>
 
 #include <minhook.hpp>
 
 #include <rua/gnc/any_ptr.hpp>
+#include <rua/macros.hpp>
 
 #include <d3d11.h>
 
+#include <cassert>
+
 namespace nob {
+	namespace shv {
+		bool _init();
+	}
+
 	namespace dx {
 		static rua::any_ptr *_dxgi_swap_chain_vtab() {
+			auto d3d11 = LoadLibraryW(L"d3d11.dll");
+			assert(d3d11);
+
 			WNDCLASSEXW wc = { sizeof(WNDCLASSEXW), CS_CLASSDC, DefWindowProcW, 0, 0, GetModuleHandleA(nullptr), nullptr, nullptr, nullptr, nullptr, L"NobDxgiTmpWnd", nullptr };
 			RegisterClassExW(&wc);
 			HWND hWnd = CreateWindowW(L"NobDxgiTmpWnd", nullptr, WS_OVERLAPPEDWINDOW, 100, 100, 300, 300, nullptr, nullptr, wc.hInstance, NULL);
@@ -35,7 +47,7 @@ namespace nob {
 			ID3D11Device *dev = nullptr;
 			IDXGISwapChain *sc = nullptr;
 
-			if (FAILED(D3D11CreateDeviceAndSwapChain(
+			if (FAILED(RUA_DLL_FUNC(d3d11, D3D11CreateDeviceAndSwapChain)(
 				nullptr,
 				D3D_DRIVER_TYPE_HARDWARE,
 				nullptr,
@@ -49,6 +61,7 @@ namespace nob {
 				nullptr,
 				nullptr
 			))) {
+				assert(0);
 				return nullptr;
 			}
 
@@ -61,30 +74,31 @@ namespace nob {
 			return vtab;
 		}
 
-		static minhook<HRESULT (*)(IDXGISwapChain *, UINT, UINT)> _IDXGISwapChainPresent_hk;
-
-		void _hook() {
-			if (_IDXGISwapChainPresent_hk) {
+		void on_render::_init() RUA_ONCE_CODE({
+			if (shv::_init()) {
+				shv::presentCallbackRegister(reinterpret_cast<void (*)(void *)>(&dx::on_render::_handle));
 				return;
 			}
-			auto vtab = _dxgi_swap_chain_vtab();
-			if (vtab) {
-				_IDXGISwapChainPresent_hk.install(
-					vtab[8],
-					[](IDXGISwapChain *th1s, UINT SyncInterval, UINT Flags) -> HRESULT {
-						for (auto &hdr : on_render::handler_list()) {
-							hdr(th1s);
-						}
-						return _IDXGISwapChainPresent_hk.original(th1s, SyncInterval, Flags);
-					}
-				);
-			}
-		}
 
-		void _handle(void *sc) {
-			for (auto &hdr : on_render::handler_list()) {
-				hdr(reinterpret_cast<IDXGISwapChain *>(sc));
+			auto vtab = _dxgi_swap_chain_vtab();
+			if (!vtab) {
+				return;
 			}
+			static minhook<HRESULT (*)(IDXGISwapChain *, UINT, UINT)> hk;
+			hk.install(
+				vtab[8],
+				[](IDXGISwapChain *th1s, UINT SyncInterval, UINT Flags)->HRESULT {
+					_handle(th1s);
+					return hk.original(th1s, SyncInterval, Flags);
+				}
+			);
+		})
+
+		void on_render::_uninit() {
+			if (!shv::_init()) {
+				return;
+			}
+			shv::presentCallbackUnregister(reinterpret_cast<void (*)(void *)>(&dx::on_render::_handle));
 		}
 	}
 }

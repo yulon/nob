@@ -104,7 +104,7 @@ namespace nob {
 			return CallWindowProcW(_old_proc, hWnd, uMsg, wParam, lParam);
 		}
 
-		initer _hook_proc([]() {
+		on_load _hook_proc([]() {
 			if (_old_proc) {
 				return;
 			}
@@ -114,7 +114,7 @@ namespace nob {
 			_old_proc = (WNDPROC)SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)&_proc);
 		});
 
-		exiter _unhook_proc([]() {
+		on_unload _unhook_proc([]() {
 			if (!_old_proc) {
 				return;
 			}

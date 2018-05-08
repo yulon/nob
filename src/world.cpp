@@ -103,7 +103,7 @@ namespace nob {
 				}
 			};
 
-			static initer reset([]() {
+			static on_load reset([]() {
 				if (tsk) {
 					tsk.del();
 					gc::undelegate(gc_id_t());
@@ -186,7 +186,7 @@ namespace nob {
 		void disable_ambient_missions(bool toggle) {
 			static task tsk;
 
-			static initer reset([]() {
+			static on_load reset([]() {
 				if (tsk) {
 					tsk.del();
 				}
@@ -826,7 +826,7 @@ namespace nob {
 				}
 			};
 
-			static initer reset([]() {
+			static on_load reset([]() {
 				if (block_code_addr && *block_code_addr == 0x90) {
 					memcpy(block_code_addr, &block_code_bak, 20);
 				}

@@ -1,9 +1,10 @@
 #include <nob/script.hpp>
 #include <nob/program.hpp>
-#include <nob/window.hpp>
 #include <nob/ntv.hpp>
 #include <nob/shv.hpp>
 #include <nob/log.hpp>
+
+#include "disable_ws2.hpp"
 
 #include <minhook.hpp>
 
@@ -19,73 +20,6 @@
 
 namespace nob {
 	std::unique_ptr<rua::cp::coro_pool> tasks(nullptr);
-
-	std::unique_ptr<std::vector<std::function<void()>>> _initers(nullptr);
-
-	initer::initer(std::function<void()> handler) {
-		if (!_initers) {
-			_initers.reset(new std::vector<std::function<void()>>);
-		}
-		_initers->push_back(std::move(handler));
-	}
-
-	std::unique_ptr<std::vector<std::function<void()>>> _exiters(nullptr);
-
-	exiter::exiter(std::function<void()> handler) {
-		if (!_exiters) {
-			_exiters.reset(new std::vector<std::function<void()>>);
-		}
-		_exiters->push_back(std::move(handler));
-	}
-
-	namespace ntv {
-		bool _pre_init();
-		bool _init();
-	}
-
-	namespace shv {
-		bool _init();
-	}
-
-	namespace dx {
-		bool _hook();
-		void _handle(void *);
-	}
-
-	void _disable_ws2_func(const std::string &name) {
-		static auto ws2_dll = GetModuleHandleW(L"ws2_32.dll");
-
-		auto fp = GetProcAddress(ws2_dll, name.c_str());
-		if (!fp) {
-			log("nob::_disable_mp: ", name, "() not found!");
-			return;
-		}
-
-		auto is_writable = rua::mem::protect(fp, 3);
-		if (!is_writable) {
-			log("nob::_disable_mp: set ", name, "() memory protection failed!");
-			return;
-		}
-
-		if (rua::mem::get<uint16_t>(fp) != 0xC031) {
-			rua::mem::get<uint16_t>(fp) = 0xC031;
-		}
-		if (rua::mem::get<uint8_t>(fp, 2) != 0xC3) {
-			rua::mem::get<uint8_t>(fp, 2) = 0xC3;
-		}
-	}
-
-	bool _is_disabled_mp = false;
-
-	void _disable_mp() {
-		if (_is_disabled_mp) {
-			return;
-		}
-		_is_disabled_mp = true;
-
-		_disable_ws2_func("send");
-		_disable_ws2_func("recv");
-	}
 
 	extern std::queue<std::function<void()>> _inputs;
 
@@ -109,17 +43,14 @@ namespace nob {
 
 	namespace this_script {
 		mode_t mode = mode_t::invalid;
-		std::thread::id thread_id;
 		size_t load_count = 0;
 		std::atomic<size_t> load_count_s(0);
 		std::atomic<bool> exiting(false);
-		static std::atomic<bool> _exited(false);
+		std::atomic<bool> _exited(false);
 		static int _last_fc = -1;
 
 		static inline void _init() {
-			_disable_mp();
-
-			thread_id = std::this_thread::get_id();
+			_disable_ws2();
 
 			if (!tasks) {
 				tasks.reset(new rua::cp::coro_pool);
@@ -132,9 +63,7 @@ namespace nob {
 
 			load_count = ++load_count_s;
 
-			for (auto &initer : *_initers) {
-				initer();
-			}
+			on_load::handle();
 
 			_clear_inputs();
 		}
@@ -143,9 +72,7 @@ namespace nob {
 			if (_exited) {
 				return;
 			}
-			for (auto rit = _exiters->rbegin(); rit != _exiters->rend(); ++rit) {
-				(*rit)();
-			}
+			on_unload::handle();
 			_exited = true;
 		}
 
@@ -262,74 +189,13 @@ namespace nob {
 			return td.get();
 		}
 
-		#ifdef NDEBUG
-			#define _NOB_CALL_INIT_FN(_f) \
-				if (!_f()) { \
-					MessageBoxW(0, rua::u8_to_w(log.str()).c_str(), L"ERRORS", MB_OK | MB_ICONERROR); \
-					_exited = true; \
-					exit(1); \
-					return; \
-				}
-		#else
-			#define _NOB_CALL_INIT_FN(_f) _f()
-		#endif
-
-		void _create() {
-			ntv::_pre_init();
-
-			CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(static_cast<void(*)()>([]() {
-				while (!window::is_visible()) {
-					Sleep(100);
-				}
-
-				_NOB_CALL_INIT_FN(ntv::_init);
-
-				log.alloc_console();
-
-				if (shv::_init()) {
-					mode = mode_t::shv;
-					shv::scriptRegister(this_dll, _shv_main);
-					shv::presentCallbackRegister(&dx::_handle);
-					return;
-				}
-
-				if (ntv::game_state) {
-					auto &gs = reinterpret_cast<uint8_t &>(*ntv::game_state);
-					while (gs && gs < 5) {
-						Sleep(100);
-					}
-				}
-
-				dx::_hook();
-
-				if (_create_from_new_td()) {
-					mode = mode_t::sub_thread;
-					return;
-				}
-
-				mode = mode_t::main_thread;
-				_NOB_CALL_INIT_FN(_create_from_main_td);
-			})), nullptr, 0, nullptr);
-		}
-
-		void _destroy() {
-			exiting = true;
-
-			for (;;) {
-				if (!IsWindowVisible(window::native_handle())) {
-					return;
-				}
-				if (_exited) {
-					break;
-				}
-				Sleep(100);
+		bool _create_from_td() {
+			if (_create_from_new_td()) {
+				mode = mode_t::unique_thread;
+				return true;
 			}
-
-			if (mode == mode_t::shv) {
-				shv::scriptUnregister(this_dll);
-				shv::presentCallbackUnregister(&dx::_handle);
-				return;
-			}
+			mode = mode_t::main_thread;
+			return _create_from_main_td();
 		}
 	} /* this_script */
 

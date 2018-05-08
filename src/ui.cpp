@@ -76,7 +76,7 @@ namespace nob {
 			task draw_tsk;
 			hotkey_listener hk_lnr, hk_bkr;
 			g2d::texture_dict cm_td("CommonMenu");
-			initer reset(menu::close_any);
+			on_load reset(menu::close_any);
 
 			static inline void del_res() {
 				draw_tsk.del();
@@ -320,14 +320,14 @@ namespace nob {
 		int _bnr_sf;
 		task _bnr_tsk;
 
-		initer _reset_bnr([]() {
+		on_load _reset_bnr([]() {
 			_bnr_sf = 0;
 			if (_bnr_tsk) {
 				_bnr_tsk.del();
 			}
 		});
 
-		exiter _free_bnr([]() {
+		on_unload _free_bnr([]() {
 			if (_bnr_sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
 				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
 			}
@@ -385,7 +385,7 @@ namespace nob {
 		std::vector<std::pair<std::string, std::vector<hotkey_t>>> _btn_bar_data;
 		task _btn_bar_tsk;
 
-		initer _reset_btn_bar([]() {
+		on_load _reset_btn_bar([]() {
 			_btn_bar_sf = 0;
 			if (_btn_bar_tsk) {
 				_btn_bar_tsk.del();
@@ -395,7 +395,7 @@ namespace nob {
 			}
 		});
 
-		exiter _free_btn_bar([]() {
+		on_unload _free_btn_bar([]() {
 			if (_btn_bar_sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
 				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_btn_bar_sf);
 			}

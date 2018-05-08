@@ -17,7 +17,7 @@ namespace nob {
 	namespace _kl {
 		std::unordered_set<int> downs;
 
-		initer _clear_downs([]() {
+		on_load _clear_downs([]() {
 			downs.clear();
 		});
 
@@ -138,7 +138,7 @@ namespace nob {
 	namespace _hkl {
 		std::unordered_set<int> downs;
 
-		initer clear_downs([]() {
+		on_load clear_downs([]() {
 			downs.clear();
 		});
 

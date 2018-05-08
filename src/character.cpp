@@ -162,7 +162,7 @@ namespace nob {
 
 	static std::unordered_map<int, _chr_data> _data_map;
 
-	static initer _data_initer([]() {
+	static on_load _data_initer([]() {
 		if (_data_map.size()) {
 			_data_map.clear();
 		}
