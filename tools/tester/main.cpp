@@ -56,12 +56,12 @@ nob::on_load_task blk([]() {
 
 using namespace nob::ui;
 
-void add_veh(list &li, const nob::model &m, bool is_dlc = false) {
+void add_veh(list &li, const nob::model &m) {
 	li->items.emplace_back(action(nob::i18n(m.display_name_for_vehicle()), m.name(), [m]() {
 		auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
 		veh.place_on_ground();
 		veh.set_best_mods();
-		//veh.invincible();
+		veh.invincible();
 	}));
 }
 

@@ -19,9 +19,9 @@
 namespace nob {
 	namespace ui {
 		static constexpr float aspect_ratio = 9.0f / 16.0f;
-		static constexpr vector2 padding_size { 29.0f / 1920.0f, 17.0f / 1080.0f };
-		static constexpr struct { float left, top, right, bottom; } padding {
-			padding_size.x, padding_size.y, 1.0f - padding_size.x, 1.0f - padding_size.y
+		static constexpr vector2 margin2_size { 29.0f / 1920.0f, 17.0f / 1080.0f };
+		static constexpr struct { float left, top, right, bottom; } margin {
+			margin2_size.x, margin2_size.y, 1.0f - margin2_size.x, 1.0f - margin2_size.y
 		};
 
 		struct _item {
@@ -225,7 +225,7 @@ namespace nob {
 				static constexpr float title_font_height = g2d::calc_text_height(title_font_size);
 				static constexpr float font_size = 0.355f;
 				static constexpr float font_height = g2d::calc_text_height(font_size);
-				static constexpr float margin = 11.0f / 1920.0f;
+				static constexpr float padding = 11.0f / 1920.0f;
 				static constexpr float item_height = 37.0f / 1080.0f;
 				static constexpr float icon_height = item_height / 0.77f;
 				static constexpr float icon_width = icon_height * aspect_ratio;
