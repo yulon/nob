@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cstdint>
+#include <vector>
 
 namespace nob {
 	namespace arm {
@@ -91,5 +92,13 @@ namespace nob {
 		// May not exist: "AMMO_GRENADELAUNCHER_SMOKE"
 
 		hasher weapon_from_ammo_type(const hasher &amm_typ);
+
+		const std::vector<hasher> &weapons_from_group(const hasher &group);
+
+		struct display_info_t {
+			const char *name, *desc;
+		};
+
+		display_info_t display_info(const hasher &);
 	}
 }
