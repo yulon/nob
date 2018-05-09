@@ -630,14 +630,14 @@ namespace nob {
 					ss << "weapon ";
 					for (auto &hr : arm::weapons) {
 						if (hr == cur_wpn) {
-							ss << hr.src_c_str() << " ";
+							ss << hr.src_str() << " ";
 							break;
 						}
 					}
 					if (is_in_vehicle()) {
 						for (auto &hr : arm::vehicle_weapons) {
 							if (hr == cur_wpn) {
-								ss << hr.src_c_str() << " ";
+								ss << hr.src_str() << " ";
 								break;
 							}
 						}
@@ -648,7 +648,7 @@ namespace nob {
 					ss << "  group: ";
 					for (auto &hr : arm::weapon_groups) {
 						if (hr == grp) {
-							ss << hr.src_c_str() << " ";
+							ss << hr.src_str() << " ";
 							break;
 						}
 					}
@@ -658,7 +658,7 @@ namespace nob {
 					ss << "  ammo type: ";
 					for (auto &hr : arm::ammo_types) {
 						if (hr == amm_ty) {
-							ss << hr.src_c_str() << " ";
+							ss << hr.src_str() << " ";
 							break;
 						}
 					}

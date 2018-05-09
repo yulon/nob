@@ -56,8 +56,8 @@ nob::on_load_task blk([]() {
 
 using namespace nob::ui;
 
-void add_veh(list &li, const nob::model &m) {
-	li->items.emplace_back(action(nob::i18n(m.name()), m.name(), [m]() {
+void add_veh(list &li, const nob::model &m, bool is_dlc = false) {
+	li->items.emplace_back(action(nob::i18n(m.display_name_for_vehicle()), m.name(), [m]() {
 		auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
 		veh.place_on_ground();
 		veh.set_best_mods();
@@ -116,18 +116,10 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					if (!veh.mod_sum(i)) {
 						continue;
 					}
-					auto mod_type_name = veh.mod_type_name(i);
-					auto i18n_mod_type_name = nob::i18n(veh.mod_type_name(i));
-					if (i18n_mod_type_name != "NULL") {
-						mod_type_name = i18n_mod_type_name;
-					}
+					auto mod_type_name = nob::i18n(veh.mod_type_name(i));
 					li->items.emplace_back(list(mod_type_name, [veh, i](list li) mutable {
 						for (int j = -1; j < veh.mod_sum(i); ++j) {
-							auto mod_name = veh.mod_name(i, j);
-							auto i18n_mod_name = nob::i18n(mod_name);
-							if (i18n_mod_name != "NULL") {
-								mod_name = i18n_mod_name;
-							}
+							auto mod_name = nob::i18n(veh.mod_name(i, j));
 							li->items.emplace_back(action(mod_name, [veh, i, j]() mutable {
 								veh.mod(i, j);
 							}));
@@ -154,7 +146,8 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				if (wpn == "WEAPON_UNARMED") {
 					continue;
 				}
-				li->items.emplace_back(action(std::string(wpn.src_str()).substr(7), [&wpn]() {
+				auto di = nob::arm::display_info(wpn);
+				li->items.emplace_back(action(nob::i18n(di.name), nob::i18n(di.desc), [&wpn]() {
 					auto pb = nob::player::body();
 					auto wpn_grp = nob::arm::weapon_group(wpn);
 
@@ -405,16 +398,24 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		}),
 		action("Other", []() {
 			static auto pb = nob::player::body();
-			auto pos = pb.pos();
 
-			nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("scr_carsteal4");
-			while (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("scr_carsteal4")) {
+			nob::ui::tip(nob::ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(nob::hash("WEAPON_RPG")));
+			nob::ui::tip(nob::i18n("WTD_SNIP_RIF"));
+
+
+/*			nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
+			while (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
 				nob::yield();
 			}
-			nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("scr_carsteal4");
-			nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("muz_shotgun", pos.x, pos.y, pos.z, 0.f, 0.f, 0, 1, 0, 0, 0, 0);
+			nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");// scr_rcbarry1 scr_alien_charging scr_alien_impact scr_alien_teleport scr_alien_disintegrate
+			//nob::task([]() {
+				auto pos = pb.pos();
+				auto h = nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("veh_light_amber", pos.x, pos.y, pos.z, 0.f, 0.f, 0.f, 0.5f, 0, 0, 0, 0);
+			//});
 
-/*			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
+			nob::ntv::GRAPHICS::_SET_PARTICLE_FX_LOOPED_RANGE(h, 5000.f);
+
+			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {
 					nob::log("scr: ", nob::ntv::script_list->scripts[i].hash);
 					for (size_t j = 0; j < nob::ntv::script_list->scripts[i].info->local_count; ++j) {

@@ -82,6 +82,11 @@ namespace nob {
 				return ntv::STREAMING::IS_MODEL_A_VEHICLE(hash());
 			}
 
+			const char *display_name_for_vehicle() const {
+				assert(is_vehicle());
+				return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(hash());
+			}
+
 			const model &load() {
 				assert(*this);
 

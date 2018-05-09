@@ -32,9 +32,9 @@ namespace nob {
 
 	class hasher {
 		public:
-			constexpr hasher() : _h(0), _str(nullptr) {}
+			constexpr hasher() : _h(0), _str("") {}
 			constexpr hasher(std::nullptr_t) : hasher() {}
-			constexpr hasher(hash_t h) : _h(h), _str(nullptr) {}
+			constexpr hasher(hash_t h) : _h(h), _str("") {}
 			constexpr hasher(const char *c_str) : _h(nob::hash(c_str)), _str(c_str) {}
 			hasher(const std::string &str) : hasher(str.c_str()) {}
 
@@ -42,10 +42,8 @@ namespace nob {
 				return _h;
 			}
 
-			const char *src_c_str() const;
-
-			std::string src_str() const {
-				return src_c_str();
+			const char *src_str() const {
+				return _str;
 			}
 
 			bool operator==(const hasher &hr) const {
