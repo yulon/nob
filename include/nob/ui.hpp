@@ -274,17 +274,35 @@ namespace nob {
 			ntv::UI::_DRAW_NOTIFICATION(false, false);
 		}
 
-		inline void info_this_frame(const std::string &content) {
-			ntv::UI::BEGIN_TEXT_COMMAND_DISPLAY_HELP("STRING");
-			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(content.c_str());
-			ntv::UI::END_TEXT_COMMAND_DISPLAY_HELP(0, 0, 1, -1);
-		}
-
-		inline void info(const std::string &content, float dur = 1.0f) {
-			task([content]() {
-				info_this_frame(content);
-			}, dur * 15000);
+		inline void help(const std::string &content, int dur = 15000) {
+			static task tsk;
+			static std::string cnt;
+			if (dur <= 0) {
+				if (tsk) {
+					tsk.del();
+				}
+				if (!dur) {
+					ntv::UI::BEGIN_TEXT_COMMAND_DISPLAY_HELP("STRING");
+					ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(content.c_str());
+					ntv::UI::END_TEXT_COMMAND_DISPLAY_HELP(0, 0, 1, -1);
+				}
+				return;
+			}
+			cnt = content;
+			if (tsk) {
+				tsk.reset_dol(dur);
+			} else {
+				tsk = task([]() {
+					ntv::UI::BEGIN_TEXT_COMMAND_DISPLAY_HELP("STRING");
+					ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(cnt.c_str());
+					ntv::UI::END_TEXT_COMMAND_DISPLAY_HELP(0, 0, 1, -1);
+				}, dur);
+			}
 		};
+
+		inline void clear_help() {
+			help("", -1);
+		}
 
 		void banner(const std::string &title, const std::string &sub_title = "");
 		void clear_banner();
