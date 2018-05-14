@@ -399,11 +399,44 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Other", []() {
 			static auto pb = nob::player::body();
 
-			nob::ui::tip(nob::ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(nob::hash("WEAPON_RPG")));
-			nob::ui::tip(nob::i18n("WTD_SNIP_RIF"));
+			nob::player::full_stats_for_everyone();
 
+/*			nob::task([]() {
+				nob::ntv::UI::_BEGIN_TEXT_COMMAND_TIMER("STRING");
+				nob::ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME("hhhuu");
+				nob::ntv::UI::_END_TEXT_COMMAND_TIMER(0);
+			});
 
-/*			nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
+			static int x[] {
+				-2060115030, // 什么都没有
+				-545108805, // 赌注
+				-79324650, // 选项
+				14955678, // 中心白圈
+				-1235717879, // 中心白圈
+				-1664703635, // 中心白圈
+				-818055323, // 中心白圈
+				1169381272, // 中心白圈
+				2134013846, // 中心白圈
+				-708066240, // 差事邀请
+				889053273, // 差事大厅
+				-1392473901, // 交互按钮
+				-1307429, // 中心白圈
+				1399975061 // 等级框
+			};
+
+			static size_t ix = 9;
+
+			if (ix >= 14) {
+				nob::log(111);
+				return;
+			}
+
+			nob::ntv::UI::ACTIVATE_FRONTEND_MENU(x[ix++], false, -1);
+
+			nob::sleep(5000);
+			nob::ntv::UI::SET_FRONTEND_ACTIVE(0);
+
+			nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
 			while (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
 				nob::yield();
 			}
@@ -555,7 +588,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	}),
 	list("UI", {
 		action("Pops", []() {
-			nob::ui::info("you know!");
+			nob::ui::help("you know!");
 
 			nob::ui::tip("~b~~h~dog~h~~s~ killed ~r~~h~cat");
 

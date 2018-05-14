@@ -84,6 +84,8 @@ namespace nob {
 
 		void invincible(bool toggle = true);
 
+		void full_stats_for_everyone(bool toggle = true);
+
 		inline void disable_automatic_respawn() {
 			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_DEATH(false);
 			ntv::GAMEPLAY::SET_FADE_OUT_AFTER_ARREST(false);
