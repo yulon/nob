@@ -57,7 +57,7 @@ nob::on_load_task blk([]() {
 using namespace nob::ui;
 
 void add_veh(list &li, const nob::model &m) {
-	li->items.emplace_back(action(nob::i18n(m.display_name_for_vehicle()), m.name(), [m]() {
+	li->items.emplace_back(action(nob::vehicle::localized_names_from_model(m), m.name(), [m]() {
 		auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
 		veh.place_on_ground();
 		veh.set_best_mods();
@@ -399,9 +399,25 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Other", []() {
 			static auto pb = nob::player::body();
 
+			auto sf = nob::ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE_INSTANCE("Minimap");
+			while (!nob::ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(sf)) {
+				nob::log("w");
+				nob::yield();
+			}
+
+			nob::ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(sf, "SET_ABILITY_BAR_VISIBLE");
+			nob::ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(false);
+			nob::ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
+/*			static nob::g2d::texture_dict a("MPCarHUD"), b("MPCarHUD2");
+			a.load();
+			b.load();
+
+			static nob::ui::stats_panel demo(pb.pos());
+
 			nob::player::full_stats_for_everyone();
 
-/*			nob::task([]() {
+			nob::task([]() {
 				nob::ntv::UI::_BEGIN_TEXT_COMMAND_TIMER("STRING");
 				nob::ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME("hhhuu");
 				nob::ntv::UI::_END_TEXT_COMMAND_TIMER(0);
@@ -615,6 +631,25 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				});
 			} else {
 				nob::ui::clear_button_bar();
+			}
+		}),
+		flag("Stats Panel", [](bool val) {
+			static nob::ui::stats_panel sp;
+			if (val) {
+				auto pos = nob::player::body().pos();
+				sp.reset(
+					pos,
+					"Title", "Desc",
+					"CommonMenu", "shop_box_tick",
+					{
+						std::make_pair("A", 10),
+						std::make_pair("B", 20),
+						std::make_pair("C", 40),
+						std::make_pair("D", 80)
+					}
+				);
+			} else {
+				sp.reset();
 			}
 		}),
 		flag("Show Cursor", [](bool val) {

@@ -15,6 +15,9 @@
 #include <stack>
 #include <initializer_list>
 #include <utility>
+#include <array>
+#include <memory>
+#include <cassert>
 
 namespace nob {
 	namespace ui {
@@ -322,7 +325,20 @@ namespace nob {
 				return !ntv::UI::IS_HUD_HIDDEN();
 			}
 
-			void hide_lower_right(bool toggle = true);
+			inline void hide_lower_right(bool toggle = true) {
+				static task draw_tsk;
+				if (toggle) {
+					if (!draw_tsk) {
+						draw_tsk = task([]() {
+							for (int i = 6; i < 10; ++i) {
+								ntv::UI::HIDE_HUD_COMPONENT_THIS_FRAME(i);
+							}
+						});
+					}
+				} else if (draw_tsk) {
+					draw_tsk.del();
+				}
+			}
 		}
 
 		namespace minimap {
@@ -418,5 +434,39 @@ namespace nob {
 
 		void show_cursor(cursor_icon_t ico = cursor_icon_t::normal);
 		void hide_cursor();
+
+		class stats_panel {
+			public:
+				constexpr stats_panel() : _sf(0) {}
+
+				stats_panel(
+					const vector3 &pos,
+					const std::string &title,
+					const std::string &desc,
+					const std::string &tex_dct,
+					const std::string &tex,
+					const std::array<std::pair<std::string, int>, 4> &items
+				) : _sf(0) {
+					reset(pos, title, desc, tex_dct, tex, items);
+				}
+
+				~stats_panel() {
+					reset();
+				}
+
+				void reset(
+					const vector3 &pos,
+					const std::string &title,
+					const std::string &desc,
+					const std::string &tex_dct,
+					const std::string &tex,
+					const std::array<std::pair<std::string, int>, 4> &items
+				);
+
+				void reset();
+
+			private:
+				int _sf;
+		};
 	} /* ui */
 } /* nob */

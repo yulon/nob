@@ -7,6 +7,7 @@
 #include "arm.hpp"
 #include "script.hpp"
 #include "gc.hpp"
+#include "i18n.hpp"
 #include "log.hpp"
 
 #include <string>
@@ -1279,15 +1280,68 @@ namespace nob {
 				train
 			};
 
-			static class_t get_class_from_model(const model &mi) {
-				if (!mi.is_vehicle()) {
+			static class_t get_class_from_model(const model &m) {
+				if (!m.is_vehicle()) {
 					return class_t::none;
 				}
-				return static_cast<class_t>(ntv::VEHICLE::GET_VEHICLE_CLASS_FROM_NAME(mi));
+				return static_cast<class_t>(ntv::VEHICLE::GET_VEHICLE_CLASS_FROM_NAME(m));
 			}
 
 			class_t get_class() const {
 				return static_cast<class_t>(ntv::VEHICLE::GET_VEHICLE_CLASS(_h));
+			}
+
+			class names_t {
+				public:
+					std::string veh_name, com_name;
+
+					names_t(const std::string &vn, const std::string &cn) : veh_name(vn), com_name(cn) {}
+
+					const std::string &comb() {
+						if (_combed.empty()) {
+							_combed = std::string(com_name) + " " + veh_name;
+						}
+						return _combed;
+					}
+
+					std::string comb() const {
+						if (_combed.empty()) {
+							return std::string(com_name) + " " + veh_name;
+						}
+						return _combed;
+					}
+
+					operator const std::string &() {
+						return comb();
+					}
+
+					operator std::string() const {
+						return comb();
+					}
+
+					operator const char *() {
+						return comb().c_str();
+					}
+
+				private:
+					std::string _combed;
+			};
+
+			static names_t display_names_from_model(const model &);
+
+			names_t display_names() const {
+				return display_names_from_model(get_model());
+			}
+
+			static names_t localized_names_from_model(const model &m) {
+				auto dns = display_names_from_model(m);
+				dns.veh_name = i18n(dns.veh_name);
+				dns.com_name = i18n(dns.com_name);
+				return dns;
+			}
+
+			names_t localized_names() const {
+				return localized_names_from_model(get_model());
 			}
 
 			bool is_armed() const {

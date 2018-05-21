@@ -113,6 +113,27 @@ namespace nob {
 				del();
 			}
 
+			on_load(const on_load &) = delete;
+
+			on_load &operator=(const on_load &) = delete;
+
+			on_load(on_load &&src) : _it(src._it) {
+				auto &li = _handler_list();
+				if (src._it != li.end()) {
+					src._it = li.end();
+				}
+			}
+
+			on_load &operator=(on_load &&src) {
+				del();
+				auto &li = _handler_list();
+				if (src._it != li.end()) {
+					_it = src._it;
+					src._it = li.end();
+				}
+				return *this;
+			}
+
 			operator bool() const {
 				return _it != _handler_list().end();
 			}
@@ -162,6 +183,27 @@ namespace nob {
 
 			~on_unload() {
 				del();
+			}
+
+			on_unload(const on_unload &) = delete;
+
+			on_unload &operator=(const on_unload &) = delete;
+
+			on_unload(on_unload &&src) : _it(src._it) {
+				auto &li = _handler_list();
+				if (src._it != li.end()) {
+					src._it = li.end();
+				}
+			}
+
+			on_unload &operator=(on_unload &&src) {
+				del();
+				auto &li = _handler_list();
+				if (src._it != li.end()) {
+					_it = src._it;
+					src._it = li.end();
+				}
+				return *this;
 			}
 
 			operator bool() const {

@@ -1,11 +1,13 @@
 #include <nob/ui.hpp>
 #include <nob/program.hpp>
 #include <nob/script.hpp>
+#include <nob/input.hpp>
 
 #include <minhook.hpp>
 
 #include <thread>
 #include <string>
+#include <unordered_map>
 
 namespace nob {
 	namespace ui {
@@ -71,7 +73,7 @@ namespace nob {
 			}
 		}
 
-		namespace _menu {
+		namespace { namespace _menu {
 			std::shared_ptr<menu::_data_t> cur(nullptr);
 			task draw_tsk;
 			hotkey_listener hk_lnr, hk_bkr;
@@ -85,7 +87,7 @@ namespace nob {
 				cm_td.free();
 				cur.reset();
 			}
-		}
+		}}
 
 		bool menu::is_opened() const {
 			return this->_data.get() && _menu::cur.get() && _menu::cur.get() == this->_data.get();
@@ -320,31 +322,39 @@ namespace nob {
 			_menu::del_res();
 		}
 
-		int _bnr_sf;
-		task _bnr_tsk;
-
-		on_load _reset_bnr([]() {
-			_bnr_sf = 0;
-			if (_bnr_tsk) {
-				_bnr_tsk.del();
-			}
-		});
-
-		on_unload _free_bnr([]() {
-			if (_bnr_sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
-				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
-			}
-		});
+		namespace { namespace _bnr {
+			int sf;
+			task draw_tsk;
+			on_load reset;
+			on_unload free;
+		}}
 
 		void banner(const std::string &title, const std::string &sub_title) {
-			if (!_bnr_sf) {
-				_bnr_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("MP_BIG_MESSAGE_FREEMODE");
-				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
+			if (!_bnr::sf) {
+				_bnr::sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("MP_BIG_MESSAGE_FREEMODE");
+				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr::sf)) {
 					yield();
 				}
 			}
+			if (!_bnr::reset) {
+				_bnr::reset = on_load([]() {
+					_bnr::sf = 0;
+					if (_bnr::draw_tsk) {
+						_bnr::draw_tsk.del();
+					}
+				});
+			}
+			if (!_bnr::free) {
+				_bnr::free = on_unload([]() {
+					if (_bnr::sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr::sf)) {
+						ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr::sf);
+					}
+				});
+			}
 
-			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "SHOW_SHARD_WASTED_MP_MESSAGE");
+			ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_bnr::sf, "CLEAR_ALL");
+
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr::sf, "SHOW_SHARD_WASTED_MP_MESSAGE");
 
 			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
 			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(title.c_str());
@@ -361,73 +371,84 @@ namespace nob {
 
 			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 
-			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "TRANSITION_UP");
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr::sf, "TRANSITION_UP");
 			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 
-			_bnr_tsk = task([]() {
-				ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_bnr_sf, 255, 255, 255, 255, 0);
+			if (_bnr::draw_tsk) {
+				return;
+			}
+			_bnr::draw_tsk = task([]() {
+				ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_bnr::sf, 255, 255, 255, 255, 0);
 			});
 		}
 
 		void clear_banner() {
-			if (_bnr_sf) {
-				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr_sf)) {
-					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr_sf, "TRANSITION_OUT");
+			if (_bnr::sf) {
+				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_bnr::sf)) {
+					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_bnr::sf, "TRANSITION_OUT");
 					ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 					sleep(500);
-					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr_sf);
+					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_bnr::sf);
 				}
-				_bnr_sf = 0;
+				_bnr::sf = 0;
 			}
-			if (_bnr_tsk) {
-				_bnr_tsk.del();
+			if (_bnr::draw_tsk) {
+				_bnr::draw_tsk.del();
 			}
+			_bnr::reset.del();
+			_bnr::free.del();
 		}
 
-		int _btn_bar_sf;
-		std::vector<std::pair<std::string, std::vector<hotkey_t>>> _btn_bar_data;
-		task _btn_bar_tsk;
-
-		on_load _reset_btn_bar([]() {
-			_btn_bar_sf = 0;
-			if (_btn_bar_tsk) {
-				_btn_bar_tsk.del();
-			}
-			if (_btn_bar_data.size()) {
-				_btn_bar_data.clear();
-			}
-		});
-
-		on_unload _free_btn_bar([]() {
-			if (_btn_bar_sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
-				ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_btn_bar_sf);
-			}
-		});
+		namespace { namespace _btn_bar {
+			int sf;
+			std::vector<std::pair<std::string, std::vector<hotkey_t>>> data;
+			task draw_tsk;
+			on_load reset;
+			on_unload free;
+		}}
 
 		void button_bar(std::vector<std::pair<std::string, std::vector<hotkey_t>>> buttons) {
-			if (!_btn_bar_sf) {
-				_btn_bar_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE_INSTANCE("instructional_buttons");
-				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
+			if (!_btn_bar::sf) {
+				_btn_bar::sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE_INSTANCE("instructional_buttons");
+				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar::sf)) {
 					yield();
 				}
-				ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CLEAR_ALL");
+				ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar::sf, "CLEAR_ALL");
 
-				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "TOGGLE_MOUSE_BUTTONS");
+				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar::sf, "TOGGLE_MOUSE_BUTTONS");
 				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(false);
 				ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 
-				ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "CREATE_CONTAINER");
+				ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_btn_bar::sf, "CREATE_CONTAINER");
+			}
+			if (!_btn_bar::reset) {
+				_btn_bar::reset = on_load([]() {
+					_btn_bar::sf = 0;
+					if (_btn_bar::draw_tsk) {
+						_btn_bar::draw_tsk.del();
+					}
+					if (_btn_bar::data.size()) {
+						_btn_bar::data.clear();
+					}
+				});
+			}
+			if (!_btn_bar::free) {
+				_btn_bar::free = on_unload([]() {
+					if (_btn_bar::sf && ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar::sf)) {
+						ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_btn_bar::sf);
+					}
+				});
 			}
 
-			_btn_bar_data = std::move(buttons);
+			_btn_bar::data = std::move(buttons);
 
-			if (_btn_bar_tsk) {
+			if (_btn_bar::draw_tsk) {
 				return;
 			}
-			_btn_bar_tsk = task([]() {
-				for (size_t i = 0; i < _btn_bar_data.size(); ++i) {
-					auto &pr = _btn_bar_data[_btn_bar_data.size() - 1 - i];
-					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "SET_DATA_SLOT");
+			_btn_bar::draw_tsk = task([]() {
+				for (size_t i = 0; i < _btn_bar::data.size(); ++i) {
+					auto &pr = _btn_bar::data[_btn_bar::data.size() - 1 - i];
+					ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar::sf, "SET_DATA_SLOT");
 					ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(i);
 					for (auto it = pr.second.rbegin(); it != pr.second.rend(); ++it) {
 						ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BUTTON_NAME(
@@ -439,24 +460,26 @@ namespace nob {
 					ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_STRING(pr.first.c_str());
 					ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 				}
-				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar_sf, "DRAW_INSTRUCTIONAL_BUTTONS");
+				ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_btn_bar::sf, "DRAW_INSTRUCTIONAL_BUTTONS");
 				ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(-1);
 				ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 
-				ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_btn_bar_sf, 255, 255, 255, 255, 0);
+				ntv::GRAPHICS::DRAW_SCALEFORM_MOVIE_FULLSCREEN(_btn_bar::sf, 255, 255, 255, 255, 0);
 			});
 		}
 
 		void clear_button_bar() {
-			if (_btn_bar_sf) {
-				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar_sf)) {
-					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_btn_bar_sf);
+			if (_btn_bar::sf) {
+				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_btn_bar::sf)) {
+					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_btn_bar::sf);
 				}
-				_btn_bar_sf = 0;
+				_btn_bar::sf = 0;
 			}
-			if (_btn_bar_tsk) {
-				_btn_bar_tsk.del();
+			if (_btn_bar::draw_tsk) {
+				_btn_bar::draw_tsk.del();
 			}
+			_bnr::reset.del();
+			_bnr::free.del();
 		}
 
 		bool _fm_opened = false;
@@ -497,24 +520,7 @@ namespace nob {
 			}
 		}
 
-		namespace hud {
-			void hide_lower_right(bool toggle) {
-				static task tsk;
-				if (toggle) {
-					if (!tsk) {
-						tsk = task([]() {
-							for (int i = 6; i < 10; ++i) {
-								ntv::UI::HIDE_HUD_COMPONENT_THIS_FRAME(i);
-							}
-						});
-					}
-				} else if (tsk) {
-					tsk.del();
-				}
-			}
-		}
-
-		task _cursor_tsk;
+		static task _cursor_tsk;
 
 		void show_cursor(cursor_icon_t ico) {
 			ntv::UI::_SET_CURSOR_SPRITE(static_cast<int>(ico));
@@ -527,6 +533,148 @@ namespace nob {
 			if (_cursor_tsk) {
 				_cursor_tsk.del();
 			}
+		}
+
+		namespace { namespace _stpl {
+			struct data_t {
+				vector3 pos;
+				g2d::texture_dict td;
+			};
+
+			std::unordered_map<int, data_t> map;
+
+			task draw_tsk;
+			on_load reset;
+			on_unload free;
+		}}
+
+		void stats_panel::reset(
+			const vector3 &pos,
+			const std::string &title,
+			const std::string &desc,
+			const std::string &tex_dct,
+			const std::string &tex,
+			const std::array<std::pair<std::string, int>, 4> &items
+		) {
+			if (!_sf) {
+				_sf = ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE("mp_car_stats_01");
+				assert(_sf);
+
+				_stpl::map.emplace(_sf, _stpl::data_t{pos, tex_dct});
+
+				while (!ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_sf)) {
+					yield();
+				}
+			}
+
+			ntv::GRAPHICS::CALL_SCALEFORM_MOVIE_METHOD(_sf, "CLEAR_ALL");
+
+			ntv::GRAPHICS::BEGIN_SCALEFORM_MOVIE_METHOD(_sf, "SET_VEHICLE_INFOR_AND_STATS");
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(title.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			memcpy((char *)title.data(), "12\0", 3);
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(desc.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			auto &td = _stpl::map[_sf].td;
+			if (td.name() != tex_dct) {
+				td = tex_dct;
+			}
+			td.load();
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(tex_dct.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(tex.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(items[0].first.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(items[1].first.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(items[2].first.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			ntv::GRAPHICS::BEGIN_TEXT_COMMAND_SCALEFORM_STRING("STRING");
+			ntv::UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(items[3].first.c_str());
+			ntv::GRAPHICS::END_TEXT_COMMAND_SCALEFORM_STRING();
+
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(items[0].second);
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(items[1].second);
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(items[2].second);
+			ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_INT(items[3].second);
+
+			ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
+
+			if (_stpl::draw_tsk) {
+				return;
+			}
+
+			_stpl::draw_tsk = task([]() {
+				/*auto rot_z = ntv::CAM::GET_GAMEPLAY_CAM_ROT(0).z + 180.f;
+				if (rot_z > 180.f) {
+					rot_z = -180.f + (rot_z - 180.f);
+				} else if (rot_z < -180.f) {
+					rot_z = 180.f - (-180.f - rot_z);
+				}*/
+				for (auto &pr : _stpl::map) {
+					ntv::GRAPHICS::_DRAW_SCALEFORM_MOVIE_3D_NON_ADDITIVE(
+						pr.first,
+						pr.second.pos.x, pr.second.pos.y, pr.second.pos.z + 5.f,
+						0.f, 0.f, 0.f,
+						0.f,
+						1.f, 0.f, 10.f, 10.f, 10.f, 0.f
+					);
+				}
+			});
+
+			_stpl::reset = on_load([]() {
+				_stpl::map.clear();
+				_stpl::draw_tsk.del();
+				_stpl::reset.del();
+				_stpl::free.del();
+			});
+
+			_stpl::free = on_unload([]() {
+				for (auto &pr : _stpl::map) {
+					if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(pr.first)) {
+						auto sf = pr.first;
+						ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&sf);
+					}
+				}
+				_stpl::map.clear();
+			});
+		}
+
+		void stats_panel::reset() {
+			if (!_sf) {
+				return;
+			}
+			auto it = _stpl::map.find(_sf);
+			if (it != _stpl::map.end()) {
+				if (ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(_sf)) {
+					ntv::GRAPHICS::SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(&_sf);
+				}
+				_stpl::map.erase(it);
+				if (_stpl::map.empty()) {
+					_stpl::draw_tsk.del();
+					_stpl::reset.del();
+					_stpl::free.del();
+				}
+			}
+			_sf = 0;
 		}
 	} /* ui */
 } /* nob */

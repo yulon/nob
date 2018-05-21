@@ -101,6 +101,10 @@ namespace nob {
 					return _name.c_str();
 				}
 
+				operator native_handle_t() const {
+					return native_handle();
+				}
+
 				operator bool() const {
 					return _name.length();
 				}
@@ -111,7 +115,7 @@ namespace nob {
 					return ntv::GRAPHICS::HAS_STREAMED_TEXTURE_DICT_LOADED(_name.c_str());
 				}
 
-				const texture_dict &load() {
+				texture_dict &load() {
 					assert(*this);
 
 					if (_loaded == this_script::load_count) {
