@@ -33,7 +33,7 @@ namespace nob {
 		}
 
 		inline void disable_control(bool toggle = true) {
-			ntv::PLAYER::SET_PLAYER_CONTROL(body(), !toggle, 0);
+			ntv::PLAYER::SET_PLAYER_CONTROL(0, !toggle, 0);
 		}
 
 		inline void switch_scene(character chr) {

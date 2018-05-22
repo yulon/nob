@@ -263,6 +263,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("Auto Get Parachute in Plane", [](bool val) {
 			nob::player::auto_get_parachute_in_plane(val);
 		}),
+		flag("Disable Control", [](bool val) {
+			nob::player::disable_control(val);
+		}),
 		action("Clear High Speed", []() {
 			high_speed = 0.0f;
 		}),
