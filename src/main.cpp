@@ -10,7 +10,7 @@ namespace nob {
 	HMODULE this_dll;
 
 	namespace ntv {
-		bool _pre_init();
+		void _pre_init();
 		bool _init();
 	}
 
@@ -20,7 +20,7 @@ namespace nob {
 
 	namespace this_script {
 		void _shv_main();
-		void _create_from_td();
+		bool _create_from_td();
 		extern std::atomic<bool> _exited;
 	}
 
