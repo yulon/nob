@@ -34,6 +34,10 @@ namespace nob {
 				std::pow((double)y - (double)v2.y, 2)
 			);
 		}
+
+		float angle(const vector2 &v2) const {
+			return std::atan2(v2.x - x, v2.y - y) / 3.141592653589793f * 180.f;
+		}
 	};
 
 	struct vector3_wf {
@@ -85,7 +89,7 @@ namespace nob {
 			};
 		}
 
-		vector3 rotation() const {
+		vector3 fix_rotation() const {
 			return {
 				fix_angle(x),
 				fix_angle(y),
