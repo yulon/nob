@@ -80,6 +80,10 @@ namespace nob {
 				(**nob::ntv::entity_obj_map)[_h]->move(coords);
 			}
 
+			void move_s(const vector3 &coords) {
+				nob::ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, false, false, false);
+			}
+
 			vector3 rotation() const {
 				return ntv::ENTITY::GET_ENTITY_ROTATION(_h, 2);
 			}

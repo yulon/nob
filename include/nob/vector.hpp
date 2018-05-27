@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <cstring>
+#include <cmath>
 
 namespace nob {
 	struct vector2_i {
@@ -39,6 +40,15 @@ namespace nob {
 		alignas(uintptr_t) float x, y, z;
 	};
 
+	inline float fix_angle(float a) {
+		if (a > 180.f) {
+			return -180.f + fmod(a - 180.f, 180.f);
+		} else if (a < -180.f) {
+			return 180.f - fmod(-180.f - a, 180.f);
+		}
+		return a;
+	}
+
 	struct vector3 : public vector2 {
 		float z;
 
@@ -72,6 +82,14 @@ namespace nob {
 				(float)((double)((float)(-(float)std::sin((double)radians_z))) * (double)num),
 				(float)((double)((float)std::cos((double)radians_z)) * (double)num),
 				(float)std::sin((double)radians_x)
+			};
+		}
+
+		vector3 rotation() const {
+			return {
+				fix_angle(x),
+				fix_angle(y),
+				fix_angle(z)
 			};
 		}
 
