@@ -118,9 +118,9 @@ namespace nob {
 			"DeathFailOut"
 		}};
 
-		inline void filter(const char *name, bool toggle = true) {
+		inline void filter(const char *name, bool toggle = true, bool looped = false) {
 			if (toggle) {
-				ntv::GRAPHICS::_START_SCREEN_EFFECT(name, 0, false);
+				ntv::GRAPHICS::_START_SCREEN_EFFECT(name, 0, looped);
 			} else {
 				ntv::GRAPHICS::_STOP_SCREEN_EFFECT(name);
 			}
