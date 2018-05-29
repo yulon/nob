@@ -117,10 +117,10 @@ namespace nob {
 			_menu::cm_td.load();
 
 			_menu::draw_tsk = task([]() {
-				float x = margin.left;
-				float y = margin.top;
+				float x = padding.left;
+				float y = padding.top;
 				float w = width();
-				float text_w = w - 2 * padding;
+				float text_w = w - 2 * item_padding_left;
 				float h = title_bg_height;
 				_menu::cm_td.draw("interaction_bgd", x, y, w, h);
 				g2d::draw_text(x, y + ((h - title_font_height) / 2), text_w, _menu::cur->_tit, title_font_size, 255, 255, 255, 255, 1);
@@ -131,7 +131,7 @@ namespace nob {
 				y += h;
 				h = item_height;
 				g2d::draw_rect(x, y, w, h);
-				g2d::draw_text(x + padding, y + ((h - font_height) / 2.0f), text_w, cur_li->name, font_size, 100, 179, 211, 255, 0);
+				g2d::draw_text(x + item_padding_left, y + ((h - font_height) / 2.0f), text_w, cur_li->name, font_size, 100, 179, 211, 255, 0);
 
 				if (sz) {
 					size_t len;
@@ -139,7 +139,7 @@ namespace nob {
 						len = sz;
 					} else {
 						g2d::draw_text(
-							x - padding, y + ((h - font_height) / 2.0f), w,
+							x - item_padding_left, y + ((h - font_height) / 2.0f), w,
 							std::to_string(cur_li->selected + 1) + " / " + std::to_string(sz),
 							font_size, 255, 255, 255, 255, 2
 						);
@@ -181,7 +181,7 @@ namespace nob {
 							}
 						}
 
-						g2d::draw_text(x + padding, y + ((h - font_height) / 2.0f), text_w, cur_li->items[i]->name, font_size, r, g, b, 255, 0);
+						g2d::draw_text(x + item_padding_left, y + ((h - font_height) / 2.0f), text_w, cur_li->items[i]->name, font_size, r, g, b, 255, 0);
 
 						y += h;
 					}
@@ -207,7 +207,7 @@ namespace nob {
 						h = item_height * 2.f;
 						_menu::cm_td.draw("gradient_bgd", x, y, w, h, 0.0f, 200);
 
-						g2d::draw_text(x + padding, y + ((item_height - font_height) / 2), text_w, cur_li->items[cur_li->selected]->desc, font_size, 255, 255, 255, 255, 0);
+						g2d::draw_text(x + item_padding_left, y + ((item_height - font_height) / 2), text_w, cur_li->items[cur_li->selected]->desc, font_size, 255, 255, 255, 255, 0);
 					}
 				}
 			});
