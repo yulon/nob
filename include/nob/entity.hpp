@@ -11,6 +11,7 @@
 #include "log.hpp"
 
 #include <string>
+#include <unordered_map>
 
 namespace nob {
 	class entity {
@@ -77,7 +78,10 @@ namespace nob {
 			}
 
 			void move(const vector3 &coords) {
-				(**nob::ntv::entity_obj_map)[_h]->move(coords);
+				auto obj = (**nob::ntv::entity_obj_map)[_h];
+				if (obj) {
+					obj->move(coords);
+				}
 			}
 
 			void move_s(const vector3 &coords) {
@@ -111,19 +115,23 @@ namespace nob {
 			}
 
 			struct movement_t {
-				vector3 pos;
-				vector4 quaternion;
-				vector3 velocity;
+				vector3 pos, rotation, velocity;
 			};
 
 			movement_t movement() const {
-				return {pos(), quaternion(), velocity()};
+				return {pos(), rotation(), velocity()};
 			}
 
-			void movement(const movement_t &mm) {
-				move(mm.pos);
-				quaternion(mm.quaternion);
-				velocity(mm.velocity);
+			void movement(const movement_t &mmt, float speed = -1.f) {
+				if (speed <= 0.f) {
+					move(mmt.pos);
+					rotation(mmt.rotation);
+					velocity(mmt.velocity);
+					return;
+				}
+				auto &mover = _mmt_smooth_mover();
+				mover.map[_h] = {mmt, speed, speed * (mmt.pos - pos()), speed * (mmt.rotation - rotation()), 0.f};
+				mover.run();
 			}
 
 			int alpha() const {
@@ -192,6 +200,71 @@ namespace nob {
 
 		protected:
 			int _h;
+
+		private:
+			struct _mmt_smooth_mover_t {
+				struct info_t {
+					movement_t dest;
+					float speed;
+					vector3 speed_pos, speed_rot;
+					float prgs;
+				};
+				std::unordered_map<int, info_t> map;
+				task tsk;
+				size_t last_ts = 0;
+
+				void run() {
+					if (!tsk) {
+						tsk = task([this]() mutable {
+							size_t ts = GetTickCount();
+							if (last_ts) {
+								for(auto it = map.begin(); it != map.end(); ) {
+									auto obj = (**nob::ntv::entity_obj_map)[it->first];
+									if (!obj) {
+										it = map.erase(it);
+										if (map.empty()) {
+											tsk.del();
+											return;
+										}
+										continue;
+									}
+
+									auto &dest = it->second.dest;
+									vector3 now_pos(ntv::ENTITY::GET_ENTITY_COORDS(it->first, true));
+									auto dur = static_cast<float>(ts - last_ts) / 1000.f;
+									it->second.prgs += dur * it->second.speed;
+
+									if (it->second.prgs >= 1.f) {
+										obj->move(dest.pos);
+										ntv::ENTITY::SET_ENTITY_ROTATION(it->first, dest.rotation.x, dest.rotation.y, dest.rotation.z, 2, true);
+										ntv::ENTITY::SET_ENTITY_VELOCITY(it->first, dest.velocity.x, dest.velocity.y, dest.velocity.z);
+
+										it = map.erase(it);
+										if (map.empty()) {
+											tsk.del();
+											return;
+										}
+										continue;
+									}
+
+									obj->move(now_pos + dur * it->second.speed_pos);
+									auto now_dest_rot = dest.rotation + dur * it->second.speed_rot;
+									ntv::ENTITY::SET_ENTITY_ROTATION(it->first, now_dest_rot.x, now_dest_rot.y, now_dest_rot.z, 2, true);
+									ntv::ENTITY::SET_ENTITY_VELOCITY(it->first, dest.velocity.x, dest.velocity.y, dest.velocity.z);
+									++it;
+								}
+							}
+							last_ts = ts;
+							//yield();
+						});
+					}
+				}
+			};
+
+			static _mmt_smooth_mover_t &_mmt_smooth_mover() {
+				static _mmt_smooth_mover_t md;
+				return md;
+			}
 
 		////////////////////////////////////////////////////////////////////
 
@@ -464,10 +537,10 @@ namespace nob {
 			};
 
 			movement_t movement() const {
-				movement_t mm;
-				static_cast<entity::movement_t &>(mm) = entity::movement();
-				mm.motion_state = motion_state();
-				return mm;
+				movement_t mmt;
+				static_cast<entity::movement_t &>(mmt) = entity::movement();
+				mmt.motion_state = motion_state();
+				return mmt;
 			}
 
 			void movement(const movement_t &);
@@ -1156,18 +1229,13 @@ namespace nob {
 				if (ntv::PED::IS_PED_ON_SPECIFIC_VEHICLE(ntv::PLAYER::PLAYER_PED_ID(), _h) && is_playing_radio()) {
 					return ntv::AUDIO::GET_PLAYER_RADIO_STATION_NAME();
 				}
-				return "";
+				return "OFF";
 			}
 
-			void radio_station(const std::string &rs = nullptr) {
+			void radio_station(const std::string &rs) {
 				if (rs.empty()) {
-					if (is_playing_radio()) {
-						ntv::AUDIO::SET_VEHICLE_RADIO_LOUD(_h, false);
-					}
+					ntv::AUDIO::SET_VEH_RADIO_STATION(_h, "OFF");
 					return;
-				}
-				if (!is_playing_radio()) {
-					ntv::AUDIO::SET_VEHICLE_RADIO_LOUD(_h, true);
 				}
 				ntv::AUDIO::SET_VEH_RADIO_STATION(_h, rs.c_str());
 			}
