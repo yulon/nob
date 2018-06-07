@@ -24,6 +24,10 @@ namespace nob {
 		extern std::atomic<bool> _exited;
 	}
 
+	namespace window {
+		void _unhook_proc();
+	}
+
 	#ifdef NDEBUG
 		#define _NOB_CALL_INIT_FN(_f) \
 			if (!_f()) { \
@@ -78,6 +82,7 @@ namespace nob {
 		}
 
 		dx::on_render::_uninit();
+		window::_unhook_proc();
 
 		if (this_script::mode == this_script::mode_t::shv) {
 			shv::scriptUnregister(this_dll);

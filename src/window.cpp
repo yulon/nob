@@ -114,11 +114,11 @@ namespace nob {
 			_old_proc = (WNDPROC)SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)&_proc);
 		});
 
-		on_unload _unhook_proc([]() {
+		void _unhook_proc() {
 			if (!_old_proc) {
 				return;
 			}
 			SetWindowLongPtrW(_handle, GWLP_WNDPROC, (LONG_PTR)_old_proc);
-		});
+		}
 	} /* window */
 } /* nob */
