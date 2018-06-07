@@ -235,70 +235,64 @@ namespace nob {
 					hotkey_t::FrontendAccept
 				},
 				[](hotkey_t hk, bool down)->bool {
-					if (!_menu::cur.get()) {
-						if (hk == hotkey_t::FrontendCancel && !down) {
+					if (!down) {
+						if (!_menu::cur.get() && hk == hotkey_t::FrontendCancel) {
 							_menu::hk_lnr.del();
 							_menu::hk_bkr.del();
 						}
 						return false;
 					}
+					ntv::AUDIO::PLAY_SOUND_FRONTEND(-1, "NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET", 0);
 					switch (hk) {
 						case hotkey_t::FrontendCancel:
-							if (down) {
-								if (_menu::cur->_li_stack.size() > 1) {
-									_menu::cur->_li_stack.pop();
-								} else if (_menu::cur->_can_cls) {
-									_menu::draw_tsk.del();
-									_menu::cm_td.free();
-									_menu::cur.reset();
-								}
+							if (_menu::cur->_li_stack.size() > 1) {
+								_menu::cur->_li_stack.pop();
+							} else if (_menu::cur->_can_cls) {
+								_menu::draw_tsk.del();
+								_menu::cm_td.free();
+								_menu::cur.reset();
 							}
 							break;
 
 						case hotkey_t::FrontendDown:
-							if (down) {
-								_menu::cur->_li_stack.top()->next();
-							}
+							_menu::cur->_li_stack.top()->next();
 							break;
 
 						case hotkey_t::FrontendUp:
-							if (down) {
-								_menu::cur->_li_stack.top()->prev();
-							}
+							_menu::cur->_li_stack.top()->prev();
 							break;
 
-						case hotkey_t::FrontendAccept:
-							if (down) {
-								auto cur_li = _menu::cur->_li_stack.top();
-								if (cur_li->items.size()) {
-									auto cur_it = cur_li->items[cur_li->selected];
+						case hotkey_t::FrontendAccept: {
+							auto cur_li = _menu::cur->_li_stack.top();
+							if (cur_li->items.size()) {
+								auto cur_it = cur_li->items[cur_li->selected];
 
-									if (cur_it.type_is<action>()) {
-										auto a = cur_it.to<action>();
-										if (a->handler) {
-											a->handler();
-										}
-									} else
+								if (cur_it.type_is<action>()) {
+									auto a = cur_it.to<action>();
+									if (a->handler) {
+										a->handler();
+									}
+								} else
 
-									if (cur_it.type_is<list>()) {
-										cur_li = cur_it.to<list>();
-										if (cur_li->on_show) {
-											cur_li->on_show(cur_li);
-											cur_li->fix();
-										}
-										_menu::cur->_li_stack.push(cur_li);
-									} else
+								if (cur_it.type_is<list>()) {
+									cur_li = cur_it.to<list>();
+									if (cur_li->on_show) {
+										cur_li->on_show(cur_li);
+										cur_li->fix();
+									}
+									_menu::cur->_li_stack.push(cur_li);
+								} else
 
-									if (cur_it.type_is<flag>()) {
-										auto flg = cur_it.to<flag>();
-										flg->value = !flg->value;
-										if (flg->on_change) {
-											flg->on_change(flg->value);
-										}
+								if (cur_it.type_is<flag>()) {
+									auto flg = cur_it.to<flag>();
+									flg->value = !flg->value;
+									if (flg->on_change) {
+										flg->on_change(flg->value);
 									}
 								}
 							}
 							break;
+						}
 
 						default:
 							break;
@@ -306,6 +300,8 @@ namespace nob {
 					return false;
 				}
 			);
+
+			ntv::AUDIO::PLAY_SOUND_FRONTEND(-1, "NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET", 0);
 		}
 
 		void menu::close() {
