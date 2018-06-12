@@ -55,6 +55,10 @@ namespace nob {
 
 		class texture_dict {
 			public:
+				static int register_from_file(const std::string &);
+
+				////////////////////////////////////////////////////////////////
+
 				texture_dict() : _name(""), _loaded(0) {}
 
 				texture_dict(std::nullptr_t) : texture_dict() {}
