@@ -32,7 +32,6 @@ namespace nob {
 				{"AMMO_STUNGUN", nullptr},
 
 				{"AMMO_SMG", "prop_ld_ammo_pack_01"},
-				//{"AMMO_MG", "hei_prop_heist_ammo_box"},
 
 				{"AMMO_RIFLE", "prop_ld_ammo_pack_03"},
 
@@ -50,9 +49,16 @@ namespace nob {
 			if (it != map.end()) {
 				return it->second;
 			}
-			if (wpn_or_amm == "AMMO_MG") {
-				return ntv::WEAPON::GET_WEAPON_COMPONENT_TYPE_MODEL(hash("COMPONENT_MG_CLIP_02"));
+
+			static const std::unordered_map<hasher, hasher> map2 {
+				{"AMMO_MG", "COMPONENT_MG_CLIP_02"},
+				{"AMMO_RAILGUN", "COMPONENT_MG_CLIP_02"}
+			};
+			it = map2.find(wpn_or_amm);
+			if (it != map2.end()) {
+				return ntv::WEAPON::GET_WEAPON_COMPONENT_TYPE_MODEL(it->second);
 			}
+
 			return ntv::WEAPON::GET_WEAPONTYPE_MODEL(wpn_or_amm.hash());
 		}
 

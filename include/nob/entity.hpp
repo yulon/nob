@@ -193,11 +193,11 @@ namespace nob {
 				return ntv::ENTITY::GET_ENTITY_HEALTH(_h);
 			}
 
-			int max_health() {
+			int health_max() {
 				return ntv::ENTITY::GET_ENTITY_MAX_HEALTH(_h);
 			}
 
-			void health(int v) {
+			void health(int v) const {
 				ntv::ENTITY::SET_ENTITY_HEALTH(_h, v);
 			}
 
