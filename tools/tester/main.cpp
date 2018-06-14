@@ -298,7 +298,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 							pb.current_vehicle().movement(rec.front());
 							pb.current_vehicle().action(32);
 						} else {
-							static_cast<nob::entity &>(pb).movement(rec.front());
+							pb.movement(rec.front());
 						}
 						rec.pop();
 					} else {
@@ -400,8 +400,16 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}*/
 		}),
 		action("Other", []() {
+			static nob::entity::anim_dict ad("anim@heists@ornate_bank@hostages@hit");
 			static auto pb = nob::player::body();
-
+			ad.load();
+			pb.play_anim(ad, "player_melee_long_rifle_kick_a");
+			//nob::ntv::PLAYER::SPECIAL_ABILITY_DEACTIVATE_FAST(0);
+/*			auto chr = nob::character("mp_m_freemode_01", pb.pos({0, 5, 500}), true);
+			nob::character("mp_m_freemode_01", pb.pos({0, 10, 500}), true);
+			nob::ntv::ENTITY::SET_ENTITY_ONLY_DAMAGED_BY_PLAYER(chr, true);
+			auto veh = nob::vehicle("kuruma", pb.pos({0, 15, 0}));
+			nob::ntv::VEHICLE::SET_VEHICLE_EXCLUSIVE_DRIVER(veh, 0);
 			auto sf = nob::ntv::GRAPHICS::REQUEST_SCALEFORM_MOVIE_INSTANCE("Minimap");
 			while (!nob::ntv::GRAPHICS::HAS_SCALEFORM_MOVIE_LOADED(sf)) {
 				nob::log("w");
@@ -412,7 +420,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::ntv::GRAPHICS::_PUSH_SCALEFORM_MOVIE_METHOD_PARAMETER_BOOL(false);
 			nob::ntv::GRAPHICS::END_SCALEFORM_MOVIE_METHOD();
 
-/*			static nob::g2d::texture_dict a("MPCarHUD"), b("MPCarHUD2");
+			static nob::g2d::texture_dict a("MPCarHUD"), b("MPCarHUD2");
 			a.load();
 			b.load();
 
@@ -512,9 +520,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::ntv::WEAPON::SET_PED_INFINITE_AMMO(pb, true, nob::hash("WEAPON_PISTOL"));
 			//
 			//nob::log(pb.ammo("AMMO_PISTOL"));
-			static auto veh = nob::vehicle("kuruma", pb.pos({0, 15, 0}));
+
 			//pb.into_vehicle(veh, 0);
-			//static auto chr = nob::character("mp_m_freemode_01", nob::world::ground_pos(pb.pos({0, 5, 0})), true);
+			//
 
 			static nob::task tsk([]() {
 				static int s;

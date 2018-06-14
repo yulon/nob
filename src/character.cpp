@@ -547,42 +547,47 @@ namespace nob {
 		ntv::AI::TASK_STAND_STILL(_h, -1);
 	}
 
-	void character::movement(const movement_t &mm) {
-		entity::movement(mm);
-
-		switch (mm.motion_state) {
-			case motion_state_t::still:
-				still();
-				break;
-			case motion_state_t::jumping:
-				jump();
-				break;
-			case motion_state_t::walking:
-				go(speed_walk);
-				break;
-			case motion_state_t::runing:
-				go(speed_run);
-				break;
-			case motion_state_t::sprinting:
-				go(speed_sprint);
-				break;
-			case motion_state_t::skydiving:
-				skydive();
-				break;
-			case motion_state_t::climbing:
-				climb();
-				break;
-			case motion_state_t::climbing_ladder:
-				climb_ladder();
-				break;
-			case motion_state_t::parachuting:
-				open_fake_parachute();
-				break;
-			case motion_state_t::covering:
-				cover();
-				break;
-			default:
-				break;
-		}
+	void character::movement(const movement_t &mm, float speed, const std::function<void()> &callback) {
+		auto ms = mm.motion_state;
+		auto cb = [*this, ms, callback]() mutable {
+			switch (ms) {
+				case motion_state_t::still:
+					still();
+					break;
+				case motion_state_t::jumping:
+					jump();
+					break;
+				case motion_state_t::walking:
+					go(speed_walk);
+					break;
+				case motion_state_t::runing:
+					go(speed_run);
+					break;
+				case motion_state_t::sprinting:
+					go(speed_sprint);
+					break;
+				case motion_state_t::skydiving:
+					skydive();
+					break;
+				case motion_state_t::climbing:
+					climb();
+					break;
+				case motion_state_t::climbing_ladder:
+					climb_ladder();
+					break;
+				case motion_state_t::parachuting:
+					open_fake_parachute();
+					break;
+				case motion_state_t::covering:
+					cover();
+					break;
+				default:
+					break;
+			}
+			if (callback) {
+				callback();
+			}
+		};
+		entity::movement(mm, speed, cb);
 	}
 } /* nob */

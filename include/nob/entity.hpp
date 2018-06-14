@@ -122,15 +122,22 @@ namespace nob {
 				return {pos(), rotation(), velocity()};
 			}
 
-			void movement(const movement_t &mmt, float speed = -1.f) {
+			void movement(const movement_t &mmt, float speed = -1.f, std::function<void()> callback = nullptr) {
 				if (speed <= 0.f) {
-					move(mmt.pos);
+					auto obj = (**nob::ntv::entity_obj_map)[_h];
+					if (!obj) {
+						return;
+					}
+					obj->move(mmt.pos);
 					rotation(mmt.rotation);
 					velocity(mmt.velocity);
+					if (callback) {
+						callback();
+					}
 					return;
 				}
 				auto &mover = _mmt_smooth_mover();
-				mover.map[_h] = {mmt, speed, speed * (mmt.pos - pos()), speed * (mmt.rotation - rotation()), 0.f};
+				mover.map[_h] = {mmt, speed, speed * (mmt.pos - pos()), speed * (mmt.rotation - rotation()), 0.f, std::move(callback)};
 				mover.run();
 			}
 
@@ -208,6 +215,7 @@ namespace nob {
 					float speed;
 					vector3 speed_pos, speed_rot;
 					float prgs;
+					std::function<void()> callback;
 				};
 				std::unordered_map<int, info_t> map;
 				task tsk;
@@ -238,6 +246,10 @@ namespace nob {
 										obj->move(dest.pos);
 										ntv::ENTITY::SET_ENTITY_ROTATION(it->first, dest.rotation.x, dest.rotation.y, dest.rotation.z, 2, true);
 										ntv::ENTITY::SET_ENTITY_VELOCITY(it->first, dest.velocity.x, dest.velocity.y, dest.velocity.z);
+
+										if (it->second.callback) {
+											it->second.callback();
+										}
 
 										it = map.erase(it);
 										if (map.empty()) {
@@ -543,7 +555,7 @@ namespace nob {
 				return mmt;
 			}
 
-			void movement(const movement_t &);
+			void movement(const movement_t &, float speed = -1.f, const std::function<void()> &callback = nullptr);
 
 			void add_weapon(const hasher &wpn) {
 				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn.hash(), 0, false, false);
