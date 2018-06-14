@@ -400,11 +400,21 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}*/
 		}),
 		action("Other", []() {
-			static nob::entity::anim_dict ad("anim@heists@ornate_bank@hostages@hit");
 			static auto pb = nob::player::body();
-			ad.load();
-			pb.play_anim(ad, "player_melee_long_rifle_kick_a");
-			//nob::ntv::PLAYER::SPECIAL_ABILITY_DEACTIVATE_FAST(0);
+			nob::log();
+			size_t c = 0;
+			for (auto &amm : nob::arm::ammo_types) {
+				auto m = nob::arm::get_model(amm);
+				if (m) {
+					++c;
+					auto p = nob::world::ground_pos(pb.pos({0, static_cast<float>(c)}));
+					p.z += 0.1f;
+					nob::entity(m, p, true);
+					//nob::log(amm.src_str(), ": ok");
+				} else {
+					nob::log(amm.src_str(), ": lost");
+				}
+			}
 /*			auto chr = nob::character("mp_m_freemode_01", pb.pos({0, 5, 500}), true);
 			nob::character("mp_m_freemode_01", pb.pos({0, 10, 500}), true);
 			nob::ntv::ENTITY::SET_ENTITY_ONLY_DAMAGED_BY_PLAYER(chr, true);

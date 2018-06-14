@@ -7,6 +7,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <unordered_map>
 
 namespace nob {
 	namespace arm {
@@ -26,6 +27,32 @@ namespace nob {
 		}
 
 		inline model get_model(const hasher &wpn_or_amm) {
+			static const std::unordered_map<hasher, hasher> map {
+				{"AMMO_PISTOL", "prop_ld_ammo_pack_01"},
+				{"AMMO_STUNGUN", nullptr},
+
+				{"AMMO_SMG", "prop_ld_ammo_pack_01"},
+				//{"AMMO_MG", "hei_prop_heist_ammo_box"},
+
+				{"AMMO_RIFLE", "prop_ld_ammo_pack_03"},
+
+				{"AMMO_SNIPER", "prop_box_ammo07a"},
+
+				{"AMMO_SHOTGUN", "prop_ld_ammo_pack_02"},
+
+				{"AMMO_MINIGUN", "hei_prop_heist_ammo_box"},
+				{"AMMO_RAILGUN", nullptr},
+
+				{"AMMO_PETROLCAN", nullptr},
+				{"AMMO_FIREEXTINGUISHER", nullptr}
+			};
+			auto it = map.find(wpn_or_amm);
+			if (it != map.end()) {
+				return it->second;
+			}
+			if (wpn_or_amm == "AMMO_MG") {
+				return ntv::WEAPON::GET_WEAPON_COMPONENT_TYPE_MODEL(hash("COMPONENT_MG_CLIP_02"));
+			}
 			return ntv::WEAPON::GET_WEAPONTYPE_MODEL(wpn_or_amm.hash());
 		}
 
@@ -80,14 +107,14 @@ namespace nob {
 			"GROUP_THROWN", "GROUP_PETROLCAN", "GROUP_FIREEXTINGUISHER"
 		}};
 
-		static constexpr std::array<hasher, 25> ammo_types {{
+		static constexpr std::array<hasher, 26> ammo_types {{
 			"AMMO_PISTOL", "AMMO_STUNGUN", "AMMO_FLAREGUN",
 			"AMMO_SMG", "AMMO_MG",
 			"AMMO_RIFLE",
 			"AMMO_SNIPER",
 			"AMMO_SHOTGUN",
 			"AMMO_RPG", "AMMO_HOMINGLAUNCHER", "AMMO_FIREWORK", "AMMO_MINIGUN", "AMMO_GRENADELAUNCHER", "AMMO_RAILGUN",
-			"AMMO_GRENADE", "AMMO_PIPEBOMB", "AMMO_STICKYBOMB", "AMMO_PROXMINE", "AMMO_SMOKEGRENADE", "AMMO_BZGAS", "AMMO_MOLOTOV", "AMMO_FLARE", "AMMO_SNOWBALL", "AMMO_PETROLCAN", "AMMO_FIREEXTINGUISHER"
+			"AMMO_GRENADE", "AMMO_PIPEBOMB", "AMMO_STICKYBOMB", "AMMO_PROXMINE", "AMMO_SMOKEGRENADE", "AMMO_BZGAS", "AMMO_MOLOTOV", "AMMO_FLARE", "AMMO_BALL", "AMMO_SNOWBALL", "AMMO_PETROLCAN", "AMMO_FIREEXTINGUISHER"
 		}};
 		// May not exist: "AMMO_GRENADELAUNCHER_SMOKE"
 
