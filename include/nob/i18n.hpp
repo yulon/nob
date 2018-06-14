@@ -8,7 +8,7 @@
 namespace nob {
 	inline std::string i18n(const std::string &display_text) {
 		if (display_text.empty()) {
-			return "???";
+			return "";
 		}
 		auto loc_c = ntv::UI::_GET_LABEL_TEXT(display_text.c_str());
 		if (!loc_c) {
@@ -23,7 +23,7 @@ namespace nob {
 
 	inline std::string i18n(const char *display_text) {
 		if (!display_text) {
-			return "???";
+			return "";
 		}
 		return i18n(std::string(display_text));
 	}

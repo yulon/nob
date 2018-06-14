@@ -1379,18 +1379,18 @@ namespace nob {
 				public:
 					std::string veh_name, com_name;
 
-					names_t(const std::string &vn, const std::string &cn) : veh_name(vn), com_name(cn) {}
+					names_t(const std::string &vn = "", const std::string &cn = "") : veh_name(vn), com_name(cn) {}
 
 					const std::string &comb() {
 						if (_combed.empty()) {
-							_combed = std::string(com_name) + " " + veh_name;
+							_combed = com_name.empty() ? veh_name : com_name + " " + veh_name;
 						}
 						return _combed;
 					}
 
 					std::string comb() const {
 						if (_combed.empty()) {
-							return std::string(com_name) + " " + veh_name;
+							return com_name.empty() ? veh_name : com_name + " " + veh_name;
 						}
 						return _combed;
 					}

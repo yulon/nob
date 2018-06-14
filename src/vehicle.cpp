@@ -1669,11 +1669,11 @@ namespace nob {
 
 	vehicle::names_t vehicle::display_names_from_model(const model &m) {
 		if (!m.is_vehicle()) {
-			return names_t("???", "???");
+			return names_t();
 		}
 		std::string cdn(_com_dn(m, true));
 		if (cdn.empty()) {
-			cdn = "???";
+			cdn = "";
 		}
 		return names_t(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(m), cdn);
 	}
