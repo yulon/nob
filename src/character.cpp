@@ -547,9 +547,9 @@ namespace nob {
 		ntv::AI::TASK_STAND_STILL(_h, -1);
 	}
 
-	void character::movement(const movement_t &mm, float speed, const std::function<void()> &callback) {
-		auto ms = mm.motion_state;
-		auto cb = [*this, ms, callback]() mutable {
+	void character::movement(const movement_t &mm, float speed, bool delayed_action, const std::function<void()> &callback) {
+		const auto &ms = mm.motion_state;
+		auto apply_action = [*this, ms]() mutable {
 			switch (ms) {
 				case motion_state_t::still:
 					still();
@@ -584,10 +584,19 @@ namespace nob {
 				default:
 					break;
 			}
-			if (callback) {
-				callback();
-			}
 		};
-		entity::movement(mm, speed, cb);
+		if (delayed_action) {
+			if (callback) {
+				entity::movement(mm, speed, [apply_action, callback]() mutable {
+					apply_action();
+					callback();
+				});
+			} else {
+				entity::movement(mm, speed, apply_action);
+			}
+		} else {
+			apply_action();
+			entity::movement(mm, speed);
+		}
 	}
 } /* nob */

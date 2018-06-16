@@ -555,7 +555,7 @@ namespace nob {
 				return mmt;
 			}
 
-			void movement(const movement_t &, float speed = -1.f, const std::function<void()> &callback = nullptr);
+			void movement(const movement_t &, float speed = -1.f, bool delayed_action = true, const std::function<void()> &callback = nullptr);
 
 			void add_weapon(const hasher &wpn) {
 				ntv::WEAPON::GIVE_WEAPON_TO_PED(_h, wpn.hash(), 0, false, false);
