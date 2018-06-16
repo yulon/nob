@@ -55,7 +55,7 @@ namespace nob {
 
 		class texture_dict {
 			public:
-				static int register_from_file(const std::string &);
+				static int import(const std::string &);
 
 				////////////////////////////////////////////////////////////////
 
@@ -172,6 +172,15 @@ namespace nob {
 					uint8_t alpha = 255, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255
 				) const {
 					ntv::GRAPHICS::DRAW_SPRITE(native_handle(), texture_name, (x + (width / 2)), (y + (height / 2)), width, height, heading, r, g, b, alpha);
+				}
+
+				void draw(
+					const std::string &texture_name,
+					float x, float y, float width, float height,
+					float heading = 0.0f,
+					uint8_t alpha = 255, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255
+				) const {
+					draw(texture_name.c_str(), x, y, width, height, heading, alpha, r, g, b);
 				}
 
 			private:

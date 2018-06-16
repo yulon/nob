@@ -5,7 +5,7 @@
 
 namespace nob {
 	namespace g2d {
-		int texture_dict::register_from_file(const std::string &path) {
+		int texture_dict::import(const std::string &path) {
 			static uint32_t *(*fptr)(int *, const char *, bool, const char *, bool);
 			static bool finding = false, finded = false;
 			if (finding) {
@@ -23,7 +23,7 @@ namespace nob {
 						0x8B, 0xEA, 0x4C, 0x8B, 0xFA, 0x48, 0x8B, 0xD9, 0x4D, 0x85, 0xC9
 					});
 					if (!mr) {
-						log("nob::g2d::texture_dict::register_from_file::fptr: not found!");
+						log("nob::g2d::texture_dict::import::fptr: not found!");
 						ch << nullptr;
 						return;
 					}

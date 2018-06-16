@@ -185,13 +185,19 @@ namespace nob {
 				menu() = default;
 
 				menu(
-					const std::string &title,
-					const list &li,
+					std::string title,
+					list li,
 					bool can_be_close = true
 				) : _data(std::make_shared<_data_t>()) {
-					_data->_tit = title;
+					auto pos = title.find(',');
+					if (pos == std::string::npos) {
+						_data->_tit = std::move(title);
+					} else {
+						_data->_tit_td = title.substr(0, pos);
+						_data->_tit = title.substr(pos + 1);
+					}
 					_data->_can_cls = can_be_close;
-					_data->_li_stack.push(li);
+					_data->_li_stack.push(std::move(li));
 				}
 
 				operator bool() const {
@@ -238,6 +244,7 @@ namespace nob {
 
 				struct _data_t {
 					std::string _tit;
+					g2d::texture_dict _tit_td;
 					std::stack<list> _li_stack;
 					bool _can_cls;
 				};

@@ -85,6 +85,9 @@ namespace nob {
 				hk_lnr.del();
 				hk_bkr.del();
 				cm_td.free();
+				if (cur->_tit_td && cur->_tit_td.name() != "CommonMenu") {
+					cur->_tit_td.free();
+				}
 				cur.reset();
 			}
 		}}
@@ -115,20 +118,31 @@ namespace nob {
 			}
 
 			_menu::cm_td.load();
+			if (_menu::cur->_tit_td && _menu::cur->_tit_td.name() != "CommonMenu") {
+				_menu::cur->_tit_td.load();
+			}
 
 			_menu::draw_tsk = task([]() {
 				float x = padding.left;
 				float y = padding.top;
 				float w = width();
 				float text_w = w - 2 * item_padding_left;
-				float h = title_bg_height;
-				_menu::cm_td.draw("interaction_bgd", x, y, w, h);
-				g2d::draw_text(x, y + ((h - title_font_height) / 2), text_w, _menu::cur->_tit, title_font_size, 255, 255, 255, 255, 1);
+				float h;
+
+				if (_menu::cur->_tit.length()) {
+					h = title_bg_height;
+					if (_menu::cur->_tit_td) {
+						_menu::cur->_tit_td.draw(_menu::cur->_tit, x, y, w, h);
+					} else {
+						_menu::cm_td.draw("interaction_bgd", x, y, w, h);
+						g2d::draw_text(x, y + ((h - title_font_height) / 2), text_w, _menu::cur->_tit, title_font_size, 255, 255, 255, 255, 1);
+					}
+					y += h;
+				}
 
 				auto &cur_li = _menu::cur->_li_stack.top();
 				auto sz = cur_li->items.size();
 
-				y += h;
 				h = item_height;
 				g2d::draw_rect(x, y, w, h);
 				g2d::draw_text(x + item_padding_left, y + ((h - font_height) / 2.0f), text_w, cur_li->name, font_size, 100, 179, 211, 255, 0);
