@@ -260,9 +260,6 @@ namespace nob {
 									}
 
 									obj->move(now_pos + dur * it->second.speed_pos);
-									auto now_dest_rot = dest.rotation + dur * it->second.speed_rot;
-									ntv::ENTITY::SET_ENTITY_ROTATION(it->first, now_dest_rot.x, now_dest_rot.y, now_dest_rot.z, 2, true);
-									ntv::ENTITY::SET_ENTITY_VELOCITY(it->first, dest.velocity.x, dest.velocity.y, dest.velocity.z);
 									++it;
 								}
 							}
