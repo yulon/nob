@@ -494,19 +494,15 @@ namespace nob {
 
 			inline void into_vehicle(vehicle veh, int seat = -1);
 
-			void leave_vehicle(bool jump = false) {
+			void leave_vehicle(bool can_jump = true) {
 				auto veh = ntv::PED::GET_VEHICLE_PED_IS_IN(_h, false);
 				if (veh) {
-					ntv::AI::TASK_LEAVE_VEHICLE(_h, veh, jump ? 4160 : 0);
+					ntv::AI::TASK_LEAVE_VEHICLE(_h, veh, can_jump ? 4160 : 0);
 				}
 			}
 
-			bool is_in_vehicle() const {
-				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, false);
-			}
-
-			bool is_getting_in_vehicle() const {
-				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, true);
+			bool is_in_vehicle(bool include_door_interactives = false) const {
+				return ntv::PED::IS_PED_IN_ANY_VEHICLE(_h, include_door_interactives);
 			}
 
 			bool is_on_vehicle() const {
