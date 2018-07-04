@@ -141,6 +141,14 @@ namespace nob {
 				mover.run();
 			}
 
+			bool visible() const {
+				return ntv::ENTITY::IS_ENTITY_VISIBLE(_h);
+			}
+
+			void visible(bool toggle = true) {
+				ntv::ENTITY::SET_ENTITY_VISIBLE(_h, toggle, false);
+			}
+
 			int alpha() const {
 				return ntv::ENTITY::GET_ENTITY_ALPHA(_h);
 			}
@@ -1321,6 +1329,14 @@ namespace nob {
 
 			void close_all_doors(bool instantly = false) {
 				ntv::VEHICLE::SET_VEHICLE_DOORS_SHUT(_h, instantly);
+			}
+
+			bool bulletproof_tires() const {
+				return !ntv::VEHICLE::GET_VEHICLE_TYRES_CAN_BURST(_h);
+			}
+
+			void bulletproof_tires(bool toggle = true) {
+				ntv::VEHICLE::SET_VEHICLE_TYRES_CAN_BURST(_h, !toggle);
 			}
 
 			void disable_crash_damage(bool toggle = true) {
