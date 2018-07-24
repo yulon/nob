@@ -6,6 +6,8 @@
 #include <nob/dx.hpp>
 #include <nob/log.hpp>
 
+#include <rua/strenc.hpp>
+
 namespace nob {
 	HMODULE this_dll;
 
@@ -32,7 +34,7 @@ namespace nob {
 		#define _NOB_CALL_INIT_FN(_f) \
 			if (!_f()) { \
 				MessageBoxW(0, rua::u8_to_w(log.str()).c_str(), L"ERRORS", MB_OK | MB_ICONERROR); \
-				_exited = true; \
+				this_script::_exited = true; \
 				exit(1); \
 				return; \
 			}

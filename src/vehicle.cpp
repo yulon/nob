@@ -81,7 +81,7 @@ namespace nob {
 			}
 		}
 
-		chan<size_t> ch;
+		chan<bool> ch;
 
 		std::thread([ch]() mutable {
 			auto &sc_inf = *_shop_ctrllr->info;
@@ -101,11 +101,9 @@ namespace nob {
 							if ((*(uint32_t *)sc_inf.code_addr(func_off + k) & 0xFFFFFF) == 0x01002E) {
 								for (k = k + 1; k < 30; k++) {
 									if (*(uint8_t *)sc_inf.code_addr(func_off + k) == 0x5F) {
-										ch
-											<< (*(uint32_t *)sc_inf.code_addr(func_off + k + 1) & 0xFFFFFF)
-											<< code_off - j
-											<< true
-										;
+										_ban_vehs_g = (*(uint32_t *)sc_inf.code_addr(func_off + k + 1) & 0xFFFFFF);
+										_ban_vehs_li_find_base = code_off - j;
+										ch << true;
 										return;
 									}
 								}
@@ -117,10 +115,10 @@ namespace nob {
 				}
 				break;
 			}
-			ch << SIZE_MAX << SIZE_MAX << false;
+			ch << false;
 		}).detach();
 
-		ch >> _ban_vehs_g >> _ban_vehs_li_find_base >> _finded_ban_vehs;
+		ch >> _finded_ban_vehs;
 
 		_finding_ban_vehs = false;
 
