@@ -89,7 +89,7 @@ namespace nob {
 			};
 		}
 
-		vector3 fix_rotation() const {
+		vector3 fix_rot() const {
 			return {
 				fix_angle(x),
 				fix_angle(y),

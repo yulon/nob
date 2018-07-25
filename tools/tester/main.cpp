@@ -17,7 +17,7 @@ nob::task print_pos([]() {
 	auto pb = nob::player::body();
 	auto pos = pb.pos();
 	std::stringstream ss;
-	ss << pos.str() << ", " << pb.rotation().str() << ", " << high_speed;
+	ss << pos.str() << ", " << pb.rot().str() << ", " << high_speed;
 	nob::g2d::draw_text(0, 0.93, 1, ss.str().c_str(), 0.4, 255, 255, 255, 255, 1, true);
 });
 
@@ -106,29 +106,112 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			li->on_show = nullptr;
 		}),
-		list("Last", [](list li) {
+		list("Mods", [](list li) {
+			auto last_veh = nob::player::body().last_vehicle();
+
+			static nob::vehicle veh;
+			if (veh.native_handle() == last_veh.native_handle()) {
+				return;
+			}
+			veh = last_veh;
+
 			li->items.clear();
 
-			auto veh = nob::player::body().last_vehicle();
-
-			li->items.emplace_back(list("Mod", [veh](list li) mutable {
-				for (int i = 0; i < veh.mod_type_sum; ++i) {
-					if (!veh.mod_sum(i)) {
-						continue;
-					}
-					auto mod_type_name = nob::i18n(veh.mod_type_name(i));
-					li->items.emplace_back(list(mod_type_name, [veh, i](list li) mutable {
-						for (int j = -1; j < veh.mod_sum(i); ++j) {
-							auto mod_name = nob::i18n(veh.mod_name(i, j));
-							li->items.emplace_back(action(mod_name, [veh, i, j]() mutable {
-								veh.mod(i, j);
-							}));
-						}
-						li->on_show = nullptr;
-					}));
+			for (int i = 0; i < veh.mod_type_sum; ++i) {
+				if (!veh.mod_sum(i)) {
+					continue;
 				}
-				li->on_show = nullptr;
+				auto mod_type_name = nob::i18n(veh.mod_type_name(i));
+				li->items.emplace_back(list(mod_type_name, [i](list li) mutable {
+					for (int j = -1; j < veh.mod_sum(i); ++j) {
+						auto mod_name = nob::i18n(veh.mod_name(i, j));
+						li->items.emplace_back(action(mod_name, [i, j]() mutable {
+							veh.mod(i, j);
+						}));
+					}
+					li->on_show = nullptr;
+				}));
+			}
+		}),
+		list("Test Speed", [](list li) {
+			static nob::vector3 pos, rot;
+
+			li->items.emplace_back(action("Start", [li]() mutable {
+				static nob::task tsk;
+				if (tsk) {
+					return;
+				}
+
+				nob::vector2 start_pos;
+				auto pb = nob::player::body();
+				if (pb.is_in_vehicle()) {
+					start_pos = pb.current_vehicle().pos();
+				} else {
+					start_pos = pb.pos();
+				}
+
+				auto start_tp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+
+				tsk = nob::task([start_pos, start_tp, li]() mutable {
+					nob::vector2 now_pos;
+					auto pb = nob::player::body();
+					if (pb.is_in_vehicle()) {
+						now_pos = pb.current_vehicle().pos();
+					} else {
+						now_pos = pb.pos();
+					}
+
+					auto d = now_pos.distance(start_pos);
+					if (d < 1000.f) {
+						return;
+					}
+
+					auto now_tp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+					auto dur = now_tp - start_tp;
+					auto km_h = static_cast<size_t>(static_cast<float>(1000 * 60 * 60) / static_cast<float>(dur));
+					auto result = pb.current_vehicle().localized_names().comb() + ": " + std::to_string(km_h) + " km/h";
+
+					nob::ui::tip(result);
+					li->items.emplace_back(action(result, []() {}));
+
+					tsk.del();
+				});
+
+				nob::ui::menu::close_any();
 			}));
+
+			li->items.emplace_back(action("Clear", [li]() mutable {
+				auto it = ++++++li->items.begin();
+				while (it != li->items.end()) {
+					it = li->items.erase(it);
+				}
+			}));
+
+			li->items.emplace_back(action("Set Point", []() {
+				auto pb = nob::player::body();
+				if (pb.is_in_vehicle()) {
+					auto veh = pb.current_vehicle();
+					pos = veh.pos({0, 0, 3.f});
+					rot = veh.rot();
+				} else {
+					pos = pb.pos({0, 0, 3.f});
+					rot = pb.rot();
+				}
+			}));
+
+			li->items.emplace_back(action("Back Point", []() {
+				auto pb = nob::player::body();
+				if (pb.is_in_vehicle()) {
+					auto veh = pb.current_vehicle();
+					veh.rot(rot);
+					veh.move_s(nob::world::ground_pos(pos));
+				} else {
+					pb.rot(rot);
+					pb.move_s(nob::world::ground_pos(pos));
+				}
+			}));
+
+			li->on_show = nullptr;
 		})
 	}),
 	list("Weapon", {
@@ -185,7 +268,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 									auto pb = nob::player::body();
 									auto rot = nob::ntv::CAM::GET_GAMEPLAY_CAM_ROT(0);
 									pb.move(dest(rot));
-									pb.rotation(rot);
+									pb.rot(rot);
 								});
 							}
 						} else if (tsks[ti]) {
@@ -330,7 +413,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			));
 		}),
 		action("Make Nodes", []() {
-			std::fstream f("wpn_nodes.inc", std::ios_base::binary | std::ios_base::trunc | std::ios_base::in | std::ios_base::out);
+			/*std::fstream f("wpn_nodes.inc", std::ios_base::binary | std::ios_base::trunc | std::ios_base::in | std::ios_base::out);
 			if (!f.is_open()) {
 				nob::log("failed to open");
 			}
@@ -373,7 +456,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				f << "{ " << pos.x << ", " << pos.y << ", " << pos.z << " }," << std::endl;
 			}
 
-			/*
+
 			std::fstream f("veh_nodes.inc", f.binary | f.trunc | f.in | f.out);
 			if (!f.is_open()) {
 				nob::log("failed to open");
@@ -398,24 +481,142 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				mkr.keep_track(false);
 				f << "{ " << pos.x << ", " << pos.y << ", " << pos.z << " }," << std::endl;
 			}*/
+
+			nob::log((*nob::ntv::entity_obj_map)->size);
+
+			/*(*nob::ntv::entity_obj_map)->resize(5000);
+
+			nob::log((*nob::ntv::entity_obj_map)->size);
+
+			nob::sleep(1000);
+
+			auto m = nob::arm::get_model("WEAPON_RPG");
+
+			std::vector<nob::vector2> nodes {
+				#include "../../../LSBR/src/asi/wpn_nodes.inc"
+			};
+			for (size_t i = 0; i < 4; ++i) {
+				for (size_t j = 0; i * 100 + j < nodes.size() && j < 100; ++j) {
+					auto e = nob::entity(m, nob::vector3(nodes[i * 100 + j], 2000.f));
+					if (!e) {
+						nob::log(i * 100 + j + 1);
+						return;
+					}
+					e.freeze_pos();
+				}
+				nob::log((i + 1) * 100);
+				nob::yield();
+			}
+			nob::log("done");*/
 		}),
 		action("Other", []() {
-			static auto pb = nob::player::body();
-			nob::log();
-			size_t c = 0;
-			for (auto &amm : nob::arm::ammo_types) {
-				auto m = nob::arm::get_model(amm);
-				if (m) {
-					++c;
-					auto p = nob::world::ground_pos(pb.pos({0, static_cast<float>(c)}));
-					p.z += 0.1f;
-					nob::entity(m, p, true);
-					//nob::log(amm.src_str(), ": ok");
-				} else {
-					nob::log(amm.src_str(), ": lost");
+			auto pb = nob::player::body();
+			auto chr = nob::character("mp_m_freemode_01", pb.pos({0, 1, 0}), true);
+			nob::player::switch_body(chr);
+/*
+			auto veh = nob::vehicle("OPPRESSOR2", pb.pos({0, 15, 0}));
+			veh.set_best_mods();
+			nob::ui::message(
+				"CHAR_MARTIN",
+				"马丁大大",
+				"别水了，快上线给我当小奴隶！不然老子亲手捧肉给你吃信不信？"
+			);
+
+			pb.get_in_vehicle(pb.current_vehicle(), 0, true);
+
+
+			auto pos = pb.pos({0,1,0});
+
+			nob::sleep(10000);
+
+			nob::ntv::ENTITY::SET_ENTITY_MAX_SPEED(pb, 0.7f);
+
+
+			int GroupHandle = nob::ntv::PLAYER::GET_PLAYER_GROUP(0);
+			nob::ntv::PED::SET_PED_AS_GROUP_MEMBER(chr, GroupHandle);
+			//nob::ntv::PED::SET_PED_NEVER_LEAVES_GROUP(chr, GroupHandle);
+			nob::ntv::PED::SET_GROUP_FORMATION(GroupHandle, 0);
+
+			chr.get_in_vehicle(veh, -1, true);
+
+			nob::ntv::AUDIO::PLAY_SOUND_FROM_COORD(-1, "SPL_RPG_NPC_SHOT_MASTER", pos.x, pos.y, pos.z, 0, 0, 0, 0);
+
+			nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
+			while (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
+				nob::yield();
+			}
+			nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");// scr_rcbarry1 scr_alien_charging scr_alien_impact scr_alien_teleport scr_alien_disintegrate
+			//nob::task([]() {
+				//auto pos = pb.pos();
+
+				//auto h =
+				//nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("bul_carmetal", pos.x, pos.y+1.f, pos.z, 0.f, 0.f, 0.f, 1.f, 0, 0, 0, 0);
+				nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("muz_rpg", pos.x, pos.y, pos.z, 0.f, 0.f, 0.f, 1.f, 0, 0, 0, 0);
+			//});
+
+			//nob::ntv::GRAPHICS::_SET_PARTICLE_FX_LOOPED_RANGE(h, 5000.f);
+
+			nob::ntv::FIRE::ADD_OWNED_EXPLOSION(
+				pb, pos.x, pos.y, pos.z, (int)nob::ntv::eExplosionType::Flame,
+				0, true, false, 0
+			);
+
+			nob::ntv::AUDIO::PLAY_SOUND_FROM_ENTITY(-1, "LAMAR1_BustDoorOpen1", pb, 0, 0, 0);
+
+			nob::task([]() {
+				static bool val = false;
+				if (rua::set_when_changing(val, nob::ntv::PED::IS_PED_IN_ANY_VEHICLE(pb, true))) {
+					nob::log(val);
+				}
+			});
+			auto pos = pb.pos();pb.leave_vehicle(true);
+			auto pos2 = pb.pos({0, 15, 0});
+
+			auto h = nob::hash("WEAPON_PISTOL");
+
+			if (!nob::ntv::WEAPON::HAS_WEAPON_ASSET_LOADED(h)) {
+				nob::ntv::WEAPON::REQUEST_WEAPON_ASSET(h, 31, 0);
+				while (nob::ntv::STREAMING::HAS_MODEL_LOADED(h)) {
+					nob::yield();
 				}
 			}
-/*			auto chr = nob::character("mp_m_freemode_01", pb.pos({0, 5, 500}), true);
+
+			for (size_t i = 0; i < 10; ++i) {
+				nob::ntv::GAMEPLAY::SHOOT_SINGLE_BULLET_BETWEEN_COORDS(
+					pos.x, pos.y, pos.z,
+					pos2.x, pos2.y, pos2.z, 0, true, h,
+					pb, true, false, -1.0f
+				);
+			}
+
+			nob::sleep(1000);
+			chr.add_weapon("WEAPON_GRENADE");
+			chr.switch_weapon("WEAPON_GRENADE");
+
+			//chr.shoot(true);
+			//nob::sleep(5000);
+
+			veh.explosion_proof();
+			veh.invincible();
+			nob::task([veh]() mutable {
+				static auto h = veh.health();
+				auto hn = veh.health();
+				if (rua::set_when_changing(h, hn)) {
+					auto hm = veh.health_max();
+					nob::log();
+					nob::log(hm - hn);
+					veh.health(hm);
+					auto a = nob::ntv::WEAPON::HAS_ENTITY_BEEN_DAMAGED_BY_WEAPON(veh, nob::hash("WEAPON_STUNGUN"), 0);
+					auto b = nob::ntv::WEAPON::HAS_ENTITY_BEEN_DAMAGED_BY_WEAPON(veh, nob::hash("WEAPON_PISTOL"), 0);
+					nob::log("WEAPON_STUNGUN: ", a);
+					nob::log("WEAPON_PROXMINE: ", b);
+					if (a && b) {
+						//nob::ntv::WEAPON::CLEAR_ENTITY_LAST_WEAPON_DAMAGE(veh);
+					}
+				}
+				veh.engine_health(nob::vehicle::engine_health_max);
+				veh.petrol_tank_health(nob::vehicle::petrol_tank_health_max);
+			});
 			nob::character("mp_m_freemode_01", pb.pos({0, 10, 500}), true);
 			nob::ntv::ENTITY::SET_ENTITY_ONLY_DAMAGED_BY_PLAYER(chr, true);
 			auto veh = nob::vehicle("kuruma", pb.pos({0, 15, 0}));
@@ -472,18 +673,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			nob::sleep(5000);
 			nob::ntv::UI::SET_FRONTEND_ACTIVE(0);
-
-			nob::ntv::STREAMING::REQUEST_NAMED_PTFX_ASSET("core");
-			while (!nob::ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core")) {
-				nob::yield();
-			}
-			nob::ntv::GRAPHICS::_USE_PARTICLE_FX_ASSET_NEXT_CALL("core");// scr_rcbarry1 scr_alien_charging scr_alien_impact scr_alien_teleport scr_alien_disintegrate
-			//nob::task([]() {
-				auto pos = pb.pos();
-				auto h = nob::ntv::GRAPHICS::START_PARTICLE_FX_LOOPED_AT_COORD("veh_light_amber", pos.x, pos.y, pos.z, 0.f, 0.f, 0.f, 0.5f, 0, 0, 0, 0);
-			//});
-
-			nob::ntv::GRAPHICS::_SET_PARTICLE_FX_LOOPED_RANGE(h, 5000.f);
 
 			for (size_t i = 0; i < nob::ntv::script_list->size; ++i) {
 				if (nob::ntv::script_list->scripts[i]) {
@@ -564,7 +753,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::log("done");
 
 			auto veh = pb.current_vehicle();
-			nob::log(veh.get_model().name(), ": { ", veh.pos().str(), ", ", veh.rotation().str(), " }");
+			nob::log(veh.get_model().name(), ": { ", veh.pos().str(), ", ", veh.rot().str(), " }");
 
 			for (auto &n : nodes) {
 				auto mkr = nob::map::marker(n);
@@ -582,7 +771,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			g.add(chr);
 			//g.like(g2);
 
-			auto veh = nob::vehicle("KURUMA", pb.pos({0, 15, 0}));
+
 			chr.into_vehicle(veh, -1);
 
 
@@ -591,10 +780,6 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::ntv::PED::RESET_PED_RAGDOLL_TIMER(pb);
 			nob::ntv::PED::SET_PED_TO_RAGDOLL(pb, 0, -1, 0, false, false, false);
 
-			nob::ntv::FIRE::ADD_OWNED_EXPLOSION(
-				pb, pos.x, pos.y, pos.z, (int)nob::ntv::eExplosionType::Flare,
-				0, true, false, 0
-			);
 
 
 

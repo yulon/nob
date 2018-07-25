@@ -88,38 +88,38 @@ namespace nob {
 				nob::ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, false, false, false);
 			}
 
-			vector3 rotation() const {
+			vector3 rot() const {
 				return ntv::ENTITY::GET_ENTITY_ROTATION(_h, 2);
 			}
 
-			void rotation(const vector3 &ro) {
-				ntv::ENTITY::SET_ENTITY_ROTATION(_h, ro.x, ro.y, ro.z, 2, true);
+			void rot(const vector3 &val) {
+				ntv::ENTITY::SET_ENTITY_ROTATION(_h, val.x, val.y, val.z, 2, true);
 			}
 
-			vector4 quaternion() const {
-				vector4 quat;
-				ntv::ENTITY::GET_ENTITY_QUATERNION(_h, &quat.x, &quat.y, &quat.z, &quat.w);
-				return quat;
+			vector4 quat() const {
+				vector4 val;
+				ntv::ENTITY::GET_ENTITY_QUATERNION(_h, &val.x, &val.y, &val.z, &val.w);
+				return val;
 			}
 
-			void quaternion(const vector4 &quat) {
-				ntv::ENTITY::SET_ENTITY_QUATERNION(_h, quat.x, quat.y, quat.z, quat.w);
+			void quat(const vector4 &val) {
+				ntv::ENTITY::SET_ENTITY_QUATERNION(_h, val.x, val.y, val.z, val.w);
 			}
 
-			vector3 velocity() const {
+			vector3 vel() const {
 				return ntv::ENTITY::GET_ENTITY_VELOCITY(_h);
 			}
 
-			void velocity(const vector3 &ve) {
-				ntv::ENTITY::SET_ENTITY_VELOCITY(_h, ve.x, ve.y, ve.z);
+			void vel(const vector3 &val) {
+				ntv::ENTITY::SET_ENTITY_VELOCITY(_h, val.x, val.y, val.z);
 			}
 
 			struct movement_t {
-				vector3 pos, rotation, velocity;
+				vector3 pos, rot, vel;
 			};
 
 			movement_t movement() const {
-				return {pos(), rotation(), velocity()};
+				return {pos(), rot(), vel()};
 			}
 
 			void movement(const movement_t &mmt, float speed = -1.f, std::function<void()> callback = nullptr) {
@@ -129,15 +129,15 @@ namespace nob {
 						return;
 					}
 					obj->move(mmt.pos);
-					rotation(mmt.rotation);
-					velocity(mmt.velocity);
+					rot(mmt.rot);
+					vel(mmt.vel);
 					if (callback) {
 						callback();
 					}
 					return;
 				}
 				auto &mover = _mmt_smooth_mover();
-				mover.map[_h] = {mmt, speed, speed * (mmt.pos - pos()), speed * (mmt.rotation - rotation()), 0.f, std::move(callback)};
+				mover.map[_h] = {mmt, speed, speed * (mmt.pos - pos()), speed * (mmt.rot - rot()), 0.f, std::move(callback)};
 				mover.run();
 			}
 
@@ -252,8 +252,8 @@ namespace nob {
 
 									if (it->second.prgs >= 1.f) {
 										obj->move(dest.pos);
-										ntv::ENTITY::SET_ENTITY_ROTATION(it->first, dest.rotation.x, dest.rotation.y, dest.rotation.z, 2, true);
-										ntv::ENTITY::SET_ENTITY_VELOCITY(it->first, dest.velocity.x, dest.velocity.y, dest.velocity.z);
+										ntv::ENTITY::SET_ENTITY_ROTATION(it->first, dest.rot.x, dest.rot.y, dest.rot.z, 2, true);
+										ntv::ENTITY::SET_ENTITY_VELOCITY(it->first, dest.vel.x, dest.vel.y, dest.vel.z);
 
 										if (it->second.callback) {
 											it->second.callback();
