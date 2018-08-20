@@ -23,7 +23,7 @@ namespace nob {
 	namespace this_script {
 		void _shv_main();
 		bool _create_from_td();
-		extern std::atomic<bool> _exited;
+		extern std::atomic<bool> _is_exited;
 	}
 
 	namespace window {
@@ -34,7 +34,7 @@ namespace nob {
 		#define _NOB_CALL_INIT_FN(_f) \
 			if (!_f()) { \
 				MessageBoxW(0, rua::u8_to_w(log.str()).c_str(), L"ERRORS", MB_OK | MB_ICONERROR); \
-				this_script::_exited = true; \
+				this_script::_is_exited = true; \
 				exit(1); \
 				return; \
 			}
@@ -71,13 +71,13 @@ namespace nob {
 	}
 
 	void _exit() {
-		this_script::exiting = true;
+		this_script::is_exiting = true;
 
 		for (;;) {
 			if (!IsWindowVisible(window::native_handle())) {
 				return;
 			}
-			if (this_script::_exited) {
+			if (this_script::_is_exited) {
 				break;
 			}
 			Sleep(100);

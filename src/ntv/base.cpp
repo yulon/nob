@@ -7,6 +7,7 @@
 
 #include <rua/mem.hpp>
 #include <rua/observer.hpp>
+#include <rua/process.hpp>
 
 #include <thread>
 
@@ -426,10 +427,10 @@ namespace nob {
 						constexpr size_t skip_sz_b = 0x1C;
 						size_t skip_sz;
 
-						auto code = game_code[mr.pos - skip_sz_b];
+						auto code = game_code(mr.pos - skip_sz_b);
 
 						if (code.get<uint32_t>() == 0x7501F883) {
-							mr = game_code[mr.pos + mov_gs_6_pat.size()].match({
+							mr = game_code(mr.pos + mov_gs_6_pat.size()).match({
 								0xC7, 0x05, 1111, 1111, 1111, 1111, 0x08, 0x00, 0x00, 0x00
 							});
 
@@ -603,7 +604,7 @@ namespace nob {
 				});
 
 				if (mr) {
-					auto game_code_slice = game_code[mr.pos];
+					auto game_code_slice = game_code(mr.pos);
 					script_thread_t::id_count = game_code_slice.derel<int32_t>(game_code_slice.match({
 						0xFF, 0x40, 0x5C, 0x8B, 0x15, 1111, 1111, 1111, 1111, 0x48, 0x8B
 					})[0]);

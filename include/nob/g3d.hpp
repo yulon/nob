@@ -52,8 +52,8 @@ namespace nob {
 					task draw_tsk;
 
 					~_data_t() {
-						if (!this_script::exiting) {
-							assert(in_task());
+						if (!this_script::is_exiting) {
+							assert(in_this_script());
 							if (draw_tsk) {
 								draw_tsk.del();
 							}

@@ -1,5 +1,7 @@
 #include <nob/shv.hpp>
 
+#include <rua/any_ptr.hpp>
+
 #include <array>
 
 namespace nob {
@@ -46,57 +48,57 @@ namespace nob {
 
 		bool _init() {
 			static bool valid = ([]()->bool {
-				HMODULE dll;
+				HMODULE dll = nullptr;
+
 				for (size_t i = 0; i < _module_names.size(); ++i) {
 					dll = GetModuleHandleW(_module_names[i]);
 					if (dll) {
-						goto get_func;
+						break;
 					}
 				}
-				for (size_t i = 0; i < _module_names.size(); ++i) {
-					dll = LoadLibraryW(_module_names[i]);
-					if (dll) {
-						goto get_func;
+				if (!dll) {
+					for (size_t i = 0; i < _module_names.size(); ++i) {
+						dll = LoadLibraryW(_module_names[i]);
+						if (dll) {
+							break;
+						}
+					}
+					if (!dll) {
+						return false;
 					}
 				}
-				return false;
 
-				get_func:
+				#define GPA(_v, _n) _v = rua::any_ptr(GetProcAddress(dll, _n))
 
-				createTexture = (int (*)(const char *texFileName))GetProcAddress(dll, "?createTexture@@YAHPEBD@Z");
+				GPA(createTexture, "?createTexture@@YAHPEBD@Z");
 
-				drawTexture = (void (*)(
-					int id, int index, int level, int time,
-					float sizeX, float sizeY, float centerX, float centerY,
-					float posX, float posY, float rotation, float screenHeightScaleFactor,
-					float r, float g, float b, float a
-				))GetProcAddress(dll, "?drawTexture@@YAXHHHHMMMMMMMMMMMM@Z");
+				GPA(drawTexture, "?drawTexture@@YAXHHHHMMMMMMMMMMMM@Z");
 
-				presentCallbackRegister = (void (*)(PresentCallback cb))GetProcAddress(dll, "?presentCallbackRegister@@YAXP6AXPEAX@Z@Z");
-				presentCallbackUnregister = (void (*)(PresentCallback cb))GetProcAddress(dll, "?presentCallbackUnregister@@YAXP6AXPEAX@Z@Z");
+				GPA(presentCallbackRegister, "?presentCallbackRegister@@YAXP6AXPEAX@Z@Z");
+				GPA(presentCallbackUnregister, "?presentCallbackUnregister@@YAXP6AXPEAX@Z@Z");
 
-				keyboardHandlerRegister = (void (*)(KeyboardHandler handler))GetProcAddress(dll, "?keyboardHandlerRegister@@YAXP6AXKGEHHHH@Z@Z");
-				keyboardHandlerUnregister = (void (*)(KeyboardHandler handler))GetProcAddress(dll, "?keyboardHandlerUnregister@@YAXP6AXKGEHHHH@Z@Z");
+				GPA(keyboardHandlerRegister, "?keyboardHandlerRegister@@YAXP6AXKGEHHHH@Z@Z");
+				GPA(keyboardHandlerUnregister, "?keyboardHandlerUnregister@@YAXP6AXKGEHHHH@Z@Z");
 
-				scriptWait = (void (*)(DWORD time))GetProcAddress(dll, "?scriptWait@@YAXK@Z");
-				scriptRegister = (void (*)(HMODULE module, void(*LP_SCRIPT_MAIN)()))GetProcAddress(dll, "?scriptRegister@@YAXPEAUHINSTANCE__@@P6AXXZ@Z");
-				scriptRegisterAdditionalThread = (void (*)(HMODULE module, void(*LP_SCRIPT_MAIN)()))GetProcAddress(dll, "?scriptRegisterAdditionalThread@@YAXPEAUHINSTANCE__@@P6AXXZ@Z");
-				scriptUnregister = (void (*)(HMODULE module))GetProcAddress(dll, "?scriptUnregister@@YAXPEAUHINSTANCE__@@@Z");
+				GPA(scriptWait, "?scriptWait@@YAXK@Z");
+				GPA(scriptRegister, "?scriptRegister@@YAXPEAUHINSTANCE__@@P6AXXZ@Z");
+				GPA(scriptRegisterAdditionalThread, "?scriptRegisterAdditionalThread@@YAXPEAUHINSTANCE__@@P6AXXZ@Z");
+				GPA(scriptUnregister, "?scriptUnregister@@YAXPEAUHINSTANCE__@@@Z");
 
-				nativeInit = (void (*)(UINT64 hash))GetProcAddress(dll, "?nativeInit@@YAX_K@Z");
-				nativePush64 = (void (*)(UINT64 val))GetProcAddress(dll, "?nativePush64@@YAX_K@Z");
-				nativeCall = (PUINT64 (*)())GetProcAddress(dll, "?nativeCall@@YAPEA_KXZ");
+				GPA(nativeInit, "?nativeInit@@YAX_K@Z");
+				GPA(nativePush64, "?nativePush64@@YAX_K@Z");
+				GPA(nativeCall, "?nativeCall@@YAPEA_KXZ");
 
-				getGlobalPtr = (UINT64 *(*)(int globalId))GetProcAddress(dll, "?getGlobalPtr@@YAPEA_KH@Z");
+				GPA(getGlobalPtr, "?getGlobalPtr@@YAPEA_KH@Z");
 
-				worldGetAllVehicles = (int (*)(int *arr, int arrSize))GetProcAddress(dll, "?worldGetAllVehicles@@YAHPEAHH@Z");
-				worldGetAllPeds = (int (*)(int *arr, int arrSize))GetProcAddress(dll, "?worldGetAllPeds@@YAHPEAHH@Z");
-				worldGetAllObjects = (int (*)(int *arr, int arrSize))GetProcAddress(dll, "?worldGetAllObjects@@YAHPEAHH@Z");
-				worldGetAllPickups = (int (*)(int *arr, int arrSize))GetProcAddress(dll, "?worldGetAllPickups@@YAHPEAHH@Z");
+				GPA(worldGetAllVehicles, "?worldGetAllVehicles@@YAHPEAHH@Z");
+				GPA(worldGetAllPeds, "?worldGetAllPeds@@YAHPEAHH@Z");
+				GPA(worldGetAllObjects, "?worldGetAllObjects@@YAHPEAHH@Z");
+				GPA(worldGetAllPickups, "?worldGetAllPickups@@YAHPEAHH@Z");
 
-				getScriptHandleBaseAddress = (BYTE *(*)(int handle))GetProcAddress(dll, "?getScriptHandleBaseAddress@@YAPEAEH@Z");
+				GPA(getScriptHandleBaseAddress, "?getScriptHandleBaseAddress@@YAPEAEH@Z");
 
-				getGameVersion = (eGameVersion (*)())GetProcAddress(dll, "?getGameVersion@@YA?AW4eGameVersion@@XZ");
+				GPA(getGameVersion, "?getGameVersion@@YA?AW4eGameVersion@@XZ");
 
 				return true;
 			})();

@@ -1,6 +1,6 @@
 #include <nob/program.hpp>
 
-#include <rua/os/process.hpp>
+#include <rua/process.hpp>
 
 #include <windows.h>
 #include <psapi.h>
@@ -9,7 +9,7 @@
 #include <memory>
 
 namespace nob {
-	rua::data game_code = rua::os::process::from_this().mem_image().to_local_ref();
+	rua::bin_view game_code = rua::process::current().mem_image().try_to_local();
 
 	uint16_t game_build = ([]()->uint16_t {
 		WCHAR path[MAX_PATH];

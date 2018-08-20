@@ -1,6 +1,10 @@
 #pragma once
 
-#include <rua/cp.hpp>
+#include <rua/co.hpp>
+#include <rua/macros.hpp>
+#include <rua/limits.hpp>
+#include <rua/sched.hpp>
+#include <rua/chan.hpp>
 
 #include <functional>
 #include <thread>
@@ -10,7 +14,7 @@
 namespace nob {
 	namespace this_script {
 		enum class mode_t {
-			invalid,
+			not_loaded,
 			shv,
 			ysc,
 			main_thread,
@@ -20,80 +24,63 @@ namespace nob {
 		extern mode_t mode;
 		extern size_t load_count;
 		extern std::atomic<size_t> load_count_s;
-		extern std::atomic<bool> exiting;
+		extern std::atomic<std::thread::id> thread_id;
+		extern std::atomic<bool> is_exiting;
 	} /* this_script */
-
-	extern std::unique_ptr<rua::cp::coro_pool> tasks;
-
-	using dur_t = rua::cp::coro_pool::dur_t;
 
 	class task {
 		public:
-			task(std::nullptr_t np = nullptr) : _cp_tsk(np) {}
+			task(std::nullptr_t = nullptr) : _cp_tsk() {}
 
-			task(const std::function<void()> &handler, dur_t timeout = dur_t::forever) {
-				if (!tasks) {
-					tasks.reset(new rua::cp::coro_pool);
-					tasks->add_back([]() {
-						tasks->exit();
-					});
-				}
-				_cp_tsk = tasks->add(handler, timeout);
+			task(const std::function<void()> &handler, size_t duration = rua::nmax<size_t>()) {
+				_cp_tsk = pool().add(handler, duration);
 			}
 
 			operator bool() const {
-				return _cp_tsk && tasks && tasks->has(_cp_tsk);
+				return _cp_tsk;
 			}
 
 			void del() {
-				if (*this) {
-					tasks->erase(_cp_tsk);
-					_cp_tsk.reset();
-				}
+				_cp_tsk.stop();
 			}
 
-			void reset_dol(dur_t timeout = dur_t::disposable) {
-				tasks->reset_dol(_cp_tsk, timeout);
+			void reset_duration(size_t duration = 0) {
+				_cp_tsk.reset_duration(duration);
+			}
+
+			static rua::co_pool &pool() {
+				static rua::co_pool inst;
+				return inst;
 			}
 
 		private:
-			rua::cp::coro_pool::task _cp_tsk;
+			rua::co_pool::task _cp_tsk;
 	};
 
 	inline task go(const std::function<void()> &handler) {
-		return task(handler, dur_t::disposable);
+		return task(handler, 0);
 	}
 
-	inline bool in_task() {
-		return tasks->this_caller_in_task();
+	inline bool in_this_script() {
+		return std::this_thread::get_id() == this_script::thread_id;
 	}
 
 	namespace this_task {
 		inline void del() {
-			tasks->erase();
+			task::pool().current().stop();
 		}
 
-		inline void reset_dol(dur_t timeout) {
-			tasks->reset_dol(timeout);
-		}
-
-		inline void sleep(dur_t timeout) {
-			tasks->sleep(timeout);
-		}
-
-		inline void yield() {
-			tasks->yield();
+		inline void reset_duration(size_t duration) {
+			task::pool().current().reset_duration(duration);
 		}
 	}
 
-	// Only for task and input listener.
-	inline void sleep(dur_t timeout) {
-		this_task::sleep(timeout);
+	inline void sleep(size_t duration) {
+		rua::sleep(duration);
 	}
 
-	// Only for task and input listener.
 	inline void yield() {
-		this_task::yield();
+		rua::yield();
 	}
 
 	// used to non-game resources initialization.
@@ -269,10 +256,7 @@ namespace nob {
 	};
 
 	template <typename T>
-	class chan : public rua::cp::chan<T> {
-		public:
-			chan() : rua::cp::chan<T>({ tasks->get_scheduler() }) {}
-	};
+	using chan = rua::chan<T>;
 
 	void terminate_unimportant_scripts();
 } /* nob */

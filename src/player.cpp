@@ -39,8 +39,8 @@ namespace nob {
 			ntv::STATS::STAT_SET_INT(hash("MP0_SCRIPT_INCREASE_STL"), 100, 1);
 			ntv::STATS::STAT_SET_INT(hash("MP0_NO_MORE_TUTORIALS"), 1, 1);
 
-			static rua::data::match_result_t mr;
-			static rua::data::find_result_t fr;
+			static rua::bin_view::match_result_t mr;
+			static rua::bin_view::find_result_t fr;
 
 			RUA_ONCE_CODE({
 				chan<bool> ch;

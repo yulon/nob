@@ -1,8 +1,11 @@
+// Unavailable
+
 #include <nob/ntv/base.hpp>
 #include <nob/ntv/fhtt.hpp>
 
-#include <rua/os/process.hpp>
-#include <rua/cp/chan.hpp>
+#include <rua/process.hpp>
+#include <rua/chan.hpp>
+#include <rua/bin.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -16,7 +19,8 @@ struct ysc_slice_t {
 	size_t code_size;
 
 	struct func_patten_t {
-		rua::data before, after;
+		rua::bin_view before_v, after_v;
+		rua::bin before, after;
 	};
 
 	std::unordered_map<uint64_t, std::vector<func_patten_t>> funcs_pats;
@@ -33,16 +37,16 @@ void load_yscs(std::string dir, std::unordered_set<uint64_t> &hashs, std::unorde
 	auto dir_name = std::experimental::filesystem::path(dir).filename().string();
 
 	size_t rd_c = 0;
-	rua::cp::chan<bool> rd_done_ch;
+	rua::chan<bool> rd_done_ch;
 	std::mutex mtx;
 
 	for (auto &de: fs::directory_iterator(dir)) {
 		auto path = de.path().string();
 		auto name = de.path().filename().string();
 
-		//if (name != "freemode.ysc.full") {
-			//continue;
-		//}
+		if (name != "freemode.ysc") {
+			continue;
+		}
 
 		++rd_c;
 
@@ -75,8 +79,6 @@ void load_yscs(std::string dir, std::unordered_set<uint64_t> &hashs, std::unorde
 
 			ysc_slc.code_size = ysc.code_size;
 
-			std::unordered_map<uint64_t, std::vector<ysc_slice_t::func_patten_t>> funcs_pats;
-
 			for (size_t i = 0; i < ysc.imp_func_count; ++i) {
 				auto hash = ysc.imp_funcs[i];
 
@@ -89,7 +91,7 @@ void load_yscs(std::string dir, std::unordered_set<uint64_t> &hashs, std::unorde
 
 				mtx.unlock();
 
-				auto &pats = funcs_pats[hash];
+				auto &pats = ysc_slc.funcs_pats[hash];
 
 				auto hash_ptr = rua::any_ptr(&ysc.imp_funcs[i]);
 
@@ -110,31 +112,39 @@ void load_yscs(std::string dir, std::unordered_set<uint64_t> &hashs, std::unorde
 							pats.emplace_back();
 							auto &pat = pats.back();
 							if (h < 50) {
-								pat.before = rua::data(code_page_base, h);
+								pat.before_v = rua::bin_view(code_page_base, h);
 							} else {
-								pat.before = rua::data(val_ptr - 50, 50);
+								pat.before_v = rua::bin_view(val_ptr - 50, 50);
 							}
 							auto after_begin = h + 4;
 							if (after_begin + 50 > ysc.code_page_size(j)) {
-								pat.after = rua::data(code_page_base + after_begin, ysc.code_page_size(j) - h);
+								pat.after_v = rua::bin_view(code_page_base + after_begin, ysc.code_page_size(j) - h);
 							} else {
-								pat.after = rua::data(code_page_base + after_begin, 50);
+								pat.after_v = rua::bin_view(code_page_base + after_begin, 50);
 							}
 
 							h += 3;
 						}
 					}
 				}
+
+				Sleep(1);
 			}
 
-			ysc_slc.funcs_pats = funcs_pats;
+			for (auto &pr : ysc_slc.funcs_pats) {
+				auto &pats = pr.second;
+				for (auto &pat : pats) {
+					pat.before = pat.before_v;
+					pat.after = pat.after_v;
+				}
+			}
 
 			rd_done_ch << true;
 		}).detach();
 
-		//break;
+		break;
 
-		if (rd_c >= 4) {
+		if (rd_c >= 10) {
 			rd_done_ch.get();
 			--rd_c;
 		}
@@ -155,7 +165,7 @@ int main() {
 		return 0;
 	}
 
-	auto bin_dir_path = fs::path(rua::os::process::from_this().file_path()).remove_filename().string();
+	auto bin_dir_path = fs::path(rua::process::current().file_path()).remove_filename().string();
 
 	std::cout << "reading ysc files from '" + bin_dir_path + "ysc\\{" << old_ver << "," << new_ver << "}\\*'" << std::endl;
 
@@ -170,29 +180,22 @@ int main() {
 	std::cout << std::hex << std::uppercase;
 
 	for (auto &new_hash : new_hashs) {
-		std::cout << "converting hash " << "0x" << std::setw(16) << std::setfill('0') << new_hash << std::endl;
+		//std::cout << "converting hash " << "0x" << std::setw(16) << std::setfill('0') << new_hash << std::endl;
 
-		struct func_pattens_t {
-			std::string from;
-			std::vector<ysc_slice_t::func_patten_t> &data;
-		};
-		std::vector<func_pattens_t> new_pats_list;
-
-		for (auto &pr : new_ysc_map) {
-			auto it = pr.second.funcs_pats.find(new_hash);
-			if (it != pr.second.funcs_pats.end()) {
-				new_pats_list.emplace_back(func_pattens_t{pr.first, it->second});
-			}
-		}
-
-		for (auto &new_pats : new_pats_list) {
-			auto it = old_ysc_map.find(new_pats.from);
-			if (it == old_ysc_map.end()) {
+		for (auto &new_ysc_map_pr : new_ysc_map) {
+			auto it = new_ysc_map_pr.second.funcs_pats.find(new_hash);
+			if (it == new_ysc_map_pr.second.funcs_pats.end()) {
 				continue;
 			}
-			auto &old_ysc = it->second;
+			auto new_pats = it->second;
 
-			for (auto &new_pat : new_pats.data) {
+			auto it2 = old_ysc_map.find(new_ysc_map_pr.first);
+			if (it2 == old_ysc_map.end()) {
+				continue;
+			}
+			auto &old_ysc = it2->second;
+
+			for (auto &new_pat : new_pats) {
 				for (auto &old_funcs_pats_pr : old_ysc.funcs_pats) {
 					auto old_hash = old_funcs_pats_pr.first;
 
@@ -201,18 +204,16 @@ int main() {
 					for (auto &old_pat : old_funcs_pats_pr.second) {
 						auto b_sz = new_pat.before.size() > old_pat.before.size() ? old_pat.before.size() : new_pat.before.size();
 						size_t bs_sz = 0;
-						for (int i = b_sz - 1; i >= 0; --i) {
-							if (new_pat.before.get<uint8_t>(i) != old_pat.before.get<uint8_t>(i)) {
-								bs_sz = b_sz - (i + 1);
-								break;
+						for (size_t i = 0; i < b_sz; ++i) {
+							if (new_pat.before[i] == old_pat.before[i]) {
+								++bs_sz;
 							}
 						}
 						auto a_sz = new_pat.after.size() > old_pat.after.size() ? old_pat.after.size() : new_pat.after.size();
 						size_t as_sz = 0;
-						for (size_t i = 0; i < a_sz - 1; ++i) {
-							if (new_pat.after.get<uint8_t>(i) != old_pat.after.get<uint8_t>(i)) {
-								as_sz = i;
-								break;
+						for (size_t i = 0; i < a_sz; ++i) {
+							if (new_pat.after[i] == old_pat.after[i]) {
+								++as_sz;
 							}
 						}
 						auto s_sz = bs_sz + as_sz;
@@ -224,6 +225,8 @@ int main() {
 					if (!sg) {
 						continue;
 					}
+
+					std::cout << sg << " converting hash " << "0x" << std::setw(16) << std::setfill('0') << new_hash << std::endl;
 
 					for (auto &old_fhtt_pr : *old_fhtt) {
 						if (old_fhtt_pr.second == old_hash) {
@@ -246,7 +249,7 @@ int main() {
 
 	std::cout << "loss_old_hash_c: " << loss_old_hash_c << std::endl;
 
-	auto new_fhtt_path = bin_dir_path + "..\\src\\ntv\\fhtt\\" + std::to_string(new_ver) + ".unsafe.inc";
+	auto new_fhtt_path = bin_dir_path + "..\\src\\ntv\\fhtt\\" + std::to_string(new_ver) + ".unsafe2.inc";
 
 	std::cout << "writing new_fhtt to '" << new_fhtt_path << "'" << std::endl;
 

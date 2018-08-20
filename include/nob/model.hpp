@@ -12,19 +12,19 @@
 namespace nob {
 	class model : private hasher {
 		public:
-			constexpr model() : hasher(), _loaded(0) {}
+			constexpr model() : hasher(), _tslc(0) {}
 
-			constexpr model(std::nullptr_t) : hasher(), _loaded(0) {}
+			constexpr model(std::nullptr_t) : hasher(), _tslc(0) {}
 
-			constexpr model(hash_t h) : hasher(h), _loaded(0) {}
+			constexpr model(hash_t h) : hasher(h), _tslc(0) {}
 
-			constexpr model(const char *c_str) : hasher(c_str), _loaded(0) {}
+			constexpr model(const char *c_str) : hasher(c_str), _tslc(0) {}
 
-			model(const std::string &str) : hasher(str), _loaded(0) {}
+			model(const std::string &str) : hasher(str), _tslc(0) {}
 
-			constexpr model(const hasher &hr) : hasher(hr), _loaded(0) {}
+			constexpr model(const hasher &hr) : hasher(hr), _tslc(0) {}
 
-			constexpr model(const model &src) : hasher(static_cast<const hasher &>(src)), _loaded(0) {}
+			constexpr model(const model &src) : hasher(static_cast<const hasher &>(src)), _tslc(0) {}
 
 			model &operator=(const model &src) {
 				free();
@@ -32,18 +32,18 @@ namespace nob {
 				return *this;
 			}
 
-			model(model &&src) : hasher(src), _loaded(src._loaded) {
-				if (src._loaded == this_script::load_count) {
-					src._loaded = 0;
+			model(model &&src) : hasher(src), _tslc(src._tslc) {
+				if (src._tslc == this_script::load_count) {
+					src._tslc = 0;
 				}
 			}
 
 			model &operator=(model &&src) {
 				free();
 				static_cast<hasher &>(*this) = static_cast<const hasher &>(src);
-				if (src._loaded == this_script::load_count) {
-					_loaded = src._loaded;
-					src._loaded = 0;
+				if (src._tslc == this_script::load_count) {
+					_tslc = src._tslc;
+					src._tslc = 0;
 				}
 				return *this;
 			}
@@ -85,7 +85,7 @@ namespace nob {
 			model &load() {
 				assert(*this);
 
-				if (_loaded == this_script::load_count) {
+				if (_tslc == this_script::load_count) {
 					return *this;
 				}
 
@@ -94,7 +94,7 @@ namespace nob {
 				if (gc::try_ref(*this)) {
 					assert(is_loaded());
 
-					_loaded = this_script::load_count;
+					_tslc = this_script::load_count;
 					return *this;
 				}
 
@@ -110,7 +110,7 @@ namespace nob {
 					}
 				}
 
-				_loaded = cur_lc;
+				_tslc = cur_lc;
 
 				gc::delegate(*this, [h]() {
 					if (ntv::STREAMING::HAS_MODEL_LOADED(h)) {
@@ -122,13 +122,13 @@ namespace nob {
 			}
 
 			void free() {
-				if (_loaded == this_script::load_count) {
+				if (_tslc && _tslc == this_script::load_count) {
 					gc::free(*this);
-					_loaded = 0;
+					_tslc = 0;
 				}
 			}
 
 		private:
-			size_t _loaded;
+			size_t _tslc;
 	};
 } /* nob */

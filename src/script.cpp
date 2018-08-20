@@ -19,8 +19,6 @@
 #include <cassert>
 
 namespace nob {
-	std::unique_ptr<rua::cp::coro_pool> tasks(nullptr);
-
 	extern std::queue<std::function<void()>> _inputs;
 
 	static inline void _clear_inputs() {
@@ -42,38 +40,34 @@ namespace nob {
 	}
 
 	namespace this_script {
-		mode_t mode = mode_t::invalid;
+		mode_t mode = mode_t::not_loaded;
+
 		size_t load_count = 0;
 		std::atomic<size_t> load_count_s(0);
-		std::atomic<bool> exiting(false);
-		std::atomic<bool> _exited(false);
+
+		std::atomic<std::thread::id> thread_id;
+
+		std::atomic<bool> is_exiting(false);
+		std::atomic<bool> _is_exited(false);
+
 		static int _last_fc = -1;
 
 		static inline void _init() {
 			_disable_ws2();
 
-			if (!tasks) {
-				tasks.reset(new rua::cp::coro_pool);
-				tasks->add_back([]() {
-					tasks->exit();
-				});
-			} else {
-				tasks->bind_this_thread();
-			}
-
+			thread_id = std::this_thread::get_id();
 			load_count = ++load_count_s;
 
 			on_load::handle();
-
 			_clear_inputs();
 		}
 
 		static inline void _exit() {
-			if (_exited) {
+			if (_is_exited) {
 				return;
 			}
 			on_unload::handle();
-			_exited = true;
+			_is_exited = true;
 		}
 
 		static inline bool _run(bool auto_init = true, bool need_init = false) {
@@ -93,12 +87,12 @@ namespace nob {
 				_flush_inputs();
 			}
 
-			if (exiting) {
+			if (is_exiting) {
 				_exit();
 				return false;
 			}
 
-			tasks->handle();
+			task::pool().step();
 
 			_hkl::prevent_defaults();
 			return true;

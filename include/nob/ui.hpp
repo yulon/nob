@@ -303,7 +303,7 @@ namespace nob {
 			}
 			cnt = content;
 			if (tsk) {
-				tsk.reset_dol(dur);
+				tsk.reset_duration(dur);
 			} else {
 				tsk = task([]() {
 					ntv::UI::BEGIN_TEXT_COMMAND_DISPLAY_HELP("STRING");

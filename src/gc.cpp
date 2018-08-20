@@ -14,7 +14,7 @@ namespace nob {
 		on_unload _exiter([]() {
 			for (auto &pr : _map) {
 				for (auto &sub_map_pr : pr.second) {
-					sub_map_pr.second.free();
+					sub_map_pr.second.freer();
 				}
 			}
 		});

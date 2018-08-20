@@ -4,7 +4,7 @@
 
 #include <minhook.hpp>
 
-#include <rua/gnc/any_ptr.hpp>
+#include <rua/any_ptr.hpp>
 #include <rua/macros.hpp>
 
 #include <d3d11.h>

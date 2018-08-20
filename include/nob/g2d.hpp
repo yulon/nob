@@ -59,15 +59,15 @@ namespace nob {
 
 				////////////////////////////////////////////////////////////////
 
-				texture_dict() : _name(""), _loaded(0) {}
+				texture_dict() : _name(""), _tslc(0) {}
 
 				texture_dict(std::nullptr_t) : texture_dict() {}
 
-				texture_dict(const char *name) : _name(name), _loaded(0) {}
+				texture_dict(const char *name) : _name(name), _tslc(0) {}
 
-				texture_dict(std::string name) : _name(std::move(name)), _loaded(0) {}
+				texture_dict(std::string name) : _name(std::move(name)), _tslc(0) {}
 
-				texture_dict(const texture_dict &src) : _name(src._name), _loaded(0) {}
+				texture_dict(const texture_dict &src) : _name(src._name), _tslc(0) {}
 
 				~texture_dict() {
 					free();
@@ -79,18 +79,18 @@ namespace nob {
 					return *this;
 				}
 
-				texture_dict(texture_dict &&src) : _name(std::move(src._name)), _loaded(src._loaded) {
-					if (src._loaded == this_script::load_count) {
-						src._loaded = 0;
+				texture_dict(texture_dict &&src) : _name(std::move(src._name)), _tslc(src._tslc) {
+					if (src._tslc == this_script::load_count) {
+						src._tslc = 0;
 					}
 				}
 
 				texture_dict &operator=(texture_dict &&src) {
 					free();
 					_name = std::move(src._name);
-					if (src._loaded == this_script::load_count) {
-						_loaded = src._loaded;
-						src._loaded = 0;
+					if (src._tslc == this_script::load_count) {
+						_tslc = src._tslc;
+						src._tslc = 0;
 					}
 					return *this;
 				}
@@ -122,7 +122,7 @@ namespace nob {
 				texture_dict &load() {
 					assert(*this);
 
-					if (_loaded == this_script::load_count) {
+					if (_tslc == this_script::load_count) {
 						return *this;
 					}
 
@@ -131,7 +131,7 @@ namespace nob {
 					if (gc::try_ref(*this)) {
 						assert(is_loaded());
 
-						_loaded = this_script::load_count;
+						_tslc = this_script::load_count;
 						return *this;
 					}
 
@@ -146,7 +146,7 @@ namespace nob {
 						}
 					}
 
-					_loaded = cur_lc;
+					_tslc = cur_lc;
 
 					auto n = _name;
 					gc::delegate(*this, [n]() {
@@ -159,9 +159,9 @@ namespace nob {
 				}
 
 				void free() {
-					if (_loaded == this_script::load_count) {
+					if (_tslc && _tslc == this_script::load_count) {
 						gc::free(*this);
-						_loaded = 0;
+						_tslc = 0;
 					}
 				}
 
@@ -185,7 +185,7 @@ namespace nob {
 
 			private:
 				std::string _name;
-				size_t _loaded;
+				size_t _tslc;
 		};
 	} /* g2d */
 } /* nob */

@@ -28,6 +28,8 @@ workspace "nob"
 		targetextension ".a"
 
 	dofileopt "project.pm5"
+		defines { "NOB_FAST_LAUNCH" }
 
 	dofileopt "tools/tester.pm5"
-	dofileopt "tools/ntv_fhtt_generator.pm5"
+	dofileopt "tools/gen_ntv_fhtt.pm5"
+	dofileopt "tools/gen_ntv_fhtt_2.pm5"

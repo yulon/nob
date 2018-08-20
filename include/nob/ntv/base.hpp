@@ -5,8 +5,8 @@
 #include "../log.hpp"
 #include "fhtt.hpp"
 
-#include <rua/gnc/any_word.hpp>
-#include <rua/gnc/getter.hpp>
+#include <rua/any_word.hpp>
+#include <rua/bin.hpp>
 
 #ifdef NOB_USING_SHV_CALL
 	#include "../shv.hpp"
@@ -684,41 +684,73 @@ namespace nob {
 
 		////////////////////////////////////////////////////////////////////////
 
-		class entity_obj_t : public rua::getter {
+		class entity_obj_t : public rua::bin_getter {
 			public:
-				struct nav_t : public rua::getter {
-					vector3 &pos() const {
+				struct nav_t : public rua::bin_getter {
+					const vector3 &pos() const {
+						return get<vector3>(0x0050);
+					}
+
+					vector3 &pos() {
 						return get<vector3>(0x0050);
 					}
 				};
 
-				nav_t *&nav() const {
+				nav_t *nav() const {
 					return get<nav_t *>(0x0030);
 				}
 
-				vector3 &pos() const {
+				nav_t *&nav() {
+					return get<nav_t *>(0x0030);
+				}
+
+				const vector3 &pos() const {
 					return get<vector3>(0x0090);
 				}
 
-				bool &god_mode() const {
+				vector3 &pos() {
+					return get<vector3>(0x0090);
+				}
+
+				bool god_mode() const {
 					return get<bool>(0x0189);
 				}
 
-				float &health() const {
+				bool &god_mode() {
+					return get<bool>(0x0189);
+				}
+
+				float health() const {
 					return get<float>(0x0280);
 				}
 
-				float &health_max() const {
+				float &health() {
+					return get<float>(0x0280);
+				}
+
+				float health_max() const {
+					return get<float>(0x02A0);
+				}
+
+				float &health_max() {
 					return get<float>(0x02A0);
 				}
 
 				using attackers_t = std::array<entity_obj_t *, 3>;
 
-				attackers_t &attackers() const {
+				const attackers_t &attackers() const {
 					return get<attackers_t>(0x02A8);
 				}
 
-				bool &invisible() const {
+				attackers_t &attackers() {
+					return get<attackers_t>(0x02A8);
+				}
+
+				bool invisible() const {
+					return get<bool>(0x002C);
+				}
+
+				bool &invisible() {
 					return get<bool>(0x002C);
 				}
 
@@ -732,11 +764,19 @@ namespace nob {
 
 		class vehice_obj_t : public entity_obj_t {
 			public:
-				float &engine_health() const {
+				float engine_health() const {
 					return get<float>(0x089C);
 				}
 
-				float &heading() const {
+				float &engine_health() {
+					return get<float>(0x089C);
+				}
+
+				float heading() const {
+					return get<float>(0x0878);
+				}
+
+				float &heading() {
 					return get<float>(0x0878);
 				}
 
@@ -744,47 +784,91 @@ namespace nob {
 					float _unk[8];
 				};
 
-				acceleration_t &acceleration() const {
+				const acceleration_t &acceleration() const {
 					return get<acceleration_t>(0x004C);
 				}
 
-				float &brakeforce() const {
+				acceleration_t &acceleration() {
+					return get<acceleration_t>(0x004C);
+				}
+
+				float brakeforce() const {
 					return get<float>(0x006C);
 				}
 
-				float &traction_curve_min() const {
+				float &brakeforce() {
+					return get<float>(0x006C);
+				}
+
+				float traction_curve_min() const {
 					return get<float>(0x0090);
 				}
 
-				float &deform_multiplie() const {
+				float &traction_curve_min() {
+					return get<float>(0x0090);
+				}
+
+				float deform_multiplie() const {
 					return get<float>(0x00F8);
 				}
 
-				float &upshift() const {
+				float &deform_multiplie() {
+					return get<float>(0x00F8);
+				}
+
+				float upshift() const {
 					return get<float>(0x0058);
 				}
 
-				float &suspension_force() const {
+				float &upshift() {
+					return get<float>(0x0058);
+				}
+
+				float suspension_force() const {
 					return get<float>(0x00BC);
 				}
 
-				uint8_t &bulletproof_tires() const {
+				float &suspension_force() {
+					return get<float>(0x00BC);
+				}
+
+				uint8_t bulletproof_tires() const {
 					return get<uint8_t>(0x08D3);
 				}
 
-				uint32_t &alarm_length() const {
+				uint8_t &bulletproof_tires() {
+					return get<uint8_t>(0x08D3);
+				}
+
+				uint32_t alarm_length() const {
 					return get<uint32_t>(0x09E4);
 				}
 
-				float &dirt_level() const {
+				uint32_t &alarm_length() {
+					return get<uint32_t>(0x09E4);
+				}
+
+				float dirt_level() const {
 					return get<float>(0x0988);
 				}
 
-				uint8_t &openable_doors() const {
+				float &dirt_level() {
+					return get<float>(0x0988);
+				}
+
+				uint8_t openable_doors() const {
 					return get<uint8_t>(0x0B30);
 				}
 
-				float &gravity() const {
+				uint8_t &openable_doors() {
+					return get<uint8_t>(0x0B30);
+				}
+
+				float gravity() const {
+					return get<float>(0x0BCC);
+				}
+
+				float &gravity() {
 					return get<float>(0x0BCC);
 				}
 		};
