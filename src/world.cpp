@@ -2,7 +2,6 @@
 #include <nob/player.hpp>
 #include <nob/program.hpp>
 #include <nob/script.hpp>
-#include <nob/gc.hpp>
 #include <nob/log.hpp>
 
 #include <cstring>
@@ -96,19 +95,8 @@ namespace nob {
 		*/
 		void no_mans_island(bool toggle) {
 			static task tsk;
-
-			struct gc_id_t {
-				static constexpr bool native_handle() {
-					return true;
-				}
-			};
-
-			static on_load reset([]() {
-				if (tsk) {
-					tsk.del();
-					gc::undelegate(gc_id_t());
-				}
-			});
+			static on_load ol;
+			static on_unload ou;
 
 			if (toggle) {
 				if (tsk) {
@@ -144,6 +132,10 @@ namespace nob {
 					ntv::AUDIO::STOP_ALL_ALARMS(true);
 				});
 
+				ol = on_load([]() {
+					tsk.del();
+				});
+
 				auto pos = player::body().pos();
 
 				ntv::GAMEPLAY::_CLEAR_AREA_OF_EVERYTHING(pos.x, pos.y, pos.z, 1000, false, false, false, false);
@@ -169,7 +161,7 @@ namespace nob {
 				}
 
 				auto h = ntv::PED::ADD_SCENARIO_BLOCKING_AREA(-7000.0f, -7000.0f, -100.0f, 7000.0f, 7000.0f, 315.0f, 0, 1, 1, 1);
-				gc::delegate(gc_id_t(), [h]() {
+				ou = on_unload([h]() {
 					ntv::PED::REMOVE_SCENARIO_BLOCKING_AREA(h, 0);
 				});
 
@@ -178,8 +170,9 @@ namespace nob {
 				}
 
 			} else if (tsk) {
+				ol.del();
+				ou.del();
 				tsk.del();
-				gc::free(gc_id_t());
 			}
 		}
 
@@ -820,18 +813,26 @@ namespace nob {
 				return ch.get();
 			})();
 
-			struct gc_id_t {
-				static constexpr bool native_handle() {
-					return true;
-				}
+			static on_load ol;
+			static on_unload ou;
+
+			static auto recover_for_ol = []() {
+				memcpy(block_code_addr, &block_code_bak, 20);
 			};
 
-			static on_load reset([]() {
-				if (block_code_addr && *block_code_addr == 0x90) {
-					memcpy(block_code_addr, &block_code_bak, 20);
+			static auto recover_for_ou = []() {
+				recover_for_ol();
+
+				ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(false);
+				ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(false);
+
+				if (ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
+					ntv::STREAMING::_REMOVE_NAMED_PTFX_ASSET("core_snow");
 				}
-				gc::undelegate(gc_id_t());
-			});
+
+				ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS");
+				ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS");
+			};
 
 			if (toggle) {
 				if (!block_code_addr) {
@@ -841,6 +842,9 @@ namespace nob {
 				if (*block_code_addr == 0x74) {
 					memset(block_code_addr, 0x90, 20);
 				}
+
+				ol = on_load(recover_for_ol);
+				ou = on_unload(recover_for_ou);
 
 				ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(true);
 				ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(true);
@@ -854,24 +858,10 @@ namespace nob {
 				ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS", true);
 				ntv::AUDIO::REQUEST_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS", true);
 
-				gc::delegate(gc_id_t(), []() {
-					if (*block_code_addr == 0x90) {
-						memcpy(block_code_addr, &block_code_bak, 20);
-					}
-
-					ntv::GRAPHICS::_SET_FORCE_PED_FOOTSTEPS_TRACKS(false);
-					ntv::GRAPHICS::_SET_FORCE_VEHICLE_TRAILS(false);
-
-					if (ntv::STREAMING::HAS_NAMED_PTFX_ASSET_LOADED("core_snow")) {
-						ntv::STREAMING::_REMOVE_NAMED_PTFX_ASSET("core_snow");
-					}
-
-					ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("ICE_FOOTSTEPS");
-					ntv::AUDIO::RELEASE_NAMED_SCRIPT_AUDIO_BANK("SNOW_FOOTSTEPS");
-				});
-
 			} else if (block_code_addr) {
-				gc::free(gc_id_t());
+				ol.del();
+				ou.del();
+				recover_for_ou();
 			}
 		}
 
