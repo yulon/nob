@@ -77,14 +77,14 @@ namespace nob {
 				return ntv::ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(_h, pos.x, pos.y, pos.z);
 			}
 
-			void move(const vector3 &coords) {
+			void ll_move(const vector3 &coords) {
 				auto obj = (**nob::ntv::entity_obj_map)[_h];
 				if (obj) {
 					obj->move(coords);
 				}
 			}
 
-			void move_s(const vector3 &coords) {
+			void move(const vector3 &coords) {
 				nob::ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, false, false, false);
 			}
 
@@ -526,6 +526,8 @@ namespace nob {
 			inline vehicle trying_to_enter_vehicle() const;
 
 			inline int trying_to_enter_vehicle_seat() const;
+
+			inline void drive_to(const nob::vector3 &coords, float speed, bool along_paths = true);
 
 			enum class motion_state_t : uint8_t {
 				null = 0,
@@ -1472,6 +1474,18 @@ namespace nob {
 
 	inline int character::trying_to_enter_vehicle_seat() const {
 		return ntv::PED::GET_SEAT_PED_IS_TRYING_TO_ENTER(_h);
+	}
+
+	inline void character::drive_to(const nob::vector3 &coords, float speed, bool along_paths) {
+		auto veh = current_vehicle();
+		if (!veh) {
+			return;
+		}
+		nob::ntv::AI::TASK_VEHICLE_DRIVE_TO_COORD(
+			_h, veh,
+			coords.x, coords.y, coords.z, speed, 0.f, veh.get_model(),
+			along_paths ? 262144 : 16777216, 0.f, 0.f
+		);
 	}
 
 	class plane : public vehicle {

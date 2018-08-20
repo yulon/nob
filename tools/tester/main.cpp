@@ -11,13 +11,15 @@
 #include <fstream>
 #include <random>
 
+#include <rua/disable_msvc_sh1t.h>
+
 float high_speed = 0.0f;
 
 nob::task print_pos([]() {
 	auto pb = nob::player::body();
 	auto pos = pb.pos();
 	std::stringstream ss;
-	ss << pos.str() << ", " << pb.rot().str() << ", " << high_speed;
+	ss << pos.str() << ", " << pb.rot().str() << ", " << high_speed << ", " << nob::task::pool().stack_count();
 	nob::g2d::draw_text(0, 0.93, 1, ss.str().c_str(), 0.4, 255, 255, 255, 255, 1, true);
 });
 
@@ -204,10 +206,10 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				if (pb.is_in_vehicle()) {
 					auto veh = pb.current_vehicle();
 					veh.rot(rot);
-					veh.move_s(nob::world::ground_pos(pos));
+					veh.move(nob::world::ground_pos(pos));
 				} else {
 					pb.rot(rot);
-					pb.move_s(nob::world::ground_pos(pos));
+					pb.move(nob::world::ground_pos(pos));
 				}
 			}));
 
@@ -267,7 +269,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 								tsks[ti] = nob::task([dest]() {
 									auto pb = nob::player::body();
 									auto rot = nob::ntv::CAM::GET_GAMEPLAY_CAM_ROT(0);
-									pb.move(dest(rot));
+									pb.ll_move(dest(rot));
 									pb.rot(rot);
 								});
 							}
@@ -512,10 +514,30 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Other", []() {
 			auto pb = nob::player::body();
 			auto chr = nob::character("mp_m_freemode_01", pb.pos({0, 1, 0}), true);
-			nob::player::switch_body(chr);
-/*
-			auto veh = nob::vehicle("OPPRESSOR2", pb.pos({0, 15, 0}));
+			//nob::player::switch_body(chr);
+
+			static auto pos = pb.pos({0, 80, 0});
+
+			static auto veh = nob::vehicle("cargoplane", pos);
 			veh.set_best_mods();
+			chr.into_vehicle(veh);
+			veh.engine_on();
+			veh.freeze_pos();
+
+			auto dest = veh.pos({0, 5000, 0.f});
+
+			chr.drive_to(dest, 30.f, false);
+
+			nob::sleep(15000);
+
+			veh.freeze_pos(false);
+
+			pb.move(veh.pos({ 0.0f, -17.0f, -2.55f }));
+
+			nob::sleep(5000);
+
+			veh.open_door(2);
+/*
 			nob::ui::message(
 				"CHAR_MARTIN",
 				"马丁大大",
