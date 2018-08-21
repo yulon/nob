@@ -77,15 +77,21 @@ namespace nob {
 				return ntv::ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(_h, pos.x, pos.y, pos.z);
 			}
 
-			void ll_move(const vector3 &coords) {
+			void move(const vector3 &coords, bool auto_refresh_display = true) {
 				auto obj = (**nob::ntv::entity_obj_map)[_h];
-				if (obj) {
-					obj->move(coords);
+				if (!obj) {
+					return;
 				}
-			}
 
-			void move(const vector3 &coords) {
-				nob::ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, false, false, false);
+				obj->move(coords);
+
+				if (auto_refresh_display) {
+					rot(rot());
+				}
+
+				nob::ntv::ROPE::ACTIVATE_PHYSICS(_h);
+
+				// nob::ntv::ENTITY::SET_ENTITY_COORDS_NO_OFFSET(_h, coords.x, coords.y, coords.z, false, false, false);
 			}
 
 			vector3 rot() const {
@@ -124,11 +130,7 @@ namespace nob {
 
 			void movement(const movement_t &mmt, float speed = -1.f, std::function<void()> callback = nullptr) {
 				if (speed <= 0.f) {
-					auto obj = (**nob::ntv::entity_obj_map)[_h];
-					if (!obj) {
-						return;
-					}
-					obj->move(mmt.pos);
+					move(mmt.pos, false);
 					rot(mmt.rot);
 					vel(mmt.vel);
 					if (callback) {
@@ -235,8 +237,8 @@ namespace nob {
 							size_t ts = GetTickCount();
 							if (last_ts) {
 								for(auto it = map.begin(); it != map.end(); ) {
-									auto obj = (**nob::ntv::entity_obj_map)[it->first];
-									if (!obj) {
+									entity ety(it->first);
+									if (!ety) {
 										it = map.erase(it);
 										if (map.empty()) {
 											tsk.del();
@@ -246,14 +248,14 @@ namespace nob {
 									}
 
 									auto &dest = it->second.dest;
-									vector3 now_pos(ntv::ENTITY::GET_ENTITY_COORDS(it->first, true));
+									auto now_pos = ety.pos();
 									auto dur = static_cast<float>(ts - last_ts) / 1000.f;
 									it->second.prgs += dur * it->second.speed;
 
 									if (it->second.prgs >= 1.f) {
-										obj->move(dest.pos);
-										ntv::ENTITY::SET_ENTITY_ROTATION(it->first, dest.rot.x, dest.rot.y, dest.rot.z, 2, true);
-										ntv::ENTITY::SET_ENTITY_VELOCITY(it->first, dest.vel.x, dest.vel.y, dest.vel.z);
+										ety.move(dest.pos, false);
+										ety.rot(dest.rot);
+										ety.vel(dest.vel);
 
 										if (it->second.callback) {
 											it->second.callback();
@@ -267,7 +269,7 @@ namespace nob {
 										continue;
 									}
 
-									obj->move(now_pos + dur * it->second.speed_pos);
+									ety.move(now_pos + dur * it->second.speed_pos);
 									++it;
 								}
 							}

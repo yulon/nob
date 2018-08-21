@@ -260,7 +260,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			auto pb = nob::player::body();
 			if (val) {
-				nob::ntv::ENTITY::FREEZE_ENTITY_POSITION(pb, true);
+				pb.freeze_pos();
 				kl = nob::key_listener([](int code, bool down)->bool {
 					static float m = 1.0f;
 					static auto cmd = [](bool down, size_t ti, nob::vector3 (*dest)(nob::vector3)) {
@@ -269,7 +269,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 								tsks[ti] = nob::task([dest]() {
 									auto pb = nob::player::body();
 									auto rot = nob::ntv::CAM::GET_GAMEPLAY_CAM_ROT(0);
-									pb.ll_move(dest(rot));
+									pb.move(dest(rot), false);
 									pb.rot(rot);
 								});
 							}
@@ -339,7 +339,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 						tsks[i].del();
 					}
 				}
-				nob::ntv::ENTITY::FREEZE_ENTITY_POSITION(pb, false);
+				pb.freeze_pos(false);
 			}
 		}),
 		flag("Invincible", [](bool val) {
@@ -512,13 +512,33 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			nob::log("done");*/
 		}),
 		action("Other", []() {
-			auto pb = nob::player::body();
+			static auto pb = nob::player::body();
+			//pb.teleport(pb.pos({ 0.f, 100.0f, 2.f }));
+
+			/*auto tk = GetTickCount();
+			for (size_t i = 0; i < 100000; ++i) {
+				nob::ntv::ROPE::ACTIVATE_PHYSICS(pb);
+			}
+			nob::log(GetTickCount() - tk);
+
+			nob::sleep(1000);
+
+			tk = GetTickCount();
+			for (size_t i = 0; i < 100000; ++i) {
+				nob::ntv::ENTITY::SET_ENTITY_DYNAMIC(pb, true);
+			}
+			nob::log(GetTickCount() - tk);
+
+			pb.move(pb.pos({ 0.f, 100.0f, 2.f }), true);
+			pb.rot(pb.rot());
+			pb.vel({0, 0, -0.001f});*/
+
 			auto chr = nob::character("mp_m_freemode_01", pb.pos({0, 1, 0}), true);
 			//nob::player::switch_body(chr);
 
-			static auto pos = pb.pos({0, 80, 0});
+			auto pos = pb.pos({0, 20, 2000.f});
 
-			static auto veh = nob::vehicle("cargoplane", pos);
+			auto veh = nob::vehicle("cargoplane", pos);
 			veh.set_best_mods();
 			chr.into_vehicle(veh);
 			veh.engine_on();
@@ -528,17 +548,37 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 
 			chr.drive_to(dest, 30.f, false);
 
+			/*nob::character a[25][4];
+
+			for (size_t i = 1; i < 25; ++i) {
+				a[i][0] = nob::character("mp_m_freemode_01", pb.pos({0, i * 1.f, 0}), true);
+				a[i][1] = nob::character("mp_m_freemode_01", pb.pos({1.f, i * 1.f, 0}), true);
+				a[i][2] = nob::character("mp_m_freemode_01", pb.pos({2.f, i * 1.f, 0}), true);
+				a[i][3] = nob::character("mp_m_freemode_01", pb.pos({3.f, i * 1.f, 0}), true);
+				nob::yield();
+			}*/
 			nob::sleep(15000);
 
 			veh.freeze_pos(false);
 
-			pb.move(veh.pos({ 0.0f, -17.0f, -2.55f }));
+			pb.move(veh.pos({ -1.7f, -19.0f, -3.05f }));
+
+			/*pb.move(veh.pos({ -1.7f, -19.0f, -3.05f }));
+			pb.vel({0, 0, -1.f});
+
+			for (size_t i = 1; i < 25; ++i) {
+				a[i][0].move(veh.pos({ -1.7f, -19.0f + i * 1.0f, -3.05f }));
+				a[i][1].move(veh.pos({ -0.7f, -19.0f + i * 1.0f, -3.05f }));
+				a[i][2].move(veh.pos({ 0.7f, -19.0f + i * 1.0f, -3.05f }));
+				a[i][3].move(veh.pos({ 1.7f, -19.0f + i * 1.0f, -3.05f }));
+				nob::yield();
+			}*/
 
 			nob::sleep(5000);
 
 			veh.open_door(2);
-/*
-			nob::ui::message(
+
+/*			nob::ui::message(
 				"CHAR_MARTIN",
 				"马丁大大",
 				"别水了，快上线给我当小奴隶！不然老子亲手捧肉给你吃信不信？"
