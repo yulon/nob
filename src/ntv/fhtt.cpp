@@ -25,7 +25,15 @@ namespace nob {
 			#include "fhtt/1493.inc"
 		};
 
+		const std::unordered_map<uint64_t, uint64_t> _fhtt_1604 {
+			#include "fhtt/1604.inc"
+		};
+
 		const std::map<uint16_t, const std::unordered_map<uint64_t, uint64_t> &> fhtt_map {
+			{
+				1604,
+				_fhtt_1604
+			},
 			{
 				1493,
 				_fhtt_1493
