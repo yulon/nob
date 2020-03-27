@@ -76,7 +76,7 @@ namespace nob {
 
 		void on_render::_init() RUA_ONCE_CODE({
 			if (shv::_init()) {
-				shv::presentCallbackRegister(reinterpret_cast<void (*)(void *)>(&dx::on_render::_handle));
+				shv::presentCallbackRegister(&dx::on_render::_shv_handle);
 				return;
 			}
 
@@ -98,7 +98,7 @@ namespace nob {
 			if (!shv::_init()) {
 				return;
 			}
-			shv::presentCallbackUnregister(reinterpret_cast<void (*)(void *)>(&dx::on_render::_handle));
+			shv::presentCallbackUnregister(&dx::on_render::_shv_handle);
 		}
 	}
 }

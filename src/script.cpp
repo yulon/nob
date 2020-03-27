@@ -98,7 +98,7 @@ namespace nob {
 			return true;
 		}
 
-		void _shv_main() {
+		void WINAPI _shv_main() {
 			while (_run()) {
 				shv::WAIT(0);
 			}

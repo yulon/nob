@@ -6,40 +6,40 @@
 
 namespace nob {
 	namespace shv {
-		int (*createTexture)(const char *texFileName);
+		int (WINAPI *createTexture)(const char *texFileName);
 
-		void (*drawTexture)(
+		void (WINAPI *drawTexture)(
 			int id, int index, int level, int time,
 			float sizeX, float sizeY, float centerX, float centerY,
 			float posX, float posY, float rotation, float screenHeightScaleFactor,
 			float r, float g, float b, float a
 		);
 
-		void (*presentCallbackRegister)(PresentCallback cb);
-		void (*presentCallbackUnregister)(PresentCallback cb);
+		void (WINAPI *presentCallbackRegister)(PresentCallback cb);
+		void (WINAPI *presentCallbackUnregister)(PresentCallback cb);
 
-		void (*keyboardHandlerRegister)(KeyboardHandler handler);
-		void (*keyboardHandlerUnregister)(KeyboardHandler handler);
+		void (WINAPI *keyboardHandlerRegister)(KeyboardHandler handler);
+		void (WINAPI *keyboardHandlerUnregister)(KeyboardHandler handler);
 
-		void (*scriptWait)(DWORD time);
-		void (*scriptRegister)(HMODULE module, void(*LP_SCRIPT_MAIN)());
-		void (*scriptRegisterAdditionalThread)(HMODULE module, void(*LP_SCRIPT_MAIN)());
-		void (*scriptUnregister)(HMODULE module);
+		void (WINAPI *scriptWait)(DWORD time);
+		void (WINAPI *scriptRegister)(HMODULE module, void(WINAPI *LP_SCRIPT_MAIN)());
+		void (WINAPI *scriptRegisterAdditionalThread)(HMODULE module, void(WINAPI *LP_SCRIPT_MAIN)());
+		void (WINAPI *scriptUnregister)(HMODULE module);
 
-		void (*nativeInit)(UINT64 hash);
-		void (*nativePush64)(UINT64 val);
-		PUINT64 (*nativeCall)();
+		void (WINAPI *nativeInit)(UINT64 hash);
+		void (WINAPI *nativePush64)(UINT64 val);
+		PUINT64 (WINAPI *nativeCall)();
 
-		UINT64 *(*getGlobalPtr)(int globalId);
+		UINT64 *(WINAPI *getGlobalPtr)(int globalId);
 
-		int (*worldGetAllVehicles)(int *arr, int arrSize);
-		int (*worldGetAllPeds)(int *arr, int arrSize);
-		int (*worldGetAllObjects)(int *arr, int arrSize);
-		int (*worldGetAllPickups)(int *arr, int arrSize);
+		int (WINAPI *worldGetAllVehicles)(int *arr, int arrSize);
+		int (WINAPI *worldGetAllPeds)(int *arr, int arrSize);
+		int (WINAPI *worldGetAllObjects)(int *arr, int arrSize);
+		int (WINAPI *worldGetAllPickups)(int *arr, int arrSize);
 
-		BYTE *(*getScriptHandleBaseAddress)(int handle);
+		BYTE *(WINAPI *getScriptHandleBaseAddress)(int handle);
 
-		eGameVersion (*getGameVersion)();
+		eGameVersion (WINAPI *getGameVersion)();
 
 		constexpr const std::array<LPCWSTR, 2> _module_names {{
 			L"ScriptHookV.dll",

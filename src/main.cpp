@@ -21,7 +21,7 @@ namespace nob {
 	}
 
 	namespace this_script {
-		void _shv_main();
+		void WINAPI _shv_main();
 		bool _create_from_td();
 		extern std::atomic<bool> _is_exited;
 	}
@@ -42,7 +42,11 @@ namespace nob {
 		#define _NOB_CALL_INIT_FN(_f) _f()
 	#endif
 
-	#define _NOB_NEW_TD(_f) CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(static_cast<void(*)()>( _f )), nullptr, 0, nullptr);
+	void CALLBACK _td_proc(void *f) {
+		reinterpret_cast<void(*)()>(f)();
+	}
+
+	#define _NOB_NEW_TD(_f) CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(&_td_proc), reinterpret_cast<LPVOID>(static_cast<void(*)()>(_f)), 0, nullptr);
 
 	void _init() {
 		ntv::_pre_init();

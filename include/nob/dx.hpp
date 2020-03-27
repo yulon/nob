@@ -63,6 +63,10 @@ namespace nob {
 					}
 				}
 
+				static void WINAPI _shv_handle(void *sc) {
+					_handle(reinterpret_cast<IDXGISwapChain *>(sc));
+				}
+
 			public:
 				static void _init();
 				static void _uninit();
