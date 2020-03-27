@@ -474,10 +474,10 @@ namespace nob {
 
 			auto fhtt_it = fhtt_map.find(game_build);
 			if (fhtt_it != fhtt_map.end()) {
-				fhtt = &fhtt_it->second;
+				fhtt = fhtt_it->second;
 			} else {
 				log("nob::ntv::fhtt: not found!");
-				fhtt = &fhtt_map.rbegin()->second;
+				fhtt = fhtt_map.rbegin()->second;
 				finded = false;
 			}
 

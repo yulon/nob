@@ -33,14 +33,19 @@ const std::unordered_map<uint64_t, uint64_t> _fhtt_1737{
 #include "fhtt/1737.inc"
 };
 
-const std::map<uint16_t, const std::unordered_map<uint64_t, uint64_t> &>
-	fhtt_map{{1737, _fhtt_1737},
-			 {1604, _fhtt_1604},
-			 {1493, _fhtt_1493},
-			 {1365, _fhtt_1365},
-			 {1290, _fhtt_1290},
-			 {1180, _fhtt_1180},
-			 {1103, _fhtt_1103}};
+const std::unordered_map<uint64_t, uint64_t> _fhtt_1868{
+#include "fhtt/1868.inc"
+};
+
+const std::map<uint16_t, const std::unordered_map<uint64_t, uint64_t> *>
+	fhtt_map{{1868, &_fhtt_1868},
+			 {1737, &_fhtt_1737},
+			 {1604, &_fhtt_1604},
+			 {1493, &_fhtt_1493},
+			 {1365, &_fhtt_1365},
+			 {1290, &_fhtt_1290},
+			 {1180, &_fhtt_1180},
+			 {1103, &_fhtt_1103}};
 
 const std::unordered_map<uint64_t, uint64_t> *fhtt = nullptr;
 
