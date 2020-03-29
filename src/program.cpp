@@ -2,36 +2,44 @@
 
 #include <rua/process.hpp>
 
-#include <windows.h>
 #include <psapi.h>
+#include <windows.h>
 #include <winver.h>
 
 #include <memory>
 
 namespace nob {
-	rua::bin_view game_code = rua::process::current().mem_image().try_to_local();
 
-	uint16_t game_build = ([]()->uint16_t {
-		WCHAR path[MAX_PATH];
-		GetModuleFileNameExW(GetCurrentProcess(), GetModuleHandleW(nullptr), path, MAX_PATH);
+rua::bytes_view game_code = rua::this_process().mem_image();
 
-		DWORD sz, h;
-		sz = GetFileVersionInfoSizeW(path, &h);
-		if(sz == 0) {
-			return 0;
-		}
+uint16_t game_build = ([]() -> uint16_t {
+	WCHAR path[MAX_PATH];
+	GetModuleFileNameExW(
+		GetCurrentProcess(), GetModuleHandleW(nullptr), path, MAX_PATH);
 
-		std::unique_ptr<uint8_t> data(new uint8_t[sz + 1]);
-		if (!GetFileVersionInfoW(path, 0, sz, reinterpret_cast<LPVOID>(data.get()))) {
-			return 0;
-		}
+	DWORD sz, h;
+	sz = GetFileVersionInfoSizeW(path, &h);
+	if (sz == 0) {
+		return 0;
+	}
 
-		VS_FIXEDFILEINFO *buf;
-		UINT len;
-		if (!VerQueryValueW(reinterpret_cast<LPCVOID>(data.get()), L"\\", reinterpret_cast<LPVOID *>(&buf), &len)) {
-			return 0;
-		}
+	std::unique_ptr<uint8_t> data(new uint8_t[sz + 1]);
+	if (!GetFileVersionInfoW(
+			path, 0, sz, reinterpret_cast<LPVOID>(data.get()))) {
+		return 0;
+	}
 
-		return HIWORD(buf->dwProductVersionLS);
-	})();
-}
+	VS_FIXEDFILEINFO *buf;
+	UINT len;
+	if (!VerQueryValueW(
+			reinterpret_cast<LPCVOID>(data.get()),
+			L"\\",
+			reinterpret_cast<LPVOID *>(&buf),
+			&len)) {
+		return 0;
+	}
+
+	return HIWORD(buf->dwProductVersionLS);
+})();
+
+} // namespace nob

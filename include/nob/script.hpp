@@ -1,262 +1,264 @@
 #pragma once
 
-#include <rua/co.hpp>
+#include <rua/fiber.hpp>
 #include <rua/macros.hpp>
-#include <rua/limits.hpp>
 #include <rua/sched.hpp>
-#include <rua/chan.hpp>
+#include <rua/sync.hpp>
+#include <rua/types.hpp>
 
-#include <functional>
-#include <thread>
 #include <atomic>
+#include <functional>
 #include <memory>
+#include <thread>
 
 namespace nob {
-	namespace this_script {
-		enum class mode_t {
-			not_loaded,
-			shv,
-			ysc,
-			main_thread,
-			unique_thread
-		};
 
-		extern mode_t mode;
-		extern size_t load_count;
-		extern std::atomic<size_t> load_count_s;
-		extern std::atomic<std::thread::id> thread_id;
-		extern std::atomic<bool> is_exiting;
-	} /* this_script */
+namespace this_script {
 
-	class task {
-		public:
-			task(std::nullptr_t = nullptr) : _cp_tsk() {}
+enum class mode_t { not_loaded, shv, ysc, main_thread, unique_thread };
 
-			task(const std::function<void()> &handler, size_t duration = rua::nmax<size_t>()) {
-				_cp_tsk = pool().add(handler, duration);
-			}
+extern mode_t mode;
+extern size_t load_count;
+extern std::atomic<size_t> load_count_s;
+extern std::atomic<std::thread::id> thread_id;
+extern std::atomic<bool> is_exiting;
 
-			operator bool() const {
-				return _cp_tsk;
-			}
+} // namespace this_script
 
-			void del() {
-				_cp_tsk.stop();
-			}
+using ms = rua::ms;
 
-			void reset_duration(size_t duration = 0) {
-				_cp_tsk.reset_duration(duration);
-			}
+class task {
+public:
+	task(std::nullptr_t = nullptr) : _cp_tsk() {}
 
-			static rua::co_pool &pool() {
-				static rua::co_pool inst;
-				return inst;
-			}
-
-		private:
-			rua::co_pool::task _cp_tsk;
-	};
-
-	inline task go(const std::function<void()> &handler) {
-		return task(handler, 0);
+	task(
+		const std::function<void()> &handler,
+		ms duration = rua::duration_max()) {
+		_cp_tsk = pool().attach(handler, duration);
 	}
 
-	inline bool in_this_script() {
-		return std::this_thread::get_id() == this_script::thread_id;
+	operator bool() const {
+		return static_cast<bool>(_cp_tsk);
 	}
 
-	namespace this_task {
-		inline void del() {
-			task::pool().current().stop();
+	void del() {
+		_cp_tsk.stop();
+	}
+
+	void reset_duration(ms duration = 0) {
+		_cp_tsk.reset_duration(duration);
+	}
+
+	static rua::fiber_driver &pool() {
+		static rua::fiber_driver inst;
+		return inst;
+	}
+
+private:
+	rua::fiber _cp_tsk;
+};
+
+inline task go(const std::function<void()> &handler) {
+	return task(handler, 0);
+}
+
+inline bool in_this_script() {
+	return std::this_thread::get_id() == this_script::thread_id;
+}
+
+namespace this_task {
+
+inline void del() {
+	task::pool().current().stop();
+}
+
+inline void reset_duration(ms duration) {
+	task::pool().current().reset_duration(duration);
+}
+
+} // namespace this_task
+
+inline void sleep(ms duration) {
+	rua::sleep(duration);
+}
+
+inline void yield() {
+	rua::yield();
+}
+
+// used to non-game resources initialization.
+class on_load {
+public:
+	on_load() : _it(_handler_list().end()) {}
+
+	on_load(std::function<void()> handler) {
+		if (!handler) {
+			return;
 		}
+		_handler_list().emplace_back(std::move(handler));
+		_it = --_handler_list().end();
+	}
 
-		inline void reset_duration(size_t duration) {
-			task::pool().current().reset_duration(duration);
+	~on_load() {
+		del();
+	}
+
+	on_load(const on_load &) = delete;
+
+	on_load &operator=(const on_load &) = delete;
+
+	on_load(on_load &&src) : _it(src._it) {
+		auto &li = _handler_list();
+		if (src._it != li.end()) {
+			src._it = li.end();
 		}
 	}
 
-	inline void sleep(size_t duration) {
-		rua::sleep(duration);
+	on_load &operator=(on_load &&src) {
+		del();
+		auto &li = _handler_list();
+		if (src._it != li.end()) {
+			_it = src._it;
+			src._it = li.end();
+		}
+		return *this;
 	}
 
-	inline void yield() {
-		rua::yield();
+	operator bool() const {
+		return _it != _handler_list().end();
 	}
 
-	// used to non-game resources initialization.
-	class on_load {
-		public:
-			on_load() : _it(_handler_list().end()) {}
+	void del() {
+		auto &li = _handler_list();
+		if (_it == li.end()) {
+			return;
+		}
+		li.erase(_it);
+		_it = li.end();
+	}
 
-			on_load(std::function<void()> handler) {
-				if (!handler) {
-					return;
-				}
-				_handler_list().emplace_back(std::move(handler));
-				_it = --_handler_list().end();
-			}
+	static size_t count() {
+		return _handler_list().size();
+	}
 
-			~on_load() {
-				del();
-			}
+	static void handle() {
+		for (auto &hdr : _handler_list()) {
+			hdr();
+		}
+	}
 
-			on_load(const on_load &) = delete;
+private:
+	using _handler_list_t = std::list<std::function<void()>>;
 
-			on_load &operator=(const on_load &) = delete;
+	_handler_list_t::iterator _it;
 
-			on_load(on_load &&src) : _it(src._it) {
-				auto &li = _handler_list();
-				if (src._it != li.end()) {
-					src._it = li.end();
-				}
-			}
+	static _handler_list_t &_handler_list() {
+		static _handler_list_t inst;
+		return inst;
+	}
+};
 
-			on_load &operator=(on_load &&src) {
-				del();
-				auto &li = _handler_list();
-				if (src._it != li.end()) {
-					_it = src._it;
-					src._it = li.end();
-				}
-				return *this;
-			}
+// used to release game resources during a halfway exit.
+class on_unload {
+public:
+	on_unload() : _it(_handler_list().end()) {}
 
-			operator bool() const {
-				return _it != _handler_list().end();
-			}
+	on_unload(std::function<void()> handler) {
+		if (!handler) {
+			return;
+		}
+		_handler_list().emplace_back(std::move(handler));
+		_it = --_handler_list().end();
+	}
 
-			void del() {
-				auto &li = _handler_list();
-				if (_it == li.end()) {
-					return;
-				}
-				li.erase(_it);
-				_it = li.end();
-			}
+	~on_unload() {
+		del();
+	}
 
-			static size_t count() {
-				return _handler_list().size();
-			}
+	on_unload(const on_unload &) = delete;
 
-			static void handle() {
-				for (auto &hdr : _handler_list()) {
-					hdr();
-				}
-			}
+	on_unload &operator=(const on_unload &) = delete;
 
-		private:
-			using _handler_list_t = std::list<std::function<void()>>;
+	on_unload(on_unload &&src) : _it(src._it) {
+		auto &li = _handler_list();
+		if (src._it != li.end()) {
+			src._it = li.end();
+		}
+	}
 
-			_handler_list_t::iterator _it;
+	on_unload &operator=(on_unload &&src) {
+		del();
+		auto &li = _handler_list();
+		if (src._it != li.end()) {
+			_it = src._it;
+			src._it = li.end();
+		}
+		return *this;
+	}
 
-			static _handler_list_t &_handler_list() {
-				static _handler_list_t inst;
-				return inst;
-			}
-	};
+	operator bool() const {
+		return _it != _handler_list().end();
+	}
 
-	// used to release game resources during a halfway exit.
-	class on_unload {
-		public:
-			on_unload() : _it(_handler_list().end()) {}
+	void del() {
+		auto &li = _handler_list();
+		if (_it == li.end()) {
+			return;
+		}
+		li.erase(_it);
+		_it = li.end();
+	}
 
-			on_unload(std::function<void()> handler) {
-				if (!handler) {
-					return;
-				}
-				_handler_list().emplace_back(std::move(handler));
-				_it = --_handler_list().end();
-			}
+	static size_t count() {
+		return _handler_list().size();
+	}
 
-			~on_unload() {
-				del();
-			}
+	static void handle() {
+		auto &li = _handler_list();
+		for (auto rit = li.rbegin(); rit != li.rend(); ++rit) {
+			(*rit)();
+		}
+	}
 
-			on_unload(const on_unload &) = delete;
+private:
+	using _handler_list_t = std::list<std::function<void()>>;
 
-			on_unload &operator=(const on_unload &) = delete;
+	_handler_list_t::iterator _it;
 
-			on_unload(on_unload &&src) : _it(src._it) {
-				auto &li = _handler_list();
-				if (src._it != li.end()) {
-					src._it = li.end();
-				}
-			}
+	static _handler_list_t &_handler_list() {
+		static _handler_list_t inst;
+		return inst;
+	}
+};
 
-			on_unload &operator=(on_unload &&src) {
-				del();
-				auto &li = _handler_list();
-				if (src._it != li.end()) {
-					_it = src._it;
-					src._it = li.end();
-				}
-				return *this;
-			}
+class on_load_task {
+public:
+	on_load_task() = default;
 
-			operator bool() const {
-				return _it != _handler_list().end();
-			}
+	on_load_task(const std::function<void()> &handler) :
+		_ol(on_load([handler]() { go(handler); })) {}
 
-			void del() {
-				auto &li = _handler_list();
-				if (_it == li.end()) {
-					return;
-				}
-				li.erase(_it);
-				_it = li.end();
-			}
+	operator bool() const {
+		return _ol;
+	}
 
-			static size_t count() {
-				return _handler_list().size();
-			}
+	void del() {
+		_ol.del();
+	}
 
-			static void handle() {
-				auto &li = _handler_list();
-				for (auto rit = li.rbegin(); rit != li.rend(); ++rit) {
-					(*rit)();
-				}
-			}
+private:
+	on_load _ol;
+};
 
-		private:
-			using _handler_list_t = std::list<std::function<void()>>;
+class once_task {
+public:
+	once_task(std::function<void()> handler) {
+		go(std::move(handler));
+	}
+};
 
-			_handler_list_t::iterator _it;
+template <typename T>
+using chan = rua::chan<T>;
 
-			static _handler_list_t &_handler_list() {
-				static _handler_list_t inst;
-				return inst;
-			}
-	};
-
-	class on_load_task {
-		public:
-			on_load_task() = default;
-
-			on_load_task(const std::function<void()> &handler) : _ol(on_load([handler]() {
-				go(handler);
-			})) {}
-
-			operator bool() const {
-				return _ol;
-			}
-
-			void del() {
-				_ol.del();
-			}
-
-		private:
-			on_load _ol;
-	};
-
-	class once_task {
-		public:
-			once_task(std::function<void()> handler) {
-				go(std::move(handler));
-			}
-	};
-
-	template <typename T>
-	using chan = rua::chan<T>;
-
-	void terminate_unimportant_scripts();
-} /* nob */
+void terminate_unimportant_scripts();
+} // namespace nob

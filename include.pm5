@@ -1,4 +1,0 @@
-dofileopt "deps/rua/include.pm5"
-dofileopt "deps/minhook_cpp/include.pm5"
-
-includedirs { "include" }

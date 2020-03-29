@@ -3,15 +3,13 @@
 #include <minhook.hpp>
 #include <rua/observer.hpp>
 
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 
-#include <sstream>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <random>
-
-#include <rua/disable_msvc_sh1t.h>
+#include <sstream>
 
 float high_speed = 0.0f;
 
@@ -19,20 +17,25 @@ nob::task print_pos([]() {
 	auto pb = nob::player::body();
 	auto pos = pb.pos();
 	std::stringstream ss;
-	ss << pos.str() << ", " << pb.rot().str() << ", " << high_speed << ", " << nob::task::pool().stack_count();
-	nob::g2d::draw_text(0, 0.93, 1, ss.str().c_str(), 0.4, 255, 255, 255, 255, 1, true);
+	ss << pos.str() << ", " << pb.rot().str() << ", " << high_speed;
+	nob::g2d::draw_text(
+		0, 0.93f, 1, ss.str().c_str(), 0.4f, 255, 255, 255, 255, 1, true);
 });
 
 nob::task speed_log([]() {
-	static auto lst_tp = std::chrono::steady_clock::time_point::min();
-	static nob::vector3 lst_pos {0, 0, 0};
+	static auto lst_tp = (std::chrono::steady_clock::time_point::min)();
+	static nob::vector3 lst_pos{0, 0, 0};
 	auto pb = nob::player::body();
 	if (!pb.is_in_vehicle()) {
 		auto tp = std::chrono::steady_clock::now();
 		auto pos = pb.pos();
 		if (lst_pos.z) {
 			auto dis = pos.distance(lst_pos);
-			auto speed = 1000.0f / std::chrono::duration_cast<std::chrono::milliseconds>(tp - lst_tp).count() * dis;
+			auto speed = 1000.0f /
+						 std::chrono::duration_cast<std::chrono::milliseconds>(
+							 tp - lst_tp)
+							 .count() *
+						 dis;
 			if (speed > high_speed) {
 				high_speed = speed;
 			}
@@ -43,9 +46,9 @@ nob::task speed_log([]() {
 	nob::sleep(5000);
 });
 
-nob::on_load_task unlock_vehs(nob::unlock_banned_vehicles);
-/*
-nob::on_load_task blk([]() {
+nob::on_load_task unlock_vehs(nob::unban_vehicles);
+
+/*nob::on_load_task blk([]() {
 	nob::player::switch_scene(nob::vector3{0, 0, 75});
 
 	while (*nob::ntv::game_state != nob::ntv::game_state_t::playing) {
@@ -59,17 +62,19 @@ nob::on_load_task blk([]() {
 using namespace nob::ui;
 
 void add_veh(list &li, const nob::model &m) {
-	li->items.emplace_back(action(nob::vehicle::localized_names_from_model(m), m.name(), [m]() {
-		auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
-		veh.place_on_ground();
-		veh.set_best_mods();
-		veh.invincible();
-	}));
+	li.items.emplace_back(
+		action(nob::vehicle::localized_names_from_model(m), m.name(), [m]() {
+			auto veh = nob::vehicle(m, nob::player::body().pos({0, 5, 0}));
+			veh.place_on_ground();
+			veh.set_best_mods();
+			veh.invincible();
+		}));
 }
 
+// clang-format off
 nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 	list("Vehicle", {
-		list("Spawn", [](list li) {
+		list("Spawn", [](list &li) {
 			list super("Super"), plane("Plane"), heli("Helicopter"), other("Other");
 
 			for (nob::model m : nob::base_vehicles) {
@@ -104,11 +109,11 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				}
 			}
 
-			li->items = { std::move(super), std::move(plane), std::move(heli), std::move(other) };
+			li.items = { std::move(super), std::move(plane), std::move(heli), std::move(other) };
 
-			li->on_show = nullptr;
+			li.on_show = nullptr;
 		}),
-		list("Mods", [](list li) {
+		list("Mods", [](list &li) {
 			auto last_veh = nob::player::body().last_vehicle();
 
 			static nob::vehicle veh;
@@ -117,28 +122,28 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 			}
 			veh = last_veh;
 
-			li->items.clear();
+			li.items.clear();
 
 			for (int i = 0; i < veh.mod_type_sum; ++i) {
 				if (!veh.mod_sum(i)) {
 					continue;
 				}
 				auto mod_type_name = nob::i18n(veh.mod_type_name(i));
-				li->items.emplace_back(list(mod_type_name, [i](list li) mutable {
+				li.items.emplace_back(list(mod_type_name, [i](list li) mutable {
 					for (int j = -1; j < veh.mod_sum(i); ++j) {
 						auto mod_name = nob::i18n(veh.mod_name(i, j));
-						li->items.emplace_back(action(mod_name, [i, j]() mutable {
+						li.items.emplace_back(action(mod_name, [i, j]() mutable {
 							veh.mod(i, j);
 						}));
 					}
-					li->on_show = nullptr;
+					li.on_show = nullptr;
 				}));
 			}
 		}),
-		list("Test Speed", [](list li) {
+		list("Test Speed", [](list &li) {
 			static nob::vector3 pos, rot;
 
-			li->items.emplace_back(action("Start", [li]() mutable {
+			li.items.emplace_back(action("Start", [li]() mutable {
 				static nob::task tsk;
 				if (tsk) {
 					return;
@@ -174,7 +179,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 					auto result = pb.current_vehicle().localized_names().comb() + ": " + std::to_string(km_h) + " km/h";
 
 					nob::ui::tip(result);
-					li->items.emplace_back(action(result, []() {}));
+					li.items.emplace_back(action(result, []() {}));
 
 					tsk.del();
 				});
@@ -182,14 +187,14 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				nob::ui::menu::close_any();
 			}));
 
-			li->items.emplace_back(action("Clear", [li]() mutable {
-				auto it = ++++++li->items.begin();
-				while (it != li->items.end()) {
-					it = li->items.erase(it);
+			li.items.emplace_back(action("Clear", [li]() mutable {
+				auto it = ++++++li.items.begin();
+				while (it != li.items.end()) {
+					it = li.items.erase(it);
 				}
 			}));
 
-			li->items.emplace_back(action("Set Point", []() {
+			li.items.emplace_back(action("Set Point", []() {
 				auto pb = nob::player::body();
 				if (pb.is_in_vehicle()) {
 					auto veh = pb.current_vehicle();
@@ -201,7 +206,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				}
 			}));
 
-			li->items.emplace_back(action("Back Point", []() {
+			li.items.emplace_back(action("Back Point", []() {
 				auto pb = nob::player::body();
 				if (pb.is_in_vehicle()) {
 					auto veh = pb.current_vehicle();
@@ -213,7 +218,7 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 				}
 			}));
 
-			li->on_show = nullptr;
+			li.on_show = nullptr;
 		})
 	}),
 	list("Weapon", {
@@ -226,13 +231,13 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		action("Remove All", []() {
 			nob::player::body().clear_armed();
 		}),
-		list("Get", [](list li) {
+		list("Get", [](list &li) {
 			for (auto &wpn : nob::arm::weapons) {
 				if (wpn == "WEAPON_UNARMED") {
 					continue;
 				}
 				auto di = nob::arm::display_info(wpn);
-				li->items.emplace_back(action(nob::i18n(di.name), nob::i18n(di.desc), [&wpn]() {
+				li.items.emplace_back(action(nob::i18n(di.name), nob::i18n(di.desc), [&wpn]() {
 					auto pb = nob::player::body();
 					auto wpn_grp = nob::arm::weapon_group(wpn);
 
@@ -949,9 +954,9 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		flag("Night Vision", [](bool val) {
 			nob::screen::night_vision(val);
 		}),
-		list("Filters", [](list li) {
+		list("Filters", [](list &li) {
 			for (auto name : nob::screen::filters) {
-				li->items.emplace_back(flag(name, [name](bool val) {
+				li.items.emplace_back(flag(name, [name](bool val) {
 					nob::screen::filter(name, val);
 				}));
 			}
@@ -963,40 +968,41 @@ nob::ui::menu ia_menu("Nob Tester", list("Interaction Menu", {
 		})
 	})
 }));
+// clang-format on
 
 nob::hotkey_listener ia_menu_open_hotkey(
 	nob::hotkey_t::InteractionMenu,
-	[](nob::hotkey_t, bool down)->bool {
+	[](nob::hotkey_t, bool down) -> bool {
 		if (down) {
 			ia_menu.toggle();
 		}
 		return false;
 	},
-	true
-)/*,
-veh(
-	{
-		nob::hotkey_t::VehicleMoveUp,
-		nob::hotkey_t::VehicleMoveUpOnly,
-		nob::hotkey_t::VehicleSlowMoUpOnly
-	},
-	[](nob::hotkey_t hk, bool down)->bool {
-		if (down) {
-			switch (hk) {
-				case nob::hotkey_t::VehicleAccelerate:
-					nob::log("VehicleAccelerate");
-					break;
-				case nob::hotkey_t::VehicleBrake:
-					nob::log("VehicleBrake");
-					break;
-				case nob::hotkey_t::VehicleDuck:
-					nob::log("VehicleDuck");
-					break;
-				default:
-					break;
-			}
-		}
-		return false;
-	},
-	false
-)*/;
+	true) /*,
+		 veh(
+			 {
+				 nob::hotkey_t::VehicleMoveUp,
+				 nob::hotkey_t::VehicleMoveUpOnly,
+				 nob::hotkey_t::VehicleSlowMoUpOnly
+			 },
+			 [](nob::hotkey_t hk, bool down)->bool {
+				 if (down) {
+					 switch (hk) {
+						 case nob::hotkey_t::VehicleAccelerate:
+							 nob::log("VehicleAccelerate");
+							 break;
+						 case nob::hotkey_t::VehicleBrake:
+							 nob::log("VehicleBrake");
+							 break;
+						 case nob::hotkey_t::VehicleDuck:
+							 nob::log("VehicleDuck");
+							 break;
+						 default:
+							 break;
+					 }
+				 }
+				 return false;
+			 },
+			 false
+		 )*/
+	;

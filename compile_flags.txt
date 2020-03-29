@@ -1,0 +1,4 @@
+-std=c++17
+-I./../minhook_cpp/include
+-I./../rua/include
+-I./include

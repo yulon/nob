@@ -1,6 +1,0 @@
-[submodule "deps/rua"]
-	path = deps/rua
-	url = https://github.com/yulon/rua.git
-[submodule "deps/minhook_cpp"]
-	path = deps/minhook_cpp
-	url = https://github.com/yulon/minhook_cpp.git
