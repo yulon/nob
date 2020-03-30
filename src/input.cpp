@@ -119,7 +119,7 @@ key_listener::operator bool() const {
 }
 
 void key_listener::del() {
-	if (!*this || !_kl::lnr_li) {
+	if (!*this || this_script::is_exiting) {
 		return;
 	}
 	_kl::lnr_li->erase(_lnr_it);
@@ -304,7 +304,7 @@ void hotkey_listener::prevent_default(bool toggle) {
 }
 
 void hotkey_listener::del() {
-	if (!*this || !_hkl::lnr_li_map || !_hkl::blk_map) {
+	if (!*this || this_script::is_exiting) {
 		return;
 	}
 	for (size_t i = 0; i < _hks.size(); ++i) {
