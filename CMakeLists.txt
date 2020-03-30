@@ -7,15 +7,13 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/DepPull.cmake")
 DepPull(
 	minhook_cpp
 	GIT_REPO "https://github.com/yulon/minhook_cpp.git"
-	GIT_TAG "3af32f8c360e43703e37c1157efb2769e69678a5"
-	DEV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../minhook_cpp"
+	GIT_TAG "f3239f712c42cb949b3be49bba841eb0931c783f"
 )
 
 DepPull(
 	rua
 	GIT_REPO "https://github.com/yulon/rua.git"
-	GIT_TAG "81f0f900f4085c7973e28a9292666ab1b0f9ce79"
-	DEV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../rua"
+	GIT_TAG "f6f8a099d3b06818e164987887e87e58c53d6e56"
 )
 
 file(GLOB_RECURSE nob_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
