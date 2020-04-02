@@ -224,14 +224,14 @@ namespace {
 
 const char *_com_dn_flyer(hash_t iParam0, bool bParam1) {
 	switch (iParam0) {
-	case hash("frogger"):
+	case hash("FROGGER"):
 	case hash("frogger2"):
 		return "MAIBATSU";
 
-	case hash("maverick"):
-	case hash("polmav"):
-	case hash("luxor"):
-	case hash("shamal"):
+	case hash("MAVERICK"):
+	case hash("POLMAV"):
+	case hash("LUXOR"):
+	case hash("SHAMAL"):
 		if (bParam1) {
 			return "BUCKING";
 		} else {
@@ -239,36 +239,36 @@ const char *_com_dn_flyer(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("cargobob"):
+	case hash("CARGOBOB"):
 	case hash("annihilator"):
-	case hash("cuban800"):
-	case hash("duster"):
-	case hash("stunt"):
+	case hash("CUBAN800"):
+	case hash("DUSTER"):
+	case hash("STUNT"):
 		return "WESTERN";
 		break;
 
-	case hash("buzzard"):
-	case hash("buzzard2"):
+	case hash("BUZZARD"):
+	case hash("BUZZARD2"):
 		return "NAGASAKI";
 		break;
 
-	case hash("mammatus"):
-	case hash("velum"):
-	case hash("velum2"):
-	case hash("lazer"):
+	case hash("MAMMATUS"):
+	case hash("VELUM"):
+	case hash("VELUM2"):
+	case hash("LAZER"):
 		return "JOBUILT";
 		break;
 	}
-	if (iParam0 == hash("vestra")) {
+	if (iParam0 == hash("VESTRA")) {
 		if (bParam1) {
 			return "BUCKING";
 		} else {
 			return "BUCKINGHAM";
 		}
 	}
-	if (((((iParam0 == hash("miljet") || iParam0 == hash("swift")) ||
-		   iParam0 == hash("swift2")) ||
-		  iParam0 == hash("luxor2")) ||
+	if (((((iParam0 == hash("MILJET") || iParam0 == hash("SWIFT")) ||
+		   iParam0 == hash("SWIFT2")) ||
+		  iParam0 == hash("LUXOR2")) ||
 		 iParam0 == hash("supervolito")) ||
 		iParam0 == hash("supervolito2")) {
 		if (bParam1) {
@@ -277,13 +277,13 @@ const char *_com_dn_flyer(hash_t iParam0, bool bParam1) {
 			return "BUCKINGHAM";
 		}
 	}
-	if (iParam0 == hash("besra")) {
+	if (iParam0 == hash("BESRA")) {
 		return "WESTERN";
 	}
-	if (iParam0 == hash("hydra") || iParam0 == hash("thruster")) {
+	if (iParam0 == hash("HYDRA") || iParam0 == hash("thruster")) {
 		return "MAMMOTH";
 	}
-	if (iParam0 == hash("volatus") || iParam0 == hash("nimbus")) {
+	if (iParam0 == hash("VOLATUS") || iParam0 == hash("NIMBUS")) {
 		if (bParam1) {
 			return "BUCKING";
 		} else {
@@ -295,8 +295,8 @@ const char *_com_dn_flyer(hash_t iParam0, bool bParam1) {
 
 const char *_com_dn_boat(hash_t iParam0, bool bParam1) {
 	switch (iParam0) {
-	case hash("squalo"):
-	case hash("tropic"):
+	case hash("SQUALO"):
+	case hash("TROPIC"):
 		if (bParam1) {
 			return "BUCKING";
 		} else {
@@ -304,12 +304,12 @@ const char *_com_dn_boat(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("jetmax"):
-	case hash("suntrap"):
+	case hash("JETMAX"):
+	case hash("SUNTRAP"):
 		return "OCELOT";
 		break;
 
-	case hash("dinghy"):
+	case hash("DINGHY"):
 		if (!bParam1) {
 			return "OCELOT";
 		}
@@ -331,7 +331,7 @@ const char *_com_dn_boat(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("seashark"):
+	case hash("SEASHARK"):
 		if (bParam1) {
 			return "SPEEDOPH";
 		} else {
@@ -339,7 +339,7 @@ const char *_com_dn_boat(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("toro"):
+	case hash("TORO"):
 		if (bParam1) {
 			return "LAMPADA";
 		} else {
@@ -347,7 +347,7 @@ const char *_com_dn_boat(hash_t iParam0, bool bParam1) {
 		}
 		break;
 	}
-	if (iParam0 == hash("speeder") || iParam0 == hash("speeder2")) {
+	if (iParam0 == hash("SPEEDER") || iParam0 == hash("speeder2")) {
 		if (bParam1) {
 			return "PEGASSI";
 		} else {
@@ -370,24 +370,26 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		return "HIJAK";
 		break;
 
-	case hash("issi2"):
+	case hash("ISSI2"):
+	case hash("issi7"):
 		return "WEENY";
 		break;
 
-	case hash("elegy2"):
+	case hash("ELEGY2"):
+	case hash("hellion"):
 		return "ANNIS";
 		break;
 
-	case hash("romero"):
+	case hash("ROMERO"):
 		return "CHARIOT";
 		break;
 
-	case hash("baller"):
-	case hash("baller2"):
-	case hash("baller3"):
-	case hash("baller4"):
-	case hash("baller5"):
-	case hash("baller6"):
+	case hash("BALLER"):
+	case hash("BALLER2"):
+	case hash("BALLER3"):
+	case hash("BALLER4"):
+	case hash("BALLER5"):
+	case hash("BALLER6"):
 		if (bParam1) {
 			return "GALLIVAN";
 		} else {
@@ -395,21 +397,21 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("surfer"):
-	case hash("surfer2"):
-	case hash("dune"):
+	case hash("SURFER"):
+	case hash("SURFER2"):
+	case hash("DUNE"):
 	case hash("bfinjection"):
 		return "BF";
 		break;
 
 	case hash("feltzer2"):
-	case hash("dubsta"):
-	case hash("surano"):
+	case hash("DUBSTA"):
+	case hash("SURANO"):
 	case hash("schwarzer"):
-	case hash("schafter2"):
-	case hash("serrano"):
+	case hash("SCHAFTER2"):
+	case hash("SERRANO"):
 	case hash("dubsta2"):
-	case hash("feltzer3"):
+	case hash("FELTZER3"):
 		if (bParam1) {
 			return "BENEFAC";
 		} else {
@@ -417,12 +419,13 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("sentinel"):
-	case hash("sentinel2"):
-	case hash("zion"):
-	case hash("zion2"):
-	case hash("oracle"):
-	case hash("oracle2"):
+	case hash("SENTINEL"):
+	case hash("SENTINEL2"):
+	case hash("ZION"):
+	case hash("ZION2"):
+	case hash("zion3"):
+	case hash("ORACLE"):
+	case hash("ORACLE2"):
 		if (bParam1) {
 			return "UBERMACH";
 		} else {
@@ -430,17 +433,18 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("ztype"):
-	case hash("adder"):
+	case hash("ZTYPE"):
+	case hash("ADDER"):
+	case hash("thrax"):
 		return "TRUFFADE";
 		break;
 
-	case hash("jb700"):
-	case hash("rapidgt"):
+	case hash("JB700"):
+	case hash("RAPIDGT"):
 	case hash("rapidgt2"):
-	case hash("exemplar"):
-	case hash("massacro"):
-	case hash("massacro2"):
+	case hash("EXEMPLAR"):
+	case hash("MASSACRO"):
+	case hash("MASSACRO2"):
 		if (bParam1) {
 			return "DEWBAUCH";
 		} else {
@@ -448,21 +452,22 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("tailgater"):
-	case hash("ninef"):
-	case hash("ninef2"):
-	case hash("rocoto"):
+	case hash("TAILGATER"):
+	case hash("NINEF"):
+	case hash("NINEF2"):
+	case hash("ROCOTO"):
+	case hash("drafter"):
 		return "OBEY";
 		break;
 
-	case hash("picador"):
-	case hash("surge"):
-	case hash("fugitive"):
-	case hash("marshall"):
+	case hash("PICADOR"):
+	case hash("SURGE"):
+	case hash("FUGITIVE"):
+	case hash("MARSHALL"):
 		return "CHEVAL";
 		break;
 
-	case hash("mower"):
+	case hash("MOWER"):
 		if (bParam1) {
 			return "JACKSHP";
 		} else {
@@ -470,58 +475,59 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("tornado"):
-	case hash("tornado2"):
-	case hash("tornado3"):
-	case hash("burrito"):
+	case hash("TORNADO"):
+	case hash("TORNADO2"):
+	case hash("TORNADO3"):
+	case hash("BURRITO"):
 	case hash("burrito2"):
-	case hash("premier"):
-	case hash("voodoo2"):
-	case hash("sabregt"):
+	case hash("PREMIER"):
+	case hash("VOODOO2"):
+	case hash("SABREGT"):
 	case hash("rancherxl"):
-	case hash("vigero"):
-	case hash("asea"):
+	case hash("VIGERO"):
+	case hash("ASEA"):
 	case hash("asea2"):
-	case hash("granger"):
-	case hash("pranger"):
-	case hash("sheriff"):
-	case hash("sheriff2"):
-	case hash("gburrito"):
-	case hash("gburrito2"):
-	case hash("stalion"):
+	case hash("GRANGER"):
+	case hash("PRANGER"):
+	case hash("SHERIFF"):
+	case hash("SHERIFF2"):
+	case hash("GBURRITO"):
+	case hash("GBURRITO2"):
+	case hash("STALION"):
 		return "DECLASSE";
 		break;
 
 	case hash("buccaneer"):
 	case hash("cavalcade"):
 	case hash("cavalcade2"):
-	case hash("emperor"):
-	case hash("emperor2"):
-	case hash("manana"):
-	case hash("primo"):
+	case hash("EMPEROR"):
+	case hash("EMPEROR2"):
+	case hash("MANANA"):
+	case hash("PRIMO"):
 	case hash("washington"):
-	case hash("virgo"):
+	case hash("VIRGO"):
 		return "ALBANY";
 		break;
 
-	case hash("banshee"):
-	case hash("bison"):
-	case hash("gresley"):
-	case hash("youga"):
-	case hash("gauntlet"):
-	case hash("buffalo"):
-	case hash("buffalo2"):
+	case hash("BANSHEE"):
+	case hash("BISON"):
+	case hash("GRESLEY"):
+	case hash("YOUGA"):
+	case hash("GAUNTLET"):
+	case hash("BUFFALO"):
+	case hash("BUFFALO2"):
 	case hash("ratloader"):
-	case hash("dloader"):
+	case hash("DLOADER"):
 	case hash("ratloader2"):
-	case hash("rumpo"):
-	case hash("banshee2"):
+	case hash("RUMPO"):
+	case hash("BANSHEE2"):
+	case hash("gauntlet3"):
 		return "BRAVADO";
 		break;
 
-	case hash("stinger"):
+	case hash("STINGER"):
 	case hash("stingergt"):
-	case hash("cheetah"):
+	case hash("CHEETAH"):
 	case hash("carbonizzare"):
 		if (bParam1) {
 			return "GROTTI";
@@ -530,8 +536,8 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("coquette"):
-	case hash("coquette3"):
+	case hash("COQUETTE"):
+	case hash("COQUETTE3"):
 		if (bParam1) {
 			return "INVERTO";
 		} else {
@@ -539,132 +545,136 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("radi"):
-	case hash("sadler"):
+	case hash("RADI"):
+	case hash("SADLER"):
 	case hash("dominator"):
-	case hash("sandking"):
+	case hash("SANDKING"):
 	case hash("sandking2"):
-	case hash("police"):
+	case hash("POLICE"):
 	case hash("police3"):
-	case hash("policet"):
-	case hash("benson"):
-	case hash("bullet"):
-	case hash("minivan"):
-	case hash("speedo"):
-	case hash("speedo2"):
-	case hash("peyote"):
-	case hash("towtruck"):
+	case hash("POLICET"):
+	case hash("BENSON"):
+	case hash("BULLET"):
+	case hash("MINIVAN"):
+	case hash("SPEEDO"):
+	case hash("SPEEDO2"):
+	case hash("PEYOTE"):
+	case hash("TOWTRUCK"):
 	case hash("towtruck2"):
-	case hash("bobcatxl"):
-	case hash("stanier"):
-	case hash("hotknife"):
-	case hash("slamvan"):
-	case hash("guardian"):
-	case hash("chino"):
+	case hash("BOBCATXL"):
+	case hash("STANIER"):
+	case hash("HOTKNIFE"):
+	case hash("SLAMVAN"):
+	case hash("GUARDIAN"):
+	case hash("CHINO"):
+	case hash("caracara2"):
 		return "VAPID";
 		break;
 
-	case hash("tiptruck"):
-	case hash("taco"):
+	case hash("TIPTRUCK"):
+	case hash("TACO"):
 	case hash("utillitruck"):
 	case hash("utillitruck2"):
 	case hash("utillitruck3"):
-	case hash("camper"):
-	case hash("riot"):
-	case hash("tourbus"):
+	case hash("CAMPER"):
+	case hash("RIOT"):
+	case hash("TOURBUS"):
 	case hash("ambulance"):
-	case hash("stockade"):
-	case hash("boxville"):
-	case hash("pony"):
+	case hash("STOCKADE"):
+	case hash("BOXVILLE"):
+	case hash("PONY"):
 		return "BRUTE";
 		break;
 
-	case hash("prairie"):
+	case hash("PRAIRIE"):
 		return "BOLLOKAN";
 		break;
 
-	case hash("jackal"):
-	case hash("f620"):
+	case hash("JACKAL"):
+	case hash("F620"):
+	case hash("locust"):
 		return "OCELOT";
 		break;
 
-	case hash("mesa"):
-	case hash("mesa3"):
-	case hash("bodhi2"):
-	case hash("seminole"):
-	case hash("crusader"):
+	case hash("MESA"):
+	case hash("MESA3"):
+	case hash("BODHI2"):
+	case hash("SEMINOLE"):
+	case hash("CRUSADER"):
 		return "CANIS";
 		break;
 
-	case hash("entityxf"):
+	case hash("ENTITYXF"):
 		return "OVERFLOD";
 		break;
 
-	case hash("monroe"):
-	case hash("infernus"):
-	case hash("bati"):
-	case hash("bati2"):
-	case hash("vacca"):
-	case hash("ruffian"):
+	case hash("MONROE"):
+	case hash("INFERNUS"):
+	case hash("BATI"):
+	case hash("BATI2"):
+	case hash("VACCA"):
+	case hash("RUFFIAN"):
 	case hash("faggio2"):
-	case hash("osiris"):
+	case hash("OSIRIS"):
+	case hash("zorrusso"):
 		return "PEGASSI";
 		break;
 
-	case hash("phoenix"):
-	case hash("ruiner"):
-	case hash("dukes"):
-	case hash("dukes2"):
+	case hash("PHOENIX"):
+	case hash("RUINER"):
+	case hash("DUKES"):
+	case hash("DUKES2"):
 		return "IMPONTE";
 		break;
 
-	case hash("bjxl"):
-	case hash("rebel"):
-	case hash("rebel2"):
+	case hash("BJXL"):
+	case hash("REBEL"):
+	case hash("REBEL2"):
 	case hash("asterope"):
-	case hash("intruder"):
-	case hash("futo"):
-	case hash("sultan"):
+	case hash("INTRUDER"):
+	case hash("FUTO"):
+	case hash("SULTAN"):
 	case hash("dilettante"):
 	case hash("dilettante2"):
-	case hash("kuruma"):
-	case hash("kuruma2"):
-	case hash("sultanrs"):
+	case hash("KURUMA"):
+	case hash("KURUMA2"):
+	case hash("SULTANRS"):
 		return "KARIN";
 		break;
 
-	case hash("penumbra"):
-	case hash("sanchez"):
-	case hash("sanchez2"):
-	case hash("mule"):
+	case hash("PENUMBRA"):
+	case hash("SANCHEZ"):
+	case hash("SANCHEZ2"):
+	case hash("MULE"):
 		return "MAIBATSU";
 		break;
 
-	case hash("blista"):
-	case hash("blista2"):
-	case hash("blista3"):
-	case hash("double"):
-	case hash("jester"):
-	case hash("jester2"):
-	case hash("enduro"):
-	case hash("vindicator"):
-	case hash("akuma"):
+	case hash("BLISTA"):
+	case hash("BLISTA2"):
+	case hash("BLISTA3"):
+	case hash("DOUBLE"):
+	case hash("JESTER"):
+	case hash("JESTER2"):
+	case hash("ENDURO"):
+	case hash("VINDICATOR"):
+	case hash("AKUMA"):
 		return "DINKA";
 		break;
 
-	case hash("fq2"):
+	case hash("FQ2"):
 		return "FATHOM";
 		break;
 
-	case hash("voltic"):
-	case hash("brawler"):
+	case hash("VOLTIC"):
+	case hash("BRAWLER"):
 		return "COIL";
 		break;
 	}
 	switch (iParam0) {
-	case hash("felon"):
-	case hash("felon2"):
-	case hash("casco"):
+	case hash("FELON"):
+	case hash("FELON2"):
+	case hash("CASCO"):
+	case hash("Novak"):
 		if (bParam1) {
 			return "LAMPADA";
 		} else {
@@ -672,17 +682,17 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("comet2"):
+	case hash("COMET2"):
 		return "PFISTER";
 		break;
 
-	case hash("fusilade"):
+	case hash("FUSILADE"):
 		return "SCHYSTER";
 		break;
 
-	case hash("stretch"):
-	case hash("regina"):
-	case hash("landstalker"):
+	case hash("STRETCH"):
+	case hash("REGINA"):
+	case hash("LANDSTALKER"):
 		if (bParam1) {
 			return "DUNDREAR";
 		} else {
@@ -690,49 +700,49 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("handler"):
+	case hash("HANDLER"):
 	case hash("bulldozer"):
-	case hash("docktug"):
-	case hash("cutter"):
-	case hash("mixer"):
-	case hash("mixer2"):
-	case hash("barracks"):
-	case hash("barracks2"):
-	case hash("biff"):
+	case hash("DOCKTUG"):
+	case hash("CUTTER"):
+	case hash("MIXER"):
+	case hash("MIXER2"):
+	case hash("BARRACKS"):
+	case hash("BARRACKS2"):
+	case hash("BIFF"):
 	case hash("forklift"):
-	case hash("ripley"):
-	case hash("airtug"):
-	case hash("dump"):
-	case hash("insurgent2"):
-	case hash("insurgent"):
+	case hash("RIPLEY"):
+	case hash("AIRTUG"):
+	case hash("DUMP"):
+	case hash("INSURGENT2"):
+	case hash("INSURGENT"):
 		return "HVY";
 		break;
 
-	case hash("packer"):
-	case hash("flatbed"):
-	case hash("tiptruck2"):
-	case hash("pounder"):
-	case hash("firetruk"):
+	case hash("PACKER"):
+	case hash("FLATBED"):
+	case hash("TIPTRUCK2"):
+	case hash("POUNDER"):
+	case hash("FIRETRUK"):
 		return "MTL";
 		break;
 
-	case hash("tractor"):
-	case hash("tractor2"):
+	case hash("TRACTOR"):
+	case hash("TRACTOR2"):
 		return "STANLEY";
 		break;
 
-	case hash("hauler"):
-	case hash("phantom"):
-	case hash("trash"):
+	case hash("HAULER"):
+	case hash("PHANTOM"):
+	case hash("TRASH"):
 		return "JOBUILT";
 		break;
 
-	case hash("patriot"):
+	case hash("PATRIOT"):
 		return "MAMMOTH";
 		break;
 
-	case hash("journey"):
-	case hash("stratum"):
+	case hash("JOURNEY"):
+	case hash("STRATUM"):
 		if (bParam1) {
 			return "ZIRCONIU";
 		} else {
@@ -740,14 +750,14 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("vader"):
-	case hash("pcj"):
+	case hash("VADER"):
+	case hash("PCJ"):
 		return "SHITZU";
 		break;
 
-	case hash("bagger"):
-	case hash("daemon"):
-	case hash("sovereign"):
+	case hash("BAGGER"):
+	case hash("DAEMON"):
+	case hash("SOVEREIGN"):
 		if (bParam1) {
 			return "WESTERN";
 		} else {
@@ -755,16 +765,16 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("blazer"):
-	case hash("caddy"):
+	case hash("BLAZER"):
+	case hash("CADDY"):
 	case hash("carbonrs"):
-	case hash("blazer3"):
-	case hash("blazer2"):
+	case hash("BLAZER3"):
+	case hash("BLAZER2"):
 		return "NAGASAKI";
 		break;
 
-	case hash("nemesis"):
-	case hash("lectro"):
+	case hash("NEMESIS"):
+	case hash("LECTRO"):
 		if (bParam1) {
 			return "PRINCIPL";
 		} else {
@@ -772,33 +782,33 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("hexer"):
+	case hash("HEXER"):
 		return "LCC";
 		break;
 
-	case hash("bmx"):
-	case hash("cruiser"):
-	case hash("scorcher"):
+	case hash("BMX"):
+	case hash("CRUISER"):
+	case hash("SCORCHER"):
 		if (!bParam1) {
 			return "Ped";
 		}
 		break;
 
-	case hash("tribike"):
-	case hash("tribike2"):
-	case hash("tribike3"):
+	case hash("TRIBIKE"):
+	case hash("TRIBIKE2"):
+	case hash("TRIBIKE3"):
 		if (!bParam1) {
 			return "TriCycles";
 		}
 		break;
 
 	case hash("cogcabrio"):
-	case hash("superd"):
-	case hash("windsor"):
+	case hash("SUPERD"):
+	case hash("WINDSOR"):
 		return "ENUS";
 		break;
 
-	case hash("habanero"):
+	case hash("HABANERO"):
 		if (bParam1) {
 			return "EMPEROR";
 		} else {
@@ -806,87 +816,88 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 		}
 		break;
 
-	case hash("ingot"):
+	case hash("INGOT"):
+	case hash("nebula"):
 		return "VULCAR";
 		break;
 
-	case hash("t20"):
+	case hash("T20"):
 		return "PROGEN";
 		break;
 	}
-	if (iParam0 == hash("bifta")) {
+	if (iParam0 == hash("BIFTA")) {
 		return "BF";
-	} else if (iParam0 == hash("kalahari")) {
+	} else if (iParam0 == hash("KALAHARI")) {
 		return "CANIS";
-	} else if (iParam0 == hash("paradise")) {
+	} else if (iParam0 == hash("PARADISE")) {
 		return "BRAVADO";
 	}
-	if (iParam0 == hash("btype")) {
+	if (iParam0 == hash("BTYPE")) {
 		return "ALBANY";
 	}
-	if (iParam0 == hash("zentorno")) {
+	if (iParam0 == hash("ZENTORNO")) {
 		return "PEGASSI";
-	} else if (iParam0 == hash("jester")) {
+	} else if (iParam0 == hash("JESTER")) {
 		return "DINKA";
-	} else if (iParam0 == hash("massacro")) {
+	} else if (iParam0 == hash("MASSACRO")) {
 		if (bParam1) {
 			return "DEWBAUCH";
 		} else {
 			return "DEWBAUCHEE";
 		}
-	} else if (iParam0 == hash("turismor")) {
+	} else if (iParam0 == hash("TURISMOR")) {
 		if (bParam1) {
 			return "GROTTI";
 		} else {
 			return "Grotti_2";
 		}
-	} else if (iParam0 == hash("huntley")) {
+	} else if (iParam0 == hash("HUNTLEY")) {
 		return "ENUS";
-	} else if (iParam0 == hash("alpha")) {
+	} else if (iParam0 == hash("ALPHA")) {
 		return "ALBANY";
-	} else if (iParam0 == hash("thrust")) {
+	} else if (iParam0 == hash("THRUST")) {
 		return "DINKA";
-	} else if (iParam0 == hash("sovereign")) {
-		return "DINKA";
-	}
-	if (iParam0 == hash("thrust")) {
+	} else if (iParam0 == hash("SOVEREIGN")) {
 		return "DINKA";
 	}
-	if (iParam0 == hash("blade") || iParam0 == hash("monster")) {
+	if (iParam0 == hash("THRUST")) {
+		return "DINKA";
+	}
+	if (iParam0 == hash("BLADE") || iParam0 == hash("MONSTER")) {
 		return "VAPID";
 	}
-	if (iParam0 == hash("warrener")) {
+	if (iParam0 == hash("WARRENER")) {
 		return "VULCAR";
 	}
-	if ((iParam0 == hash("glendale") || iParam0 == hash("panto")) ||
-		iParam0 == hash("dubsta3")) {
+	if ((iParam0 == hash("GLENDALE") || iParam0 == hash("PANTO")) ||
+		iParam0 == hash("DUBSTA3")) {
 		if (bParam1) {
 			return "BENEFAC";
 		} else {
 			return "BENEFACTOR";
 		}
 	}
-	if (iParam0 == hash("rhapsody")) {
+	if (iParam0 == hash("RHAPSODY")) {
 		return "DECLASSE";
 	}
-	if (iParam0 == hash("pigalle")) {
+	if (iParam0 == hash("PIGALLE")) {
 		if (bParam1) {
 			return "LAMPADA";
 		} else {
 			return "LAMPADATI";
 		}
 	}
-	if (iParam0 == hash("coquette2")) {
+	if (iParam0 == hash("COQUETTE2")) {
 		if (bParam1) {
 			return "INVERTO";
 		} else {
 			return "Invetero";
 		}
 	}
-	if (iParam0 == hash("innovation")) {
+	if (iParam0 == hash("INNOVATION")) {
 		return "LCC";
 	}
-	if (iParam0 == hash("hakuchou")) {
+	if (iParam0 == hash("HAKUCHOU")) {
 		return "SHITZU";
 	}
 	if (iParam0 == hash("furoregt")) {
@@ -898,106 +909,106 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 	}
 	if (iParam0 == hash("ratloader2")) {
 		return "BRAVADO";
-	} else if (iParam0 == hash("slamvan")) {
+	} else if (iParam0 == hash("SLAMVAN")) {
 		return "VAPID";
-	} else if (iParam0 == hash("jester2")) {
+	} else if (iParam0 == hash("JESTER2")) {
 		return "DINKA";
-	} else if (iParam0 == hash("massacro2")) {
+	} else if (iParam0 == hash("MASSACRO2")) {
 		if (bParam1) {
 			return "DEWBAUCH";
 		} else {
 			return "DEWBAUCHEE";
 		}
 	}
-	if (iParam0 == hash("windsor")) {
+	if (iParam0 == hash("WINDSOR")) {
 		return "ENUS";
-	} else if (iParam0 == hash("chino") || iParam0 == hash("chino2")) {
+	} else if (iParam0 == hash("CHINO") || iParam0 == hash("CHINO2")) {
 		return "VAPID";
-	} else if (iParam0 == hash("vindicator")) {
+	} else if (iParam0 == hash("VINDICATOR")) {
 		return "DINKA";
-	} else if (iParam0 == hash("virgo")) {
+	} else if (iParam0 == hash("VIRGO")) {
 		return "ALBANY";
-	} else if (iParam0 == hash("swift2") || iParam0 == hash("luxor2")) {
+	} else if (iParam0 == hash("SWIFT2") || iParam0 == hash("LUXOR2")) {
 		return "BUCKING";
-	} else if (iParam0 == hash("feltzer3")) {
+	} else if (iParam0 == hash("FELTZER3")) {
 		if (bParam1) {
 			return "BENEFAC";
 		} else {
 			return "BENEFACTOR";
 		}
-	} else if (iParam0 == hash("t20")) {
+	} else if (iParam0 == hash("T20")) {
 		return "PROGEN";
-	} else if (iParam0 == hash("osiris")) {
+	} else if (iParam0 == hash("OSIRIS")) {
 		return "PEGASSI";
-	} else if (iParam0 == hash("coquette3")) {
+	} else if (iParam0 == hash("COQUETTE3")) {
 		if (bParam1) {
 			return "INVERTO";
 		} else {
 			return "Invetero";
 		}
-	} else if (iParam0 == hash("toro")) {
+	} else if (iParam0 == hash("TORO")) {
 		if (bParam1) {
 			return "LAMPADA";
 		} else {
 			return "LAMPADATI";
 		}
-	} else if (iParam0 == hash("brawler")) {
+	} else if (iParam0 == hash("BRAWLER")) {
 		return "COIL";
 	}
-	if (iParam0 == hash("primo2") || iParam0 == hash("buccaneer2")) {
+	if (iParam0 == hash("PRIMO2") || iParam0 == hash("buccaneer2")) {
 		return "ALBANY";
-	} else if (iParam0 == hash("faction") || iParam0 == hash("faction2")) {
+	} else if (iParam0 == hash("FACTION") || iParam0 == hash("FACTION2")) {
 		return "WILLARD";
 	} else if (
-		(iParam0 == hash("moonbeam2") || iParam0 == hash("voodoo")) ||
-		iParam0 == hash("moonbeam")) {
+		(iParam0 == hash("MOONBEAM2") || iParam0 == hash("VOODOO")) ||
+		iParam0 == hash("MOONBEAM")) {
 		return "DECLASSE";
-	} else if (iParam0 == hash("chino2") || iParam0 == hash("dukes2")) {
+	} else if (iParam0 == hash("CHINO2") || iParam0 == hash("DUKES2")) {
 		return "VAPID";
 	}
-	if (iParam0 == hash("faction3")) {
+	if (iParam0 == hash("FACTION3")) {
 		return "WILLARD";
 	}
-	if ((iParam0 == hash("sabregt2") || iParam0 == hash("tornado5")) ||
-		iParam0 == hash("virgo")) {
+	if ((iParam0 == hash("SABREGT2") || iParam0 == hash("TORNADO5")) ||
+		iParam0 == hash("VIRGO")) {
 		return "DECLASSE";
 	}
-	if (iParam0 == hash("virgo2") || iParam0 == hash("virgo3")) {
+	if (iParam0 == hash("VIRGO2") || iParam0 == hash("VIRGO3")) {
 		if (bParam1) {
 			return "DUNDREAR";
 		} else {
 			return "DUNDREARY";
 		}
 	}
-	if (iParam0 == hash("slamvan3") || iParam0 == hash("minivan2")) {
+	if (iParam0 == hash("SLAMVAN3") || iParam0 == hash("MINIVAN2")) {
 		return "VAPID";
 	}
-	if (iParam0 == hash("lurcher") || iParam0 == hash("btype2")) {
+	if (iParam0 == hash("LURCHER") || iParam0 == hash("BTYPE2")) {
 		return "ALBANY";
 	}
-	if (iParam0 == hash("mamba") || iParam0 == hash("tampa")) {
+	if (iParam0 == hash("MAMBA") || iParam0 == hash("TAMPA")) {
 		return "DECLASSE";
 	}
-	if (((iParam0 == hash("cognoscenti") || iParam0 == hash("cog55")) ||
-		 iParam0 == hash("cog552")) ||
+	if (((iParam0 == hash("cognoscenti") || iParam0 == hash("COG55")) ||
+		 iParam0 == hash("COG552")) ||
 		iParam0 == hash("cognoscenti2")) {
 		return "ENUS";
 	}
 	if (iParam0 == hash("verlierer2")) {
 		return "BRAVADO";
 	}
-	if (((iParam0 == hash("schafter4") || iParam0 == hash("schafter3")) ||
-		 iParam0 == hash("schafter5")) ||
-		iParam0 == hash("schafter6")) {
+	if (((iParam0 == hash("SCHAFTER4") || iParam0 == hash("SCHAFTER3")) ||
+		 iParam0 == hash("SCHAFTER5")) ||
+		iParam0 == hash("SCHAFTER6")) {
 		if (bParam1) {
 			return "BENEFAC";
 		} else {
 			return "BENEFACTOR";
 		}
 	}
-	if (((iParam0 == hash("baller3") || iParam0 == hash("baller4")) ||
-		 iParam0 == hash("baller5")) ||
-		iParam0 == hash("baller6")) {
+	if (((iParam0 == hash("BALLER3") || iParam0 == hash("BALLER4")) ||
+		 iParam0 == hash("BALLER5")) ||
+		iParam0 == hash("BALLER6")) {
 		if (bParam1) {
 			return "GALLIVAN";
 		} else {
@@ -1010,261 +1021,261 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 	if (iParam0 == hash("btype3")) {
 		return "ALBANY";
 	}
-	if (iParam0 == hash("pfister811")) {
+	if (iParam0 == hash("PFISTER811")) {
 		return "PFISTER";
 	}
-	if (iParam0 == hash("seven70")) {
+	if (iParam0 == hash("SEVEN70")) {
 		if (bParam1) {
 			return "DEWBAUCH";
 		} else {
 			return "DEWBAUCHEE";
 		}
 	}
-	if (iParam0 == hash("rumpo3")) {
+	if (iParam0 == hash("RUMPO3")) {
 		return "BRAVADO";
 	}
-	if (iParam0 == hash("bestiagts")) {
+	if (iParam0 == hash("BESTIAGTS")) {
 		if (bParam1) {
 			return "GROTTI";
 		} else {
 			return "Grotti_2";
 		}
 	}
-	if (iParam0 == hash("prototipo")) {
+	if (iParam0 == hash("PROTOTIPO")) {
 		if (bParam1) {
 			return "GROTTI";
 		} else {
 			return "Grotti_2";
 		}
 	}
-	if (iParam0 == hash("xls") || iParam0 == hash("xls2")) {
+	if (iParam0 == hash("XLS") || iParam0 == hash("XLS2")) {
 		if (bParam1) {
 			return "BENEFAC";
 		} else {
 			return "BENEFACTOR";
 		}
 	}
-	if (iParam0 == hash("fmj")) {
+	if (iParam0 == hash("FMJ")) {
 		return "VAPID";
 	}
-	if (iParam0 == hash("windsor2")) {
+	if (iParam0 == hash("WINDSOR2")) {
 		return "ENUS";
 	}
-	if (iParam0 == hash("reaper")) {
+	if (iParam0 == hash("REAPER")) {
 		return "PEGASSI";
 	}
-	if (((iParam0 == hash("contender") || iParam0 == hash("trophytruck")) ||
+	if (((iParam0 == hash("CONTENDER") || iParam0 == hash("trophytruck")) ||
 		 iParam0 == hash("trophytruck2")) ||
-		iParam0 == hash("dominator2")) {
+		iParam0 == hash("DOMINATOR2")) {
 		return "VAPID";
 	}
-	if (iParam0 == hash("bf400")) {
+	if (iParam0 == hash("BF400")) {
 		return "NAGASAKI";
 	}
-	if (iParam0 == hash("cliffhanger") || iParam0 == hash("gargoyle")) {
+	if (iParam0 == hash("CLIFFHANGER") || iParam0 == hash("GARGOYLE")) {
 		if (bParam1) {
 			return "WESTERN";
 		} else {
 			return "WESTERNMOTORCYCLE";
 		}
 	}
-	if (iParam0 == hash("buffalo3") || iParam0 == hash("gauntlet2")) {
+	if (iParam0 == hash("BUFFALO3") || iParam0 == hash("GAUNTLET2")) {
 		return "BRAVADO";
 	}
-	if (iParam0 == hash("omnis")) {
+	if (iParam0 == hash("OMNIS")) {
 		return "OBEY";
 	}
-	if (iParam0 == hash("le7b")) {
+	if (iParam0 == hash("LE7B")) {
 		return "ANNIS";
 	}
-	if (iParam0 == hash("tropos")) {
+	if (iParam0 == hash("TROPOS")) {
 		if (bParam1) {
 			return "LAMPADA";
 		} else {
 			return "LAMPADATI";
 		}
 	}
-	if (iParam0 == hash("tampa2") || iParam0 == hash("stalion2")) {
+	if (iParam0 == hash("TAMPA2") || iParam0 == hash("STALION2")) {
 		return "DECLASSE";
 	}
-	if (iParam0 == hash("brioso")) {
+	if (iParam0 == hash("BRIOSO")) {
 		if (bParam1) {
 			return "GROTTI";
 		} else {
 			return "Grotti_2";
 		}
 	}
-	if (iParam0 == hash("tyrus")) {
+	if (iParam0 == hash("TYRUS")) {
 		return "PROGEN";
 	}
-	if (iParam0 == hash("lynx")) {
+	if (iParam0 == hash("LYNX")) {
 		return "OCELOT";
 	}
-	if (iParam0 == hash("sheava")) {
+	if (iParam0 == hash("SHEAVA")) {
 		if (bParam1) {
 			return "EMPEROR";
 		} else {
 			return "EMPORER";
 		}
 	}
-	if (iParam0 == hash("rallytruck")) {
+	if (iParam0 == hash("RALLYTRUCK")) {
 		return "MTL";
 	}
-	if (iParam0 == hash("tornado6")) {
+	if (iParam0 == hash("TORNADO6")) {
 		return "DECLASSE";
 	}
-	if (iParam0 == hash("avarus") || iParam0 == hash("sanctus")) {
+	if (iParam0 == hash("AVARUS") || iParam0 == hash("SANCTUS")) {
 		return "LCC";
 	}
-	if ((iParam0 == hash("chimera") || iParam0 == hash("shotaro")) ||
-		iParam0 == hash("blazer4")) {
+	if ((iParam0 == hash("CHIMERA") || iParam0 == hash("SHOTARO")) ||
+		iParam0 == hash("BLAZER4")) {
 		return "NAGASAKI";
 	}
-	if (iParam0 == hash("defiler") || iParam0 == hash("hakuchou2")) {
+	if (iParam0 == hash("DEFILER") || iParam0 == hash("HAKUCHOU2")) {
 		return "SHITZU";
 	}
-	if (((((iParam0 == hash("nightblade") || iParam0 == hash("zombiea")) ||
-		   iParam0 == hash("zombieb")) ||
-		  iParam0 == hash("daemon2")) ||
-		 iParam0 == hash("ratbike")) ||
-		iParam0 == hash("wolfsbane")) {
+	if (((((iParam0 == hash("NIGHTBLADE") || iParam0 == hash("ZOMBIEA")) ||
+		   iParam0 == hash("ZOMBIEB")) ||
+		  iParam0 == hash("DAEMON2")) ||
+		 iParam0 == hash("RATBIKE")) ||
+		iParam0 == hash("WOLFSBANE")) {
 		if (bParam1) {
 			return "WESTERN";
 		} else {
 			return "WESTERNMOTORCYCLE";
 		}
 	}
-	if (iParam0 == hash("youga2")) {
+	if (iParam0 == hash("YOUGA2")) {
 		return "BRAVADO";
 	}
-	if (((iParam0 == hash("esskey") || iParam0 == hash("vortex")) ||
-		 iParam0 == hash("faggio3")) ||
-		iParam0 == hash("faggio")) {
+	if (((iParam0 == hash("ESSKEY") || iParam0 == hash("VORTEX")) ||
+		 iParam0 == hash("FAGGIO3")) ||
+		iParam0 == hash("FAGGIO")) {
 		return "PEGASSI";
 	}
-	if (iParam0 == hash("raptor")) {
+	if (iParam0 == hash("RAPTOR")) {
 		return "BF";
 	}
-	if (iParam0 == hash("manchez")) {
+	if (iParam0 == hash("MANCHEZ")) {
 		return "MAIBATSU";
 	}
-	if (iParam0 == hash("blazer5")) {
+	if (iParam0 == hash("BLAZER5")) {
 		return "NAGASAKI";
 	}
-	if (iParam0 == hash("comet3")) {
+	if (iParam0 == hash("COMET3")) {
 		return "PFISTER";
 	}
-	if (iParam0 == hash("diablous") || iParam0 == hash("diablous2")) {
+	if (iParam0 == hash("DIABLOUS") || iParam0 == hash("DIABLOUS2")) {
 		if (bParam1) {
 			return "PRINCIPL";
 		} else {
 			return "PRINCIPE";
 		}
 	}
-	if ((iParam0 == hash("fcr") || iParam0 == hash("fcr2")) ||
-		iParam0 == hash("tempesta")) {
+	if ((iParam0 == hash("FCR") || iParam0 == hash("FCR2")) ||
+		iParam0 == hash("TEMPESTA")) {
 		return "PEGASSI";
 	}
-	if (iParam0 == hash("nero") || iParam0 == hash("nero2")) {
+	if (iParam0 == hash("NERO") || iParam0 == hash("NERO2")) {
 		return "TRUFFADE";
 	}
 	if (iParam0 == hash("penetrator")) {
 		return "OCELOT";
 	}
-	if (iParam0 == hash("ruiner2")) {
+	if (iParam0 == hash("RUINER2")) {
 		return "IMPONTE";
 	}
-	if (iParam0 == hash("technical2")) {
+	if (iParam0 == hash("TECHNICAL2")) {
 		return "KARIN";
 	}
-	if (iParam0 == hash("phantom2")) {
+	if (iParam0 == hash("PHANTOM2")) {
 		return "JOBUILT";
 	}
-	if (iParam0 == hash("voltic2")) {
+	if (iParam0 == hash("VOLTIC2")) {
 		return "COIL";
 	}
 	if (iParam0 == hash("wastelander")) {
 		return "MTL";
 	}
-	if (iParam0 == hash("italigtb") || iParam0 == hash("italigtb2")) {
+	if (iParam0 == hash("ITALIGTB") || iParam0 == hash("ITALIGTB2")) {
 		return "PROGEN";
 	}
-	if (iParam0 == hash("dune5") || iParam0 == hash("dune4")) {
+	if (iParam0 == hash("DUNE5") || iParam0 == hash("DUNE4")) {
 		return "BF";
 	}
-	if (iParam0 == hash("elegy") || iParam0 == hash("elegy2")) {
+	if (iParam0 == hash("ELEGY") || iParam0 == hash("ELEGY2")) {
 		return "ANNIS";
 	}
-	if (iParam0 == hash("specter") || iParam0 == hash("specter2")) {
+	if (iParam0 == hash("SPECTER") || iParam0 == hash("SPECTER2")) {
 		if (bParam1) {
 			return "DEWBAUCH";
 		} else {
 			return "DEWBAUCHEE";
 		}
 	}
-	if (iParam0 == hash("gp1")) {
+	if (iParam0 == hash("GP1")) {
 		return "PROGEN";
 	}
-	if (iParam0 == hash("infernus2")) {
+	if (iParam0 == hash("INFERNUS2")) {
 		return "PEGASSI";
 	}
-	if (iParam0 == hash("ruston")) {
+	if (iParam0 == hash("RUSTON")) {
 		return "HIJAK";
 	}
-	if (iParam0 == hash("turismo2")) {
+	if (iParam0 == hash("TURISMO2")) {
 		if (bParam1) {
 			return "GROTTI";
 		} else {
 			return "Grotti_2";
 		}
 	}
-	if (iParam0 == hash("dukes2")) {
+	if (iParam0 == hash("DUKES2")) {
 		return "IMPONTE";
 	}
-	if (iParam0 == hash("ardent") || iParam0 == hash("xa21")) {
+	if (iParam0 == hash("ARDENT") || iParam0 == hash("XA21")) {
 		return "OCELOT";
 	}
-	if (iParam0 == hash("cheetah2")) {
+	if (iParam0 == hash("CHEETAH2")) {
 		if (bParam1) {
 			return "GROTTI";
 		} else {
 			return "Grotti_2";
 		}
 	}
-	if ((iParam0 == hash("insurgent3") || iParam0 == hash("nightshark")) ||
-		iParam0 == hash("apc")) {
+	if ((iParam0 == hash("INSURGENT3") || iParam0 == hash("NIGHTSHARK")) ||
+		iParam0 == hash("APC")) {
 		return "HVY";
 	}
-	if (iParam0 == hash("technical3")) {
+	if (iParam0 == hash("TECHNICAL3")) {
 		return "KARIN";
 	}
-	if (iParam0 == hash("halftrack")) {
+	if (iParam0 == hash("HALFTRACK") || iParam0 == hash("bison3")) {
 		return "BRAVADO";
 	}
-	if (iParam0 == hash("torero") || iParam0 == hash("oppressor")) {
+	if (iParam0 == hash("TORERO") || iParam0 == hash("OPPRESSOR")) {
 		return "PEGASSI";
 	}
-	if (iParam0 == hash("dune3")) {
+	if (iParam0 == hash("DUNE3")) {
 		return "BF";
 	}
-	if (iParam0 == hash("tampa3")) {
+	if (iParam0 == hash("TAMPA3")) {
 		return "DECLASSE";
 	}
-	if (iParam0 == hash("vagner") || iParam0 == hash("rapidgt3")) {
+	if (iParam0 == hash("VAGNER") || iParam0 == hash("RAPIDGT3")) {
 		if (bParam1) {
 			return "DEWBAUCH";
 		} else {
 			return "DEWBAUCHEE";
 		}
 	}
-	if (iParam0 == hash("cyclone")) {
+	if (iParam0 == hash("CYCLONE")) {
 		return "COIL";
 	}
-	if ((iParam0 == hash("retinue") || iParam0 == hash("hustler")) ||
+	if ((iParam0 == hash("RETINUE") || iParam0 == hash("hustler")) ||
 		iParam0 == hash("riata")) {
 		return "VAPID";
 	}
-	if (iParam0 == hash("visione") || iParam0 == hash("vigilante")) {
+	if (iParam0 == hash("VISIONE") || iParam0 == hash("VIGILANTE")) {
 		if (bParam1) {
 			return "GROTTI";
 		} else {
@@ -1401,6 +1412,251 @@ const char *_com_dn(hash_t iParam0, bool bParam1) {
 	}
 	if (iParam0 == hash("scramjet")) {
 		return "DECLASSE";
+	}
+	if ((iParam0 == hash("monster3") || iParam0 == hash("monster4")) ||
+		iParam0 == hash("monster5")) {
+		return "BRAVADO";
+	}
+	if ((iParam0 == hash("scarab") || iParam0 == hash("scarab2")) ||
+		iParam0 == hash("scarab3")) {
+		return "HVY";
+	}
+	if ((iParam0 == hash("issi4") || iParam0 == hash("issi5")) ||
+		iParam0 == hash("issi6")) {
+		return "WEENY";
+	}
+	if (iParam0 == hash("toros")) {
+		return "PEGASSI";
+	}
+	if ((((((((((iParam0 == hash("clique") || iParam0 == hash("imperator")) ||
+				iParam0 == hash("imperator2")) ||
+			   iParam0 == hash("imperator3")) ||
+			  iParam0 == hash("dominator4")) ||
+			 iParam0 == hash("dominator5")) ||
+			iParam0 == hash("dominator6")) ||
+		   iParam0 == hash("slamvan4")) ||
+		  iParam0 == hash("slamvan5")) ||
+		 iParam0 == hash("slamvan6")) ||
+		iParam0 == hash("SLAMVAN2")) {
+		return "VAPID";
+	}
+	if (iParam0 == hash("deveste")) {
+		if (bParam1) {
+			return "PRINCIPL";
+		} else {
+			return "PRINCIPE";
+		}
+	}
+	if ((((((((iParam0 == hash("impaler") || iParam0 == hash("impaler2")) ||
+			  iParam0 == hash("impaler3")) ||
+			 iParam0 == hash("impaler4")) ||
+			iParam0 == hash("vamos")) ||
+		   iParam0 == hash("tulip")) ||
+		  iParam0 == hash("brutus")) ||
+		 iParam0 == hash("brutus2")) ||
+		iParam0 == hash("brutus3")) {
+		return "DECLASSE";
+	}
+	if (iParam0 == hash("deviant")) {
+		return "SCHYSTER";
+	}
+	if (iParam0 == hash("schlagen")) {
+		if (bParam1) {
+			return "BENEFAC";
+		} else {
+			return "BENEFACTOR";
+		}
+	}
+	if (iParam0 == hash("italigto")) {
+		if (bParam1) {
+			return "GROTTI";
+		} else {
+			return "Grotti_2";
+		}
+	}
+	if ((iParam0 == hash("cerberus") || iParam0 == hash("cerberus2")) ||
+		iParam0 == hash("cerberus3")) {
+		return "MTL";
+	}
+	if ((iParam0 == hash("deathbike") || iParam0 == hash("deathbike2")) ||
+		iParam0 == hash("deathbike3")) {
+		if (bParam1) {
+			return "WESTERN";
+		} else {
+			return "WESTERNMOTORCYCLE";
+		}
+	}
+	if ((iParam0 == hash("bruiser") || iParam0 == hash("bruiser2")) ||
+		iParam0 == hash("bruiser3")) {
+		if (bParam1) {
+			return "BENEFAC";
+		} else {
+			return "BENEFACTOR";
+		}
+	}
+	if ((iParam0 == hash("zr380") || iParam0 == hash("zr3802")) ||
+		iParam0 == hash("zr3803")) {
+		return "ANNIS";
+	}
+	if (iParam0 == hash("caracara2") || iParam0 == hash("peyote2")) {
+		return "VAPID";
+	}
+	if (iParam0 == hash("drafter")) {
+		return "OBEY";
+	}
+	if (iParam0 == hash("Dynasty") || iParam0 == hash("issi7")) {
+		return "WEENY";
+	}
+	if (iParam0 == hash("gauntlet3") || iParam0 == hash("gauntlet4")) {
+		return "BRAVADO";
+	}
+	if (iParam0 == hash("hellion") || iParam0 == hash("s80")) {
+		return "ANNIS";
+	}
+	if (iParam0 == hash("krieger")) {
+		if (bParam1) {
+			return "BENEFAC";
+		} else {
+			return "BENEFACTOR";
+		}
+	}
+	if (iParam0 == hash("locust") || iParam0 == hash("jugular")) {
+		return "OCELOT";
+	}
+	if (iParam0 == hash("nebula")) {
+		return "VULCAR";
+	}
+	if (iParam0 == hash("Novak")) {
+		if (bParam1) {
+			return "LAMPADA";
+		} else {
+			return "LAMPADATI";
+		}
+	}
+	if (iParam0 == hash("paragon") || iParam0 == hash("paragon2")) {
+		return "ENUS";
+	}
+	if (iParam0 == hash("thrax")) {
+		return "TRUFFADE";
+	}
+	if (iParam0 == hash("zion3")) {
+		if (bParam1) {
+			return "UBERMACH";
+		} else {
+			return "UBERMACHT";
+		}
+	}
+	if (iParam0 == hash("emerus")) {
+		return "PROGEN";
+	}
+	if (iParam0 == hash("neo")) {
+		return "VYSSER";
+	}
+	if (iParam0 == hash("rrocket")) {
+		if (bParam1) {
+			return "WESTERN";
+		} else {
+			return "WESTERNMOTORCYCLE";
+		}
+	}
+	if (iParam0 == hash("BURRITO") || iParam0 == hash("burrito2")) {
+		return "DECLASSE";
+	}
+	if (iParam0 == hash("formula")) {
+		return "PROGEN";
+	}
+	if (iParam0 == hash("everon")) {
+		return "KARIN";
+	}
+	if (iParam0 == hash("imorgon")) {
+		return "OVERFLOD";
+	}
+	if (iParam0 == hash("kanjo")) {
+		return "DINKA";
+	}
+	if (iParam0 == hash("komoda")) {
+		if (bParam1) {
+			return "LAMPADA";
+		} else {
+			return "LAMPADATI";
+		}
+	}
+	if (iParam0 == hash("rebla")) {
+		if (bParam1) {
+			return "UBERMACH";
+		} else {
+			return "UBERMACHT";
+		}
+	}
+	if (iParam0 == hash("Sugoi")) {
+		return "DINKA";
+	}
+	if (iParam0 == hash("sultan2")) {
+		return "KARIN";
+	}
+	if (iParam0 == hash("vstr")) {
+		return "ALBANY";
+	}
+	if (iParam0 == hash("zhaba")) {
+		return "RUNE";
+	}
+	if (!bParam1) {
+		if (hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("GALLIVAN")) {
+			return "GALIVANTER";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("BENEFAC")) {
+			return "BENEFACTOR";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("UBERMACH")) {
+			return "UBERMACHT";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("DEWBAUCH")) {
+			return "DEWBAUCHEE";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("JACKSHP")) {
+			return "JACKSHEEPE";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("GROTTI")) {
+			return "Grotti_2";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("INVERTO")) {
+			return "Invetero";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("LAMPADA")) {
+			return "LAMPADATI";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("DUNDREAR")) {
+			return "DUNDREARY";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("ZIRCONIU")) {
+			return "ZIRCONIUM";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("WESTERN")) {
+			return "WESTERNMOTORCYCLE";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("PRINCIPL")) {
+			return "PRINCIPE";
+		} else if (
+			hash(ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0)) ==
+			hash("EMPEROR")) {
+			return "EMPORER";
+		} else {
+			return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0);
+		}
+	} else {
+		return ntv::VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(iParam0);
 	}
 	return "";
 }
