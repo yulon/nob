@@ -9,6 +9,8 @@
 #include <rua/string.hpp>
 #include <rua/thread.hpp>
 
+#include <windows.h>
+
 namespace nob {
 
 HMODULE this_dll;
@@ -64,7 +66,7 @@ void _init() {
 			Sleep(100);
 		}
 
-		log.alloc_console();
+		AllocConsole();
 
 		if (dx::on_render::count()) {
 			rua::thread{dx::on_render::_init};

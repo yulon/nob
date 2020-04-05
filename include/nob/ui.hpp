@@ -286,7 +286,7 @@ inline void help(const std::string &content, int dur = 15000) {
 	}
 	cnt = content;
 	if (tsk) {
-		tsk.reset_duration(dur);
+		tsk.reset_lifetime(dur);
 	} else {
 		tsk = task(
 			[]() {

@@ -31,10 +31,8 @@ class task {
 public:
 	task(std::nullptr_t = nullptr) : _cp_tsk() {}
 
-	task(
-		const std::function<void()> &handler,
-		ms duration = rua::duration_max()) {
-		_cp_tsk = pool().attach(handler, duration);
+	task(std::function<void()> handler, ms duration = rua::duration_max()) {
+		_cp_tsk = executor().execute(std::move(handler), duration);
 	}
 
 	operator bool() const {
@@ -45,12 +43,12 @@ public:
 		_cp_tsk.stop();
 	}
 
-	void reset_duration(ms duration = 0) {
-		_cp_tsk.reset_duration(duration);
+	void reset_lifetime(ms duration = 0) {
+		_cp_tsk.reset_lifetime(duration);
 	}
 
-	static rua::fiber_driver &pool() {
-		static rua::fiber_driver inst;
+	static rua::fiber_executor &executor() {
+		static rua::fiber_executor inst;
 		return inst;
 	}
 
@@ -69,11 +67,11 @@ inline bool in_this_script() {
 namespace this_task {
 
 inline void del() {
-	task::pool().current().stop();
+	task::executor().executing().stop();
 }
 
-inline void reset_duration(ms duration) {
-	task::pool().current().reset_duration(duration);
+inline void reset_lifetime(ms duration) {
+	task::executor().executing().reset_lifetime(duration);
 }
 
 } // namespace this_task

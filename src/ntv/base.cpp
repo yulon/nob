@@ -153,6 +153,7 @@ void script_thread_t::kill() {
 };
 
 namespace _fn_tab {
+
 struct node_t {
 	node_t *nxt;
 	func_t funcs[7];
@@ -315,6 +316,7 @@ void begin_it(
 	node = nullptr;
 	fn_ix = 0;
 }
+
 } // namespace _fn_tab
 
 func_t *func_table_t::find(uint64_t hash) const {
@@ -398,14 +400,12 @@ void _pre_init() {
 #ifdef NOB_FAST_LAUNCH
 		auto mr = game_code.match(
 			{0x70, 0x6C, 0x61, 0x74, 0x66, 0x6F, 0x72, 0x6D, 0x3A});
-
 		if (mr.size()) {
 			auto addr = mr[0].data();
 			rua::mem_chmod(addr, 1);
 			rua::bit_as<uint8_t>(addr) = 0xC3;
 		} else {
-			log("nob::ntv::_init::logos_anim: not found!");
-			// finded = false;
+			log("nob::ntv::_init::disable_welcome_animation: not found!");
 		}
 #endif
 		_pre_init_when_no_wnd = true;
@@ -419,7 +419,6 @@ bool _init() {
 	// https://github.com/MockbaTheBorg/GTALuaF/blob/master/PHP/patternsGTA.txt#L10
 	auto mr = game_code.match(
 		{0x83, 0x3D, 1111, 1111, 1111, 1111, 1111, 0x8A, 0xD9, 0x74, 0x0A});
-
 	if (mr.size()) {
 		game_state = mr[1].derel<int32_t, 5>();
 	}
@@ -437,20 +436,18 @@ bool _init() {
 										0x00,
 										0xEB,
 										0x3F});
-
 		auto pos_o = game_code.match_pos(mov_gs_6_pat);
-
 		if (pos_o) {
 			auto mp = pos_o.value();
 			if (!game_state) {
 				game_state = game_code.derel<int32_t>(mp + 2);
 			}
+#ifdef NOB_FAST_LAUNCH
 			if (_pre_init_when_no_wnd) {
 				constexpr size_t skip_sz_b = 0x1C;
 				size_t skip_sz;
 
 				auto code = game_code(mp - skip_sz_b);
-
 				if (code.get<uint32_t>() == 0x7501F883) {
 					pos_o = game_code(mp + mov_gs_6_pat.size())
 								.match_pos({0xC7,
@@ -463,7 +460,6 @@ bool _init() {
 											0x00,
 											0x00,
 											0x00});
-
 					if (pos_o) {
 						skip_sz =
 							skip_sz_b + mov_gs_6_pat.size() + pos_o.value();
@@ -476,6 +472,7 @@ bool _init() {
 					log("nob::ntv::_init: 'game_state_handler()' not found!");
 				}
 			}
+#endif
 		} else {
 			log("nob::ntv::_init: (*game_state = 6) not found!");
 		}
@@ -490,13 +487,12 @@ bool _init() {
 	if (_pre_init_when_no_wnd) {
 		mr = game_code.match(
 			{0x72, 0x1F, 0xE8, 1111, 1111, 1111, 1111, 0x8B, 0x0D});
-
 		if (mr.size()) {
 			auto addr = mr[0].data();
 			rua::mem_chmod(addr, 2);
 			rua::bit_as<uint16_t>(addr) = 0x9090;
 		} else {
-			log("nob::ntv::_init::legals_view: not found!");
+			log("nob::ntv::_init::disable_usage_notice_page: not found!");
 			// finded = false;
 		}
 	}
@@ -527,7 +523,6 @@ bool _init() {
 						  0xC9,
 						  0x74,
 						  0x11});
-
 	if (mr.size()) {
 		global_table._segments = mr[1].derel<int32_t>();
 	} else {
@@ -549,7 +544,6 @@ bool _init() {
 						  0xFF,
 						  0x4A,
 						  0x18});
-
 	if (mr.size()) {
 		call_context_t::res_fixer = mr[0].data();
 	} else {
@@ -578,7 +572,6 @@ bool _init() {
 							  1111,
 							  1111,
 							  1111});
-
 		if (mr.size()) {
 			func_table = mr[3].derel<int32_t>();
 		} else {
@@ -622,7 +615,6 @@ bool _init() {
 								  1111,
 								  1111});
 		}
-
 		if (mr.size()) {
 			func_table = mr[1].derel<int32_t>();
 		} else {
@@ -645,7 +637,6 @@ bool _init() {
 						  0x49,
 						  0x8B,
 						  0x08});
-
 	if (mr.size()) {
 		script_list = mr[1].derel<int32_t>();
 	} else {
@@ -657,7 +648,6 @@ bool _init() {
 	// https://github.com/JLFSL/FiveMultiplayer/blob/dev/Client/Core/MemoryAccess.h#L23
 	mr = game_code.match(
 		{0x4C, 0x8B, 0x05, 1111, 1111, 1111, 1111, 0x49, 0x2B, 0x00});
-
 	if (mr.size()) {
 		entity_obj_map = mr[1].derel<int32_t>();
 	} else {
@@ -666,7 +656,6 @@ bool _init() {
 	}
 
 	if (game_build >= 757) {
-
 		if (game_build >= 1290) {
 			mr = game_code.match({0x8B,
 								  0x15,
@@ -697,14 +686,12 @@ bool _init() {
 
 		mr = game_code.match(
 			{0xFF, 0x0D, 1111, 1111, 1111, 1111, 0x48, 0x8B, 0xF9});
-
 		if (mr.size()) {
 			fake_script_hash_count = mr[1].derel<int32_t>();
 		} else {
 			log("nob::ntv::fake_script_hash_count: not found!");
 			// finded = false;
 		}
-
 	} else {
 		// Reference from
 		// https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrEngine.cpp#L381
@@ -752,7 +739,6 @@ bool _init() {
 						  1111,
 						  1111,
 						  1111});
-
 	if (mr.size()) {
 		script_context_pool = mr[2].derel<int32_t>();
 	} else {
@@ -765,7 +751,6 @@ bool _init() {
 	mr = game_code.match({1111, 1111, 1111, 1111, 0x48, 0x8B, 0x04,
 						  0xD0, 0x4A, 0x8B, 0x14, 0x00, 0x48, 0x8B,
 						  0x01, 0xF3, 0x44, 0x0F, 0x2C, 0x42, 0x20});
-
 	if (mr.size()) {
 		script_thread_t::tls_off = mr[0].get<int32_t>();
 	} else {
@@ -790,7 +775,6 @@ bool _init() {
 						  1111,
 						  1111,
 						  1111});
-
 	if (mr.size()) {
 		script_thread_t::pool = mr[1].derel<int32_t>();
 	} else {
@@ -846,26 +830,25 @@ bool _init() {
 		// finded = false;
 	}
 
-	mr = game_code.match(
-		{// Reference from
-		 // https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L50
-		 0x48,
-		 0x83,
-		 0xEC,
-		 0x20,
-		 0x48,
-		 0x83,
-		 0xB9,
-		 0x10,
-		 0x01,
-		 0x00,
-		 0x00,
-		 0x00,
-		 0x48,
-		 0x8B,
-		 0xD9,
-		 0x74,
-		 0x14});
+	// Reference from
+	// https://github.com/GTA-Lion/citizenmp/blob/master/components/rage-scripting-five/src/scrThread.cpp#L50
+	mr = game_code.match({0x48,
+						  0x83,
+						  0xEC,
+						  0x20,
+						  0x48,
+						  0x83,
+						  0xB9,
+						  0x10,
+						  0x01,
+						  0x00,
+						  0x00,
+						  0x00,
+						  0x48,
+						  0x8B,
+						  0xD9,
+						  0x74,
+						  0x14});
 
 	if (mr.size()) {
 		script_thread_t::default_kill = mr[0].data() - 6;

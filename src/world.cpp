@@ -10,6 +10,7 @@
 #include <cstring>
 
 namespace nob { namespace world {
+
 // Reference from https://pastebin.com/Tvg2PRHU
 const std::array<const char *, 45> _scenario_groups{{"ALAMO_PLANES",
 													 "ARMENIAN_CATS",

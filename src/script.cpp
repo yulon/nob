@@ -91,7 +91,7 @@ static inline bool _run(bool auto_init = true, bool need_init = false) {
 		return false;
 	}
 
-	task::pool().step();
+	task::executor().step();
 
 	_hkl::prevent_defaults();
 	return true;
@@ -172,11 +172,9 @@ bool _create_from_new_td() {
 			}
 		},
 		[]() { need_init = true; }));
-
 	if (!*td) {
 		td.reset();
 	}
-
 	return td.get();
 }
 

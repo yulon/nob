@@ -17,15 +17,13 @@ inline void _disable_ws2_func(const char *name) {
 
 	auto fp = GetProcAddress(ws2_dll, name);
 	if (!fp) {
-		log("nob::_disable_ws2_func: ", name, "() not found!");
+		log("nob::_disable_ws2_func:", name, "not found!");
 		return;
 	}
 
 	auto is_writable = rua::mem_chmod(fp, 3);
 	if (!is_writable) {
-		log("nob::_disable_ws2_func: set ",
-			name,
-			"() memory protection failed!");
+		log("nob::_disable_ws2_func: set", name, "memory protection failed!");
 		return;
 	}
 

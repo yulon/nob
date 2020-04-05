@@ -100,8 +100,8 @@ inline void wait_for_valid(const T &t) {
 
 enum class game_state_t : int {
 	playing = 0,
-	preloading = 1,
-	preload_blocking = 3,
+	welcome_animation = 1,
+	usage_notice_page = 3,
 	landing_page = 5,
 	loading = 6,
 	forced_loading_mp = 7,
