@@ -6,8 +6,9 @@
 #include <nob/window.hpp>
 
 #include <rua/memory.hpp>
-#include <rua/observer.hpp>
 #include <rua/process.hpp>
+
+#include <cassert>
 
 namespace nob { namespace ntv {
 
@@ -15,110 +16,112 @@ std::recursive_mutex _scr_td_mtx;
 
 script_thread_t::script_thread_t(void (*on_frame)(), void (*on_orig_kill)()) :
 	script_thread_t() {
+
 	if (!pool || !id_count || !script_context_pool || !fake_script_hash_count ||
 		!tls_off) {
 		return;
+	}
+
+	_on_frame = on_frame;
+	_on_orig_kill = on_orig_kill;
+	vtable = &_vtab_impl;
+
+	_vtab_impl.reset = [](script_thread_t *td,
+						  uint32_t fake_script_hash,
+						  uintptr_t *,
+						  uint32_t) -> state_t {
+		memset(&td->context, 0, sizeof(script_thread_t::context_t));
+
+		td->context.state = state_t::idle;
+		td->context.fake_script_hash = fake_script_hash;
+		td->context._munk1 = -1;
+		td->context._munk2 = -1;
+
+		td->context._set1 = 1;
+
+		if (init_gta_data) {
+			init_gta_data(td);
+		} else {
+			memset(
+				&td->script_hash_str,
+				0,
+				reinterpret_cast<uintptr_t>(
+					&td->can_remove_blips_from_other_scripts) -
+					reinterpret_cast<uintptr_t>(&td->script_hash_str) + 8);
+		}
+
+		td->network_flag = true;
+		td->can_remove_blips_from_other_scripts = false;
+
+		td->exit_msg = "Normal exit";
+
+		return td->context.state;
+	};
+
+	_vtab_impl.join = [](script_thread_t *td, uint32_t) -> state_t {
+		std::scoped_lock<std::recursive_mutex> lock(_scr_td_mtx);
+
+		if (td->context.state != state_t::killed) {
+			if (!td->script_context) {
+				script_context_pool->alloc(td);
+			}
+
+			auto cur = script_thread_t::current();
+			script_thread_t::current() = td;
+			td->_on_frame();
+			script_thread_t::current() = cur;
+		}
+
+		return td->context.state;
+	};
+
+	if (default_tick) {
+		_vtab_impl.tick = default_tick;
+	} else {
+		_vtab_impl.tick = [](script_thread_t *td,
+							 uint32_t ops_to_execute) -> state_t {
+			return td->vtable->join(td, ops_to_execute);
+		};
+	}
+
+	_vtab_impl.kill = [](script_thread_t *td) {
+		if (td->_on_orig_kill) {
+			td->_on_orig_kill();
+		}
+	};
+
+	_vtab_impl._dtor = [](script_thread_t *td) {
+		log("nob::ntv::script_thread_t: delete ", td, " by native!");
+	};
+
+	if (!context.stack_size) {
+		stack = new uint8_t[2048];
+		context.stack_size = 2048;
 	}
 
 	while (!*pool) {
 		Sleep(100);
 	}
 
+	_vtab_impl.reset(this, ++(*fake_script_hash_count), nullptr, 0);
+
+	context.id = (*id_count)++;
+	if (!context.id) {
+		context.id = (*id_count)++;
+	}
+
 	for (uint16_t i = 0; i < pool->count; ++i) {
+		assert((*pool)[i]);
 		if (!(*pool)[i]->context.id) {
-			_on_frame = on_frame;
-			_on_orig_kill = on_orig_kill;
-			vtable = &_vtab_impl;
-
-			_vtab_impl.reset = [](script_thread_t *td,
-								  uint32_t fake_script_hash,
-								  uintptr_t *,
-								  uint32_t) -> state_t {
-				memset(&td->context, 0, sizeof(script_thread_t::context_t));
-
-				td->context.state = state_t::idle;
-				td->context.fake_script_hash = fake_script_hash;
-				td->context._munk1 = -1;
-				td->context._munk2 = -1;
-
-				td->context._set1 = 1;
-
-				if (init_gta_data) {
-					init_gta_data(td);
-				} else {
-					memset(
-						&td->script_hash_str,
-						0,
-						reinterpret_cast<uintptr_t>(
-							&td->can_remove_blips_from_other_scripts) -
-							reinterpret_cast<uintptr_t>(&td->script_hash_str) +
-							8);
-				}
-
-				td->network_flag = true;
-				td->can_remove_blips_from_other_scripts = false;
-
-				td->exit_msg = "Normal exit";
-
-				return td->context.state;
-			};
-
-			_vtab_impl.join = [](script_thread_t *td, uint32_t) -> state_t {
-				std::scoped_lock<std::recursive_mutex> lock(_scr_td_mtx);
-
-				if (td->context.state != state_t::killed) {
-					if (!td->script_context) {
-						script_context_pool->alloc(td);
-					}
-
-					auto cur = script_thread_t::current();
-					script_thread_t::current() = td;
-					td->_on_frame();
-					script_thread_t::current() = cur;
-				}
-
-				return td->context.state;
-			};
-
-			if (default_tick) {
-				_vtab_impl.tick = default_tick;
-			} else {
-				_vtab_impl.tick = [](script_thread_t *td,
-									 uint32_t ops_to_execute) -> state_t {
-					return td->vtable->join(td, ops_to_execute);
-				};
-			}
-
-			_vtab_impl.kill = [](script_thread_t *td) {
-				if (td->_on_orig_kill) {
-					td->_on_orig_kill();
-				}
-			};
-
-			_vtab_impl._dtor = [](script_thread_t *td) {
-				log("nob::ntv::script_thread_t: delete ", td, " by native!");
-			};
-
-			auto fake_script_hash = ++(*fake_script_hash_count);
-
-			_vtab_impl.reset(this, fake_script_hash, nullptr, 0);
-
-			if (!context.stack_size) {
-				stack = new uint8_t[2048];
-				context.stack_size = 2048;
-			}
-
-			if (!*id_count) {
-				++(*id_count);
-			}
-			context.id = (*id_count)++;
-
 			_orig_owner = (*pool)[i];
 			(*pool)[i] = this;
-
 			return;
 		}
 	}
+
+	delete[] stack;
+	stack = nullptr;
+	context.stack_size = 0;
 }
 
 void script_thread_t::kill() {
@@ -137,7 +140,7 @@ void script_thread_t::kill() {
 		}
 	}
 
-	for (int i = 0; i < pool->count; ++i) {
+	for (uint16_t i = 0; i < pool->count; ++i) {
 		if ((*pool)[i] == this) {
 			(*pool)[i] = _orig_owner;
 			_orig_owner = nullptr;
