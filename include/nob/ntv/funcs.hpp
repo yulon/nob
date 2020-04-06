@@ -9169,6 +9169,8 @@ lazy_func_t<void(Vehicle vehicle, BOOL p1, float yaw, float pitch, float roll)>
 	_JITTER_VEHICLE(0xC59872A5134879C7);
 lazy_func_t<const char *(Hash modelHash)>
 	GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(0xB215AAC32D25D019);
+lazy_func_t<const char *(Hash modelHash)>
+	GET_MFR_DISPLAY_NAME_FROM_VEHICLE_MODEL(0xF7AF4F159FF99F97);
 lazy_func_t<void(Vehicle cargobob, int state)>
 	CREATE_PICK_UP_ROPE_FOR_CARGOBOB(0x7BEB0C7A235F6F3B);
 lazy_func_t<void(Vehicle vehicle, BOOL toggle)>

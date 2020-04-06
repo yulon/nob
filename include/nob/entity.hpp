@@ -1449,22 +1449,22 @@ public:
 
 	class names_t {
 	public:
-		std::string veh_name, com_name;
+		std::string veh_name, mfr_name;
 
-		names_t(const std::string &vn = "", const std::string &cn = "") :
-			veh_name(vn), com_name(cn) {}
+		names_t(std::string vn = "", std::string mn = "") :
+			veh_name(std::move(vn)), mfr_name(std::move(mn)) {}
 
 		const std::string &comb() {
 			if (_combed.empty()) {
 				_combed =
-					com_name.empty() ? veh_name : com_name + " " + veh_name;
+					mfr_name.empty() ? veh_name : mfr_name + " " + veh_name;
 			}
 			return _combed;
 		}
 
 		std::string comb() const {
 			if (_combed.empty()) {
-				return com_name.empty() ? veh_name : com_name + " " + veh_name;
+				return mfr_name.empty() ? veh_name : mfr_name + " " + veh_name;
 			}
 			return _combed;
 		}
@@ -1494,7 +1494,7 @@ public:
 	static names_t localized_names_from_model(const model &m) {
 		auto dns = display_names_from_model(m);
 		dns.veh_name = i18n(dns.veh_name);
-		dns.com_name = i18n(dns.com_name);
+		dns.mfr_name = i18n(dns.mfr_name);
 		return dns;
 	}
 
