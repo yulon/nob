@@ -13,7 +13,7 @@ DepPull(
 DepPull(
 	rua
 	GIT_REPO "https://github.com/yulon/rua.git"
-	GIT_TAG "e7e1fc6912e2ad2b956cb3c43a2ff497dcb5c706"
+	GIT_TAG "d8b38c0526269b042ea3019bbed871c6aaeaaf07"
 )
 
 file(GLOB_RECURSE nob_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
